@@ -1,24 +1,33 @@
 {
-  "name": "flossbank-api",
+  "name": "flossbank-fastify-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "standard --fix"
+    "lint": "standard --fix",
+    "depcheck": "dependency-check ./**/*.js --unused --no-dev",
+    "unit-tests": "recaptcha_secret_test=test mongo_uri_test=test nyc ava --serial",
+    "watch:unit-tests": "recaptcha_secret_test=test mongo_uri_test=test ava --serial --watch",
+    "test": "npm run lint && npm run depcheck && npm run unit-tests"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.580.0",
-    "crypto": "^1.0.1",
-    "dotenv": "^8.2.0",
-    "fastify": "^2.10.0",
+    "aws-sdk": "^2.543.0",
+    "bcrypt": "^3.0.6",
     "fastify-plugin": "^1.6.0",
-    "form-data": "^3.0.0",
+    "form-data": "^2.5.1",
+    "get-owned-packages": "^1.0.0",
     "got": "^9.6.0",
-    "mongodb": "^3.3.5",
+    "mongodb": "^3.3.2"
+  },
+  "devDependencies": {
+    "ava": "^2.4.0",
+    "dependency-check": "^4.1.0",
+    "husky": "^3.0.8",
+    "nyc": "^14.1.1",
+    "sinon": "^7.5.0",
     "standard": "^14.3.1"
   }
 }

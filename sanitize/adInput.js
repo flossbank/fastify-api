@@ -3,14 +3,16 @@ module.exports = ({
   impressions = [],
   content,
   name,
-  maxImpressions,
+  active = false,
+  approved = false,
   advertiserId,
   adCampaigns = []
 }) => ({
   impressions,
   content,
   name,
-  maxImpressions,
+  active,
+  approved,
   advertiserId,
   adCampaigns
 })
