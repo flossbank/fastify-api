@@ -15,8 +15,9 @@ const valid = (req) => {
 /* Ad should be a single ad to insert */
 const createAds = async (ad, db) => {
   const sanitizedAd = sanitizeAd(ad)
-  return db.collection('ads').insertOne(sanitizedAd)
-
+  const inserted = await db.collection('ads').insertOne(sanitizedAd)
+  // return the inserted ad
+  return inserted.ops[0]
 }
 
 module.exports = async (req, res, fastify) => {

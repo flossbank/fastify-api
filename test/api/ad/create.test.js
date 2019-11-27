@@ -12,7 +12,9 @@ test.before(() => {
 
 test.beforeEach(() => {
   mockFastify.mongo.collection.returns({
-    insertOne: sinon.stub().resolves(sanitizeAd(mockData.ads[0]))
+    insertOne: sinon.stub().resolves({
+      ops: [sanitizeAd(mockData.ads[0])]
+    })
   })
 })
 
