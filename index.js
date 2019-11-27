@@ -3,9 +3,7 @@ const fastify = require('fastify')({
 })
 require('dotenv').config()
 
-// Attach our db instance
 fastify.register(require('./db/index'))
-// Register our routes
 fastify.register(require('./routes/index'))
 
 const start = async () => {
