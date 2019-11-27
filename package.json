@@ -1,0 +1,24 @@
+{
+  "name": "flossbank-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "standard --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.580.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^8.2.0",
+    "fastify": "^2.10.0",
+    "fastify-plugin": "^1.6.0",
+    "form-data": "^3.0.0",
+    "got": "^9.6.0",
+    "mongodb": "^3.3.5",
+    "standard": "^14.3.1"
+  }
+}
