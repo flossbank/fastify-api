@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <title>reCAPTCHA demo: Simple page</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  </head>
+  <body>
+    <h3>FOR TESTING</h3>
+    <form action="" method="POST" id="initial">
+      <p id="init-status">Enter the full link that was emailed:</p>
+      <input name="emailed-url" type="text"/>
+      <input type="submit" value="Verify my email" />
+    </form>
+    <form action="/api/auth/validate-captcha" method="POST" id="captcha" style="display: none">
+      <p>Please verify you're a human to get your API key:</p>
+      <div class="g-recaptcha" data-sitekey="6Lfzir0UAAAAAO_GnwyXOTLpzLaHvZvF30oAJzI_"></div>
+      <input type="submit" value="Get my API key" />
+    </form>
+    <p id="apikey"></p>
+    <script>
+      (async () => {
+        const initForm = document.getElementById('initial')
+        const capForm = document.getElementById('captcha')
+        let email
+        let token
+        initForm.onsubmit = async (e) => {
+          e.preventDefault()
+          const data = new FormData(initForm)
+          const url = new URL(data.get('emailed-url'))
+          email = url.searchParams.get('email')
+          token = url.searchParams.get('token')
+          document.getElementById('init-status').textContent = 'Validating email...'
+          const res = await fetch('/api/auth/validate-email', {
+            headers: {
+              'content-type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({ email, token })
+          })
+          const json = await res.send()
+          if (!json.valid) {
+            document.getElementById('init-status').textContent = 'Invalid email/token pair'
+            return
+          }
+          initForm.style = "display: none"
+          capForm.style = "display: block"
+        }
+        capForm.onsubmit = async (e) => {
+          e.preventDefault()
+          const response = grecaptcha.getResponse()
+          const res = await fetch('/api/auth/validate-captcha', {
+            headers: {
+              'content-type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({ email, token, response })
+          })
+          const json = await res.send()
+          capForm.style = "display: none"
+          document.getElementById('apikey').textContent = `Success! Your API key: ${json.apiKey}`
+        }
+      })()
+    </script>
+  </body>
+</html>
