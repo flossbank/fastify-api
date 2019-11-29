@@ -3,6 +3,9 @@ const fastify = require('fastify')({
 })
 require('dotenv').config()
 
+fastify.register(require('fastify-cors'), {
+  // TODO stricter CORS settings when we have a frontend
+})
 fastify.register(require('./db/index'))
 fastify.register(require('./routes/index'))
 
