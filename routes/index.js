@@ -42,46 +42,46 @@ const completeSession = require('../api/session/complete')
 
 async function routes (fastify, opts, next) {
   // Ads
-  fastify.post('/api/ad/create', (req, res) => createAd(req, res, fastify))
-  fastify.get('/api/ad/get-all', (req, res) => getAllAds(req, res, fastify))
-  fastify.get('/api/ad/get', (req, res) => getAd(req, res, fastify))
-  fastify.post('/api/ad/update', (req, res) => updateAd(req, res, fastify))
+  fastify.post('/ad/create', (req, res) => createAd(req, res, fastify))
+  fastify.get('/ad/get-all', (req, res) => getAllAds(req, res, fastify))
+  fastify.get('/ad/get', (req, res) => getAd(req, res, fastify))
+  fastify.post('/ad/update', (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
-  fastify.post('/api/adCampaign/create', (req, res) => createAdCampaign(req, res, fastify))
-  fastify.post('/api/adCampaign/update', (req, res) => updateAdCampaign(req, res, fastify))
+  fastify.post('/adCampaign/create', (req, res) => createAdCampaign(req, res, fastify))
+  fastify.post('/adCampaign/update', (req, res) => updateAdCampaign(req, res, fastify))
 
   // Advertiser
-  fastify.post('/api/advertiser/create', (req, res) => createAdvertiser(req, res, fastify))
-  fastify.get('/api/advertiser/get', (req, res) => getAdvertiser(req, res, fastify))
-  fastify.post('/api/advertiser/login', (req, res) => loginAdvertiser(req, res, fastify))
-  fastify.get('/api/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
-  fastify.post('/api/advertiser/update', (req, res) => updateAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/create', (req, res) => createAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/get', (req, res) => getAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/login', (req, res) => loginAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/update', (req, res) => updateAdvertiser(req, res, fastify))
 
   // Auth
-  fastify.post('/api/auth/send', (req, res) => sendAuth(req, res, fastify))
-  fastify.post('/api/auth/validateCaptcha', (req, res) => validateCaptcha(req, res, fastify))
-  fastify.post('/api/auth/validateEmail', (req, res) => validateEmail(req, res, fastify))
+  fastify.post('/auth/send', (req, res) => sendAuth(req, res, fastify))
+  fastify.post('/auth/validateCaptcha', (req, res) => validateCaptcha(req, res, fastify))
+  fastify.post('/auth/validateEmail', (req, res) => validateEmail(req, res, fastify))
 
   // Maintainer
-  fastify.post('/api/maintainer/create', (req, res) => createMaintainer(req, res, fastify))
-  fastify.post('/api/maintainer/login', (req, res) => loginMaintainer(req, res, fastify))
-  fastify.get('/api/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
-  fastify.post('/api/maintainer/register', (req, res) => registerMaintainer(req, res, fastify))
-  fastify.get('/api/maintainer/revenue', (req, res) => maintainerRevenue(req, res, fastify))
-  fastify.post('/api/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
-  fastify.get('/api/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
+  fastify.post('/maintainer/create', (req, res) => createMaintainer(req, res, fastify))
+  fastify.post('/maintainer/login', (req, res) => loginMaintainer(req, res, fastify))
+  fastify.get('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
+  fastify.post('/maintainer/register', (req, res) => registerMaintainer(req, res, fastify))
+  fastify.get('/maintainer/revenue', (req, res) => maintainerRevenue(req, res, fastify))
+  fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
+  fastify.get('/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
 
   // Npm
-  fastify.get('/api/maintainer/npm/get', (req, res) => getNpmPackages(req, res, fastify))
+  fastify.get('/maintainer/npm/get', (req, res) => getNpmPackages(req, res, fastify))
 
   // Packages
-  fastify.get('/api/maintainer/packages/get', (req, res) => getMaintainerPackages(req, res, fastify))
-  fastify.post('/api/maintainer/packages/refresh', (req, res) => refreshMaintainerPackages(req, res, fastify))
-  fastify.post('/api/maintainer/packages/update', (req, res) => updateMaintainerPackages(req, res, fastify))
+  fastify.get('/maintainer/packages/get', (req, res) => getMaintainerPackages(req, res, fastify))
+  fastify.post('/maintainer/packages/refresh', (req, res) => refreshMaintainerPackages(req, res, fastify))
+  fastify.post('/maintainer/packages/update', (req, res) => updateMaintainerPackages(req, res, fastify))
 
   // Session
-  fastify.post('/api/session/complete', (req, res) => completeSession(req, res, fastify))
+  fastify.post('/session/complete', (req, res) => completeSession(req, res, fastify))
 
   next()
 }
