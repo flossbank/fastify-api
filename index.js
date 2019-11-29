@@ -1,6 +1,7 @@
 const fastify = require('fastify')({
   logger: true
 })
+fastify.register(require('fastify-cookie'))
 require('dotenv').config()
 
 fastify.register(require('fastify-cors'), {
