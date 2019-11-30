@@ -7,6 +7,7 @@ const updateAd = require('../api/ad/update')
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
 const updateAdCampaign = require('../api/adCampaign/update')
+const activateAdCampaign = require('../api/adCampaign/activate')
 
 // Advertiser
 const createAdvertiser = require('../api/advertiser/create')
@@ -44,12 +45,13 @@ async function routes (fastify, opts, next) {
   // Ads
   fastify.post('/ad/create', (req, res) => createAd(req, res, fastify))
   fastify.get('/ad/get-all', (req, res) => getAllAds(req, res, fastify))
-  fastify.get('/ad/get', (req, res) => getAd(req, res, fastify))
+  fastify.post('/ad/get', (req, res) => getAd(req, res, fastify))
   fastify.post('/ad/update', (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
   fastify.post('/adCampaign/create', (req, res) => createAdCampaign(req, res, fastify))
   fastify.post('/adCampaign/update', (req, res) => updateAdCampaign(req, res, fastify))
+  fastify.post('/adCampaign/activate', (req, res) => activateAdCampaign(req, res, fastify))
 
   // Advertiser
   fastify.post('/advertiser/create', (req, res) => createAdvertiser(req, res, fastify))
