@@ -1,4 +1,5 @@
 const sinon = require('sinon')
+const { Auth: originalAuth } = require('../../auth')
 
 module.exports = {
   Db: function Db () {
@@ -26,8 +27,10 @@ module.exports = {
     this.updateAd = sinon.stub().resolves()
   },
   Auth: function Auth () {
+    this.authKinds = originalAuth.prototype.authKinds
     this.isRequestAllowed = sinon.stub().resolves(true)
     this.createAdSession = sinon.stub().resolves('random-session-id')
+    this.sendUserToken = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()

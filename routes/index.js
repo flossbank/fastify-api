@@ -22,6 +22,7 @@ const updateAdvertiser = require('../api/advertiser/update')
 
 // Auth
 const sendAuth = require('../api/auth/send')
+const sendAuthSchema = require('../schema/auth/send')
 const validateCaptcha = require('../api/auth/validate-captcha')
 const validateEmail = require('../api/auth/validate-email')
 
@@ -66,7 +67,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/advertiser/update', (req, res) => updateAdvertiser(req, res, fastify))
 
   // Auth
-  fastify.post('/auth/send', (req, res) => sendAuth(req, res, fastify))
+  fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))
   fastify.post('/auth/validateCaptcha', (req, res) => validateCaptcha(req, res, fastify))
   fastify.post('/auth/validateEmail', (req, res) => validateEmail(req, res, fastify))
 
