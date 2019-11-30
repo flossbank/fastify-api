@@ -1,12 +1,14 @@
-module.exports = async (req, res, fastify) => {
+module.exports = async (req, res, ctx) => {
   if (!req.query.advertiserId) {
     res.status(400)
     return res.send({ success: false })
   }
   try {
-    res.send(await fastify.mongo.collection('ads').find({ advertiserId: req.query.advertiserId }).toArray())
+    res.send({
+      ads: await ctx.db.getAdsByAdvertiser(req.query.advertiserId)
+    })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

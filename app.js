@@ -13,7 +13,7 @@ module.exports = async function buildFastify (db, auth, logger = true) {
 
   fastify.register(routes)
 
-  fastify.register(dbPlugin(db.getDb(), db.getClient()))
+  fastify.register(dbPlugin(db))
   fastify.register(authPlugin(auth))
 
   return fastify

@@ -35,6 +35,12 @@ Db.prototype.getAdBatch = async function getAdBatch () {
   )
 }
 
+Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserId) {
+  return this.db.collection('ads').find({
+    advertiserId
+  }).toArray()
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
