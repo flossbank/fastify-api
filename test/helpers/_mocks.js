@@ -23,6 +23,7 @@ module.exports = {
       }
     ])
     this.createAd = sinon.stub().resolves('test-ad-0')
+    this.updateAd = sinon.stub().resolves()
   },
   Auth: function Auth () {
     this.isRequestAllowed = sinon.stub().resolves(true)

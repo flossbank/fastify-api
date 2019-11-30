@@ -48,6 +48,14 @@ Db.prototype.createAd = async function createAd (ad) {
   return insertedId
 }
 
+Db.prototype.updateAd = async function updateAd (ad) {
+  return this.db.collection('ads').updateOne({
+    _id: ObjectId(ad.id)
+  }, {
+    $set: ad
+  })
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

@@ -6,6 +6,7 @@ const getAllAdsSchema = require('../schema/ad/get-all')
 const getAd = require('../api/ad/get')
 const getAdSchema = require('../schema/ad/get')
 const updateAd = require('../api/ad/update')
+const updateAdSchema = require('../schema/ad/update')
 
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
@@ -49,7 +50,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/ad/create', { schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
   fastify.get('/ad/get-all', { schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
   fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
-  fastify.post('/ad/update', (req, res) => updateAd(req, res, fastify))
+  fastify.post('/ad/update', { schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
   fastify.post('/adCampaign/create', (req, res) => createAdCampaign(req, res, fastify))
