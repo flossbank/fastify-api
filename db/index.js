@@ -41,6 +41,11 @@ Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserI
   }).toArray()
 }
 
+Db.prototype.createAd = async function createAd (ad) {
+  const { insertedId } = await this.db.collection('ads').insertOne(ad)
+  return insertedId
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

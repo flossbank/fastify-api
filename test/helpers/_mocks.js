@@ -19,6 +19,7 @@ module.exports = {
     this.getClient = sinon.stub().returns(this)
     this.getAdBatch = sinon.stub().resolves(DATA.ADS)
     this.getAdsByAdvertiser = sinon.stub().resolves(DATA.ADS)
+    this.createAd = sinon.stub().resolves('test-ad-0')
   },
   Auth: function Auth () {
     this.isRequestAllowed = sinon.stub().resolves(true)
