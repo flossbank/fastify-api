@@ -28,5 +28,8 @@ module.exports = {
   Auth: function Auth () {
     this.isRequestAllowed = sinon.stub().resolves(true)
     this.createAdSession = sinon.stub().resolves('random-session-id')
+  },
+  Sqs: function Sqs () {
+    this.sendMessage = sinon.stub().resolves()
   }
 }

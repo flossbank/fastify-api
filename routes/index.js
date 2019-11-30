@@ -44,6 +44,7 @@ const updateMaintainerPackages = require('../api/maintainer/packages/update')
 
 // Session
 const completeSession = require('../api/session/complete')
+const completeSessionSchema = require('../schema/session/complete')
 
 async function routes (fastify, opts, next) {
   // Ads
@@ -87,7 +88,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/maintainer/packages/update', (req, res) => updateMaintainerPackages(req, res, fastify))
 
   // Session
-  fastify.post('/session/complete', (req, res) => completeSession(req, res, fastify))
+  fastify.post('/session/complete', { schema: completeSessionSchema }, (req, res) => completeSession(req, res, fastify))
 
   next()
 }

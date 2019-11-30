@@ -1,15 +1,12 @@
 const test = require('ava')
-const App = require('../../../app')
-const mocks = require('../../helpers/_mocks')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
 test.beforeEach(async (t) => {
-  t.context.auth = new mocks.Auth()
-  t.context.db = new mocks.Db()
-  t.context.app = await App(t.context.db, t.context.auth, false)
+  await beforeEach(t)
 })
 
-test.afterEach((t) => {
-  t.context.app.close()
+test.afterEach(async (t) => {
+  await afterEach(t)
 })
 
 test.failing('GET `/ad/get-all` 401 unauthorized', async (t) => {
