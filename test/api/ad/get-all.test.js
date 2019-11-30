@@ -26,7 +26,7 @@ test('GET `/ad/get-all` 400 bad request', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad/get-all',
-    payload: {},
+    query: {},
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)

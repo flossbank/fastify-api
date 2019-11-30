@@ -38,7 +38,9 @@ Db.prototype.getAdBatch = async function getAdBatch () {
 Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserId) {
   return this.db.collection('ads').find({
     advertiserId
-  }).toArray()
+  }).toArray().map(({ _id: id, name, content, advertiserId, active, approved }) => ({
+    id, name, content, advertiserId, active, approved
+  }))
 }
 
 Db.prototype.createAd = async function createAd (ad) {

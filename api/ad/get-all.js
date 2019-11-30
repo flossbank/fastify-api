@@ -1,8 +1,4 @@
 module.exports = async (req, res, ctx) => {
-  if (!req.query.advertiserId) {
-    res.status(400)
-    return res.send({ success: false })
-  }
   try {
     res.send({
       ads: await ctx.db.getAdsByAdvertiser(req.query.advertiserId)
