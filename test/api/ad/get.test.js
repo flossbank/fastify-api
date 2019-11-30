@@ -1,90 +1,80 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const sanitize = require('../../../sanitize/adOutput')
-const mockFastify = require('../../helpers/_mockFastify')
-const auth = require('../../../auth')
-const get = require('../../../api/ad/get')
+const App = require('../../../app')
+const mocks = require('../../helpers/_mocks')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  t.context.auth = new mocks.Auth()
+  t.context.db = new mocks.Db()
+  t.context.app = await App(t.context.db, t.context.auth, false)
 })
 
-test.beforeEach(() => {
-  sinon.stub(auth, 'isRequestAllowed').returns(true)
-  sinon.stub(auth, 'createAdSession').returns('ff')
-  mockFastify.mongo.collection.returns({
-    find: sinon.stub().returns({
-      limit: sinon.stub().returns({
-        toArray: sinon.stub().resolves(mockData.ads)
-      })
-    })
+test.afterEach((t) => {
+  t.context.app.close()
+})
+
+test('POST `/ad/get` 401 unauthorized', async (t) => {
+  t.context.auth.isRequestAllowed.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'npm', packages: ['yttrium-server@latest'] }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/ad/get` 400 bad request', async (t) => {
+  let res
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: {}
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'invalid', packages: ['yttrium-server@latest'] }
   })
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  auth.isRequestAllowed.restore()
-  auth.createAdSession.restore()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('POST `/ad/get` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'npm', packages: ['yttrium-server@latest'] }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    ads: await t.context.db.getAdBatch(),
+    sessionId: await t.context.auth.createAdSession()
+  })
 })
 
-test.after(() => {
-  console.error.restore()
+test('POST `/ad/get` 200 success | existing session', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: {
+      packageManager: 'npm',
+      packages: ['yttrium-server@latest'],
+      sessionId: 'existing-session-id'
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    ads: await t.context.db.getAdBatch(),
+    sessionId: 'existing-session-id'
+  })
 })
 
-test('success', async (t) => {
-  await get({ body: { packages: ['flossbank'], packageManager: 'npm' } }, res, mockFastify)
-  t.true(res.send.calledWith({ ads: sanitize(mockData.ads), sessionId: 'ff' }))
-  t.true(mockFastify.mongo.collection.calledWith('ads'))
-  t.true(mockFastify.mongo.collection().find().limit.calledWith(12))
-})
-
-test('bad input | no body', async (t) => {
-  await get({}, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-})
-
-test('bad input | no packages', async (t) => {
-  await get({ body: { packageManager: 'npm' } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-})
-
-test('bad input | no packageManager', async (t) => {
-  await get({ body: { packages: [] } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-})
-
-test('bad input | invalid packageManager', async (t) => {
-  await get({ body: { packages: [], packageManager: 'abc' } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-})
-
-test('unauthorized', async (t) => {
-  auth.isRequestAllowed.returns(false)
-  await get({ body: { packages: [], packageManager: 'npm' } }, res, mockFastify)
-  t.true(res.status.calledWith(401))
-  t.true(res.send.called)
-})
-
-test('instance failure', async (t) => {
-  mockFastify.mongo.collection.throws()
-  await get({ body: { packages: [], packageManager: 'npm' } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().find.throws()
-  await get({ body: { packages: [], packageManager: 'npm' } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('POST `/ad/get` 500 server error', async (t) => {
+  t.context.db.getAdBatch.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'npm', packages: ['yttrium-server@latest'] }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

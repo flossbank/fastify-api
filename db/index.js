@@ -1,19 +1,43 @@
 const fastifyPlugin = require('fastify-plugin')
-const { MongoClient, ObjectID } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 const config = require('../config')
 
-async function Db (fastify) {
+function Db () {
   const url = config.getMongoUri()
   if (!url) throw new Error('no mongo uri in environment')
-  const mongoClient = new MongoClient(url, {
+  this.mongoClient = new MongoClient(url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
-  const client = await mongoClient.connect()
-  const db = client.db('flossbank_db')
-  fastify.decorate('mongo', db)
-  fastify.decorate('mongoClient', client)
-  fastify.decorate('mongoObjectID', ObjectID)
 }
 
-module.exports = fastifyPlugin(Db)
+Db.prototype.connect = async function connect () {
+  this.client = await this.mongoClient.connect()
+  this.db = this.client.db('flossbank_db')
+}
+
+Db.prototype.getClient = function getClient () {
+  return this.client
+}
+
+Db.prototype.getDb = function getDb () {
+  return this.db
+}
+
+/** Ads */
+Db.prototype.getAdBatch = async function getAdBatch () {
+  const ads = await this.db.collection('ads').find({
+    active: true, approved: true
+  }).limit(12).toArray()
+
+  return ads.map(
+    ({ _id, content: { title, body, url } }) => ({ id: _id, title, body, url })
+  )
+}
+
+exports.Db = Db
+
+exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
+  fastify.decorate('db', db)
+  fastify.decorate('ObjectId', ObjectId)
+})

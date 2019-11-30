@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
+const fastifyPlugin = require('fastify-plugin')
 const ApiKeyCache = require('./cache')
 const config = require('../config')
 
@@ -236,4 +237,8 @@ Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession 
   }).promise()
 }
 
-module.exports = new Auth()
+exports.Auth = Auth
+
+exports.authPlugin = (auth) => fastifyPlugin(async (fastify) => {
+  fastify.decorate('auth', auth)
+})
