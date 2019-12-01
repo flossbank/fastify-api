@@ -31,12 +31,14 @@ module.exports = {
       name: 'Papa Juanita',
       email: 'jupapa@msn.com'
     })
+    this.authenticateAdvertiser = sinon.stub().resolves({ success: true })
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
     this.isRequestAllowed = sinon.stub().resolves(true)
     this.createAdSession = sinon.stub().resolves('random-session-id')
     this.sendUserToken = sinon.stub().resolves()
+    this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()

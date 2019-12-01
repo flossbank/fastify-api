@@ -70,6 +70,15 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   return { id, ...rest }
 }
 
+Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
+  const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
+  if (!foundAdvertiser) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!foundAdvertiser.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  const passMatch = await bcrypt.compare(password, foundAdvertiser.password)
+  if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  return { success: true }
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
