@@ -15,6 +15,7 @@ const activateAdCampaign = require('../api/adCampaign/activate')
 
 // Advertiser
 const createAdvertiser = require('../api/advertiser/create')
+const createAdvertiserSchema = require('../schema/advertiser/create')
 const getAdvertiser = require('../api/advertiser/get')
 const loginAdvertiser = require('../api/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
@@ -60,7 +61,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/adCampaign/activate', (req, res) => activateAdCampaign(req, res, fastify))
 
   // Advertiser
-  fastify.post('/advertiser/create', (req, res) => createAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/create', { schema: createAdvertiserSchema }, (req, res) => createAdvertiser(req, res, fastify))
   fastify.get('/advertiser/get', (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', (req, res) => loginAdvertiser(req, res, fastify))
   fastify.get('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))

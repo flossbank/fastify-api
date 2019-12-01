@@ -1,5 +1,6 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
+const bcrypt = require('bcrypt')
 const config = require('../config')
 
 function Db () {
@@ -54,6 +55,12 @@ Db.prototype.updateAd = async function updateAd (ad) {
   }, {
     $set: ad
   })
+}
+
+Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
+  advertiser.password = await bcrypt.hash(advertiser.password, 10)
+  const { insertedId } = await this.db.collection('advertisers').insertOne(advertiser)
+  return insertedId
 }
 
 exports.Db = Db

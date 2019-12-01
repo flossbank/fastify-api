@@ -25,6 +25,7 @@ module.exports = {
     ])
     this.createAd = sinon.stub().resolves('test-ad-0')
     this.updateAd = sinon.stub().resolves()
+    this.createAdvertiser = sinon.stub().resolves('test-advertiser-0')
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
