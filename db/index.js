@@ -63,6 +63,13 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
+Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
+  const { _id: id, ...rest } = await this.db.collection('advertisers')
+    .findOne({ _id: ObjectId(advertiserId) })
+  delete rest.password
+  return { id, ...rest }
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
