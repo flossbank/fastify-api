@@ -231,6 +231,7 @@ Auth.prototype.createAdvertiserSession = async function createAdvertiserSession 
 }
 
 Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: AdvertiserSessionTableName,
     Key: { sessionId }

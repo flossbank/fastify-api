@@ -66,7 +66,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/advertiser/create', { schema: createAdvertiserSchema }, (req, res) => createAdvertiser(req, res, fastify))
   fastify.get('/advertiser/get', { schema: getAdvertiserSchema }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: loginAdvertiserSchema }, (req, res) => loginAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
   fastify.post('/advertiser/update', (req, res) => updateAdvertiser(req, res, fastify))
 
   // Auth

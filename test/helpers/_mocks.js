@@ -39,6 +39,7 @@ module.exports = {
     this.createAdSession = sinon.stub().resolves('random-session-id')
     this.sendUserToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
+    this.deleteAdvertiserSession = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()
