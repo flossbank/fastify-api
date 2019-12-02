@@ -1,11 +1,11 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['advertiser'],
+    required: ['advertiserId', 'advertiser'],
     properties: {
+      advertiserId: { type: 'string' },
       advertiser: {
         type: 'object',
-        required: ['id'],
         properties: {
           organization: { type: 'string' },
           adCampaigns: {

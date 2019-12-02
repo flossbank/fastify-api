@@ -14,8 +14,8 @@ test.failing('POST `/advertiser/update` 401 unauthorized', async (t) => {
     method: 'POST',
     url: '/advertiser/update',
     payload: {
+      advertiserId: 'test-advertiser-0',
       advertiser: {
-        id: 'test-advertiser-0',
         organization: 'ad org'
       }
     },
@@ -29,8 +29,8 @@ test('POST `/advertiser/update` 200 success', async (t) => {
     method: 'POST',
     url: '/advertiser/update',
     payload: {
+      advertiserId: 'test-advertiser-0',
       advertiser: {
-        id: 'test-advertiser-0',
         organization: 'ad org'
       }
     },
@@ -53,7 +53,7 @@ test('POST `/advertiser/update` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update',
-    payload: { advertiser: {} },
+    payload: { advertiserId: 'test-advertiser-0' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -64,7 +64,7 @@ test('POST `/advertiser/update` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update',
-    payload: { advertiser: { id: 'test-advertiser-0' } },
+    payload: { advertiserId: 'test-advertiser-0', advertiser: {} },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)

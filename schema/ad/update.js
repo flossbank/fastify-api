@@ -1,16 +1,20 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['id'],
+    required: ['adId', 'ad'],
     properties: {
-      id: { type: 'string' },
-      name: { type: 'string' },
-      content: {
-        type: 'object',
+      adId: { type: 'string' },
+      ad: {
         properties: {
-          body: { type: 'string' },
-          url: { type: 'string' },
-          title: { type: 'string' }
+          name: { type: 'string' },
+          content: {
+            type: 'object',
+            properties: {
+              body: { type: 'string' },
+              url: { type: 'string' },
+              title: { type: 'string' }
+            }
+          }
         }
       }
     }

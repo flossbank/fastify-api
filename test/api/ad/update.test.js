@@ -14,7 +14,7 @@ test.failing('POST `/ad/update` 401 unauthorized', async (t) => {
     method: 'POST',
     url: '/ad/update',
     payload: {
-      id: 'test-ad-0',
+      adId: 'test-ad-0',
       ad: {
         name: 'ad',
         content: { body: 'abc', title: 'abc', url: 'abc' }
@@ -30,7 +30,7 @@ test('POST `/ad/update` 200 success', async (t) => {
     method: 'POST',
     url: '/ad/update',
     payload: {
-      id: 'test-ad-0',
+      adId: 'test-ad-0',
       ad: {
         name: 'new name',
         content: { body: 'abc', title: 'abc', url: 'abc' }
@@ -58,12 +58,14 @@ test('POST `/ad/update` 500 server error', async (t) => {
     method: 'POST',
     url: '/ad/update',
     payload: {
-      id: 'test-ad-0',
-      name: 'ad',
-      content: {
-        title: 'abc',
-        body: 'abc',
-        url: 'abc'
+      adId: 'test-ad-0',
+      ad: {
+        name: 'ad',
+        content: {
+          title: 'abc',
+          body: 'abc',
+          url: 'abc'
+        }
       }
     },
     headers: { authorization: 'valid-session-token' }

@@ -36,6 +36,13 @@ Db.prototype.getAdBatch = async function getAdBatch () {
   )
 }
 
+Db.prototype.getAdsByIds = async function getAdsByIds (ids) {
+  if (!ids || !ids.length) return []
+  return this.db.collection('ads').find({
+    _id: { $in: ids.map(ObjectId) }
+  }).toArray()
+}
+
 Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserId) {
   return this.db.collection('ads').find({
     advertiserId
@@ -49,9 +56,9 @@ Db.prototype.createAd = async function createAd (ad) {
   return insertedId
 }
 
-Db.prototype.updateAd = async function updateAd (ad) {
+Db.prototype.updateAd = async function updateAd (id, ad) {
   return this.db.collection('ads').updateOne({
-    _id: ObjectId(ad.id)
+    _id: ObjectId(id)
   }, {
     $set: ad
   })
@@ -63,9 +70,9 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
-Db.prototype.updateAdvertiser = async function updateAdvertiser (advertiser) {
+Db.prototype.updateAdvertiser = async function updateAdvertiser (id, advertiser) {
   return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(advertiser.id)
+    _id: ObjectId(id)
   }, {
     $set: advertiser
   })
@@ -94,6 +101,18 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   })
   const { insertedId } = await this.db.collection('adCampaigns').insertOne(adCampaignWithDefaults)
   return insertedId
+}
+
+Db.prototype.getAdCampaign = async function getAdCampaign (id) {
+  return this.db.collection('adCampaigns').findOne({ _id: ObjectId(id) })
+}
+
+Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign) {
+  return this.db.collection('adCampaigns').updateOne({
+    _id: ObjectId(id)
+  }, {
+    $set: adCampaign
+  })
 }
 
 exports.Db = Db
