@@ -5,9 +5,7 @@ const VALID_PACKAGE_MANAGERS = new Set(['npm', 'yarn'])
 
 const fetchAdBatch = async (db) => {
   const ads = await db.collection('ads').find({
-    $expr: {
-      $lt: [{ $size: '$impressions' }, '$maxImpressions']
-    }
+    active: true, approved: true
   }).limit(12).toArray()
   return sanitizeAds(ads)
 }

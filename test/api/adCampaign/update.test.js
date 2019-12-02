@@ -13,6 +13,7 @@ test.before(() => {
 test.beforeEach(async () => {
   mockFastify.mongo.collection.returns({
     findOne: sinon.stub().resolves(mockData.adCampaigns[0]),
+    find: sinon.stub().resolves(mockData.ads),
     updateOne: sinon.stub().resolves({})
   })
 })
@@ -32,7 +33,7 @@ test('success updating ad campaign', async (t) => {
   t.true(res.send.calledWith({ success: true }))
   t.true(mockFastify.mongo.collection.calledWith('adCampaigns'))
   t.true(mockFastify.mongo.collection().updateOne.calledWith(
-    { _id: 'advertiser' },
+    { _id: 'test-ad-campaign-0' },
     {
       $set:
       {
@@ -51,7 +52,7 @@ test('defaut creating ad campaign cpm to 100 if sent with below 100 cpm', async 
   t.true(res.send.calledWith({ success: true }))
   t.true(mockFastify.mongo.collection.calledWith('adCampaigns'))
   t.true(mockFastify.mongo.collection().updateOne.calledWith(
-    { _id: 'advertiser' },
+    { _id: 'test-ad-campaign-0' },
     {
       $set:
       {
@@ -70,7 +71,7 @@ test('creating ad campaign with above 100 cpm allowed', async (t) => {
   t.true(res.send.calledWith({ success: true }))
   t.true(mockFastify.mongo.collection.calledWith('adCampaigns'))
   t.true(mockFastify.mongo.collection().updateOne.calledWith(
-    { _id: 'advertiser' },
+    { _id: 'test-ad-campaign-0' },
     {
       $set:
       {
@@ -88,14 +89,14 @@ test('reject with invalid params, no campaign Id', async (t) => {
   await update({ body: { advertiserId: '1234', ads: ['1234'] } }, res, mockFastify)
   t.true(res.status.calledWith(400))
   t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
+  t.true(mockFastify.mongo.collection().updateOne.notCalled)
 })
 
 test('reject with invalid params, no advertiserId', async (t) => {
   await update({ body: { adCampaignId: '1234', ads: ['1234'], maxSpend: 100000, cpm: 200 } }, res, mockFastify)
   t.true(res.status.calledWith(400))
   t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
+  t.true(mockFastify.mongo.collection().updateOne.notCalled)
 })
 
 test('reject if ad campaign is owned by other advertiser', async (t) => {

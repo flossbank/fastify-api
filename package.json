@@ -7,8 +7,8 @@
     "start": "node index.js",
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
-    "unit-tests": "recaptcha_secret_test=test mongo_uri_test=test nyc ava --serial",
-    "watch:unit-tests": "recaptcha_secret_test=test mongo_uri_test=test ava --serial --watch",
+    "unit-tests": "recaptcha_secret=test mongo_uri=test nyc ava --serial",
+    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --serial --watch",
     "test": "npm run lint && npm run unit-tests"
   },
   "author": "",

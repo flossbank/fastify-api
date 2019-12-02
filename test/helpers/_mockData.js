@@ -1,14 +1,15 @@
 module.exports = {
   ads: [
-    { _id: 'test-ad-0', name: 'ad', impressions: [], content: { body: 'abc', title: 'ABC', url: 'https://abc.com' }, advertiserId: 2, adCampaigns: [] },
-    { _id: 'test-ad-1', name: 'ad', impressions: [], content: { body: 'def', title: 'DEF', url: 'https://def.com' }, advertiserId: 2, adCampaigns: [] },
-    { _id: 'test-ad-2', name: 'ad', impressions: [], content: { body: 'ghi', title: 'GHI', url: 'https://ghi.com' }, advertiserId: 2, adCampaigns: [] },
-    { _id: 'test-ad-3', name: 'ad', impressions: [], content: { body: 'jkl', title: 'JKL', url: 'https://jkl.com' }, advertiserId: 2, adCampaigns: [] },
-    { _id: 'test-ad-4', name: 'ad', impressions: [], content: { body: 'mno', title: 'MNO', url: 'https://mno.com' }, advertiserId: 2, adCampaigns: [] },
-    { _id: 'test-ad-5', name: 'ad', impressions: [], content: { body: 'pqr', title: 'PQR', url: 'https://pqr.com' }, advertiserId: 2, adCampaigns: [] }
+    { _id: 'test-ad-0', name: 'ad', impressions: [], content: { body: 'abc', title: 'ABC', url: 'https://abc.com' }, advertiserId: 'test-advertiser-0', adCampaigns: [] },
+    { _id: 'test-ad-1', name: 'ad', impressions: [], content: { body: 'def', title: 'DEF', url: 'https://def.com' }, advertiserId: 'test-advertiser-0', adCampaigns: [] },
+    { _id: 'test-ad-2', name: 'ad', impressions: [], content: { body: 'ghi', title: 'GHI', url: 'https://ghi.com' }, advertiserId: 'test-advertiser-0', adCampaigns: [] },
+    { _id: 'test-ad-3', name: 'ad', impressions: [], content: { body: 'jkl', title: 'JKL', url: 'https://jkl.com' }, advertiserId: 'test-advertiser-0', adCampaigns: [] },
+    { _id: 'test-ad-4', name: 'ad', impressions: [], content: { body: 'mno', title: 'MNO', url: 'https://mno.com' }, advertiserId: 'test-advertiser-0', adCampaigns: [] },
+    { _id: 'test-ad-5', name: 'ad', impressions: [], content: { body: 'pqr', title: 'PQR', url: 'https://pqr.com' }, advertiserId: 'test-advertiser-0', approved: true }
   ],
   adCampaigns: [
-    { _id: 'test-ad-campaign-0', ads: ['ad-1'], maxSpend: 100000, cpm: 100, active: false, createDate: 1234, startDate: 12345, endDate: 123456, spend: 0, name: 'first-campaign', advertiserId: 'advertiser' }
+    { _id: 'test-ad-campaign-0', ads: [], maxSpend: 100000, cpm: 100, active: false, createDate: 1234, startDate: 12345, endDate: 123456, spend: 0, name: 'first-campaign', advertiserId: 'test-advertiser-0' },
+    { _id: 'test-ad-campaign-1', ads: ['test-ad-5'], maxSpend: 100000, cpm: 100, active: false, createDate: 1234, startDate: 12345, endDate: 123456, spend: 0, name: 'second-campaign', advertiserId: 'test-advertiser-0' }
   ],
   advertisers: [
     { _id: 'test-advertiser-0', name: 'peter', email: 'peter@flossbank.com', organization: 'flossbank', password: 'test-pass', adCampaigns: [], billingInfo: 'peter@gmail.com', active: true }
