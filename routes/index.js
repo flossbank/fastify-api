@@ -22,6 +22,7 @@ const loginAdvertiser = require('../api/advertiser/login')
 const loginAdvertiserSchema = require('../schema/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
 const updateAdvertiser = require('../api/advertiser/update')
+const updateAdvertiserSchema = require('../schema/advertiser/update')
 
 // Auth
 const sendAuth = require('../api/auth/send')
@@ -67,7 +68,7 @@ async function routes (fastify, opts, next) {
   fastify.get('/advertiser/get', { schema: getAdvertiserSchema }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: loginAdvertiserSchema }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
-  fastify.post('/advertiser/update', (req, res) => updateAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/update', { schema: updateAdvertiserSchema }, (req, res) => updateAdvertiser(req, res, fastify))
 
   // Auth
   fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))

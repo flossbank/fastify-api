@@ -63,6 +63,14 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
+Db.prototype.updateAdvertiser = async function updateAdvertiser (advertiser) {
+  return this.db.collection('advertisers').updateOne({
+    _id: ObjectId(advertiser.id)
+  }, {
+    $set: advertiser
+  })
+}
+
 Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   const { _id: id, ...rest } = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })

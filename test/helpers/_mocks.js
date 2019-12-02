@@ -26,6 +26,7 @@ module.exports = {
     this.createAd = sinon.stub().resolves('test-ad-0')
     this.updateAd = sinon.stub().resolves()
     this.createAdvertiser = sinon.stub().resolves('test-advertiser-0')
+    this.updateAdvertiser = sinon.stub().resolves()
     this.getAdvertiser = sinon.stub().resolves({
       id: 'test-advertiser-0',
       name: 'Papa Juanita',
