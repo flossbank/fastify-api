@@ -31,6 +31,7 @@ const sendAuthSchema = require('../schema/auth/send')
 const validateCaptcha = require('../api/auth/validate-captcha')
 const validateCaptchaSchema = require('../schema/auth/validate-captcha')
 const validateEmail = require('../api/auth/validate-email')
+const validateEmailSchema = require('../schema/auth/validate-email')
 
 // Maintainer
 const createMaintainer = require('../api/maintainer/create')
@@ -75,7 +76,7 @@ async function routes (fastify, opts, next) {
   // Auth
   fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))
   fastify.post('/auth/validate-captcha', { schema: validateCaptchaSchema }, (req, res) => validateCaptcha(req, res, fastify))
-  fastify.post('/auth/validateEmail', (req, res) => validateEmail(req, res, fastify))
+  fastify.post('/auth/validate-email', { schema: validateEmailSchema }, (req, res) => validateEmail(req, res, fastify))
 
   // Maintainer
   fastify.post('/maintainer/create', (req, res) => createMaintainer(req, res, fastify))
