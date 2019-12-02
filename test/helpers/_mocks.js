@@ -42,6 +42,7 @@ module.exports = {
     this.sendUserToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
     this.deleteAdvertiserSession = sinon.stub().resolves()
+    this.validateCaptcha = sinon.stub().resolves('api-key')
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()

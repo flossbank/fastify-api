@@ -1,20 +1,17 @@
-const auth = require('../../auth')
-
-module.exports = async (req, res) => {
-  if (!req.body || !req.body.token || !req.body.email || !req.body.response) {
-    res.status(400)
-    return res.send()
-  }
+module.exports = async (req, res, ctx) => {
   try {
     const { email, token, response } = req.body
-    const apiKey = await auth.validateCaptcha(email, token, response)
+    const apiKey = await ctx.auth.validateCaptcha(email, token, response)
     if (!apiKey) {
       res.status(401)
       return res.send()
     }
-    res.send({ apiKey })
+    res.send({
+      success: true,
+      apiKey
+    })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }
