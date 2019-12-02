@@ -87,6 +87,15 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
   return { success: true }
 }
 
+Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
+  const adCampaignWithDefaults = Object.assign({}, adCampaign, {
+    active: false,
+    spend: 0
+  })
+  const { insertedId } = await this.db.collection('adCampaigns').insertOne(adCampaignWithDefaults)
+  return insertedId
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

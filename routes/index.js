@@ -10,6 +10,7 @@ const updateAdSchema = require('../schema/ad/update')
 
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
+const createAdCampaignSchema = require('../schema/adCampaign/create')
 const updateAdCampaign = require('../api/adCampaign/update')
 const activateAdCampaign = require('../api/adCampaign/activate')
 
@@ -59,9 +60,9 @@ async function routes (fastify, opts, next) {
   fastify.post('/ad/update', { schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
-  fastify.post('/adCampaign/create', (req, res) => createAdCampaign(req, res, fastify))
-  fastify.post('/adCampaign/update', (req, res) => updateAdCampaign(req, res, fastify))
-  fastify.post('/adCampaign/activate', (req, res) => activateAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/create', { schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/update', (req, res) => updateAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/activate', (req, res) => activateAdCampaign(req, res, fastify))
 
   // Advertiser
   fastify.post('/advertiser/create', { schema: createAdvertiserSchema }, (req, res) => createAdvertiser(req, res, fastify))

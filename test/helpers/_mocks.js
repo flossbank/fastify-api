@@ -33,6 +33,7 @@ module.exports = {
       email: 'jupapa@msn.com'
     })
     this.authenticateAdvertiser = sinon.stub().resolves({ success: true })
+    this.createAdCampaign = sinon.stub().resolves('test-ad-campaign-0')
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
