@@ -3,7 +3,7 @@ module.exports = async (req, res, ctx) => {
     // const campaign = await ctx.db.getAdCampaign(req.body.adCampaignId)
     // TODO allow update only if advertiser session matches advertiser id on campaign
 
-    const ads = await ctx.db.getAdsByIds(req.body.ads)
+    const ads = await ctx.db.getAdsByIds(req.body.adCampaign.ads)
     if (!ads.every(ad => ad.advertiserId === req.body.adCampaign.advertiserId)) {
       res.status(400)
       return res.send()
@@ -13,7 +13,7 @@ module.exports = async (req, res, ctx) => {
     await ctx.db.updateAdCampaign(id, adCampaign)
     res.send({ success: true })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

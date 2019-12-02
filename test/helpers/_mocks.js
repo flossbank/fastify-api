@@ -10,8 +10,12 @@ module.exports = {
         id: 'test-ad-0',
         body: 'abc',
         title: 'ABC',
-        url: 'https://abc.com'
+        url: 'https://abc.com',
+        advertiserId: 'test-advertiser-0'
       }
+    ])
+    this.getAdsByIds = sinon.stub().resolves([
+      { id: 'test-ad-0', advertiserId: 'test-advertiser-0' }
     ])
     this.getAdsByAdvertiser = sinon.stub().resolves([
       {
@@ -34,6 +38,7 @@ module.exports = {
     })
     this.authenticateAdvertiser = sinon.stub().resolves({ success: true })
     this.createAdCampaign = sinon.stub().resolves('test-ad-campaign-0')
+    this.updateAdCampaign = sinon.stub().resolves()
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds

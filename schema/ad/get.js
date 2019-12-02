@@ -26,6 +26,7 @@ module.exports = {
           items: {
             type: 'object',
             properties: {
+              advertiserId: { type: 'string' },
               id: { type: 'string' },
               title: { type: 'string' },
               body: { type: 'string' },
