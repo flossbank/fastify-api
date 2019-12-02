@@ -15,7 +15,7 @@ module.exports = {
       }
     ])
     this.getAdsByIds = sinon.stub().resolves([
-      { id: 'test-ad-0', advertiserId: 'test-advertiser-0' }
+      { id: 'test-ad-0', advertiserId: 'test-advertiser-0', approved: true }
     ])
     this.getAdsByAdvertiser = sinon.stub().resolves([
       {
@@ -37,8 +37,19 @@ module.exports = {
       email: 'jupapa@msn.com'
     })
     this.authenticateAdvertiser = sinon.stub().resolves({ success: true })
+    this.getAdCampaign = sinon.stub().resolves({
+      id: 'test-ad-campaign-0',
+      advertiserId: 'test-advertiser-0',
+      ads: ['test-ad-0'],
+      name: 'camp pain',
+      maxSpend: 1000,
+      cpm: 100,
+      startDate: 0,
+      endDate: 100
+    })
     this.createAdCampaign = sinon.stub().resolves('test-ad-campaign-0')
     this.updateAdCampaign = sinon.stub().resolves()
+    this.activateAdCampaign = sinon.stub().resolves()
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds

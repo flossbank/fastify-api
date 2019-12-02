@@ -115,6 +115,27 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign)
   })
 }
 
+Db.prototype.activateAdCampaign = async function activateAdCampaign (id) {
+  const campaign = await this.getAdCampaign(id)
+  const session = this.client.startSession()
+  try {
+    await session.withTransaction(async () => {
+      await this.db.collection('ads').updateMany({
+        _id: { $in: campaign.ads.map(ObjectId) }
+      }, {
+        $set: { active: true }
+      }, { session })
+      await this.db.collection('adCampaigns').updateOne({
+        _id: ObjectId(id)
+      }, {
+        $set: { active: true }
+      }, { session })
+    })
+  } finally {
+    await session.endSession()
+  }
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
