@@ -1,6 +1,5 @@
-const getOwnedPackagesModule = require('../../../helpers/getOwnedPackagesWrapper')
-const sanitizePackageInput = require('../../../sanitize/packageInput')
-const santizePackageMantainerRel = require('../../../sanitize/packageMaintainerRelInput')
+const sanitizePackageInput = require('../../sanitize/packageInput')
+const santizePackageMantainerRel = require('../../sanitize/packageMaintainerRelInput')
 
 // Set of supported package managers
 const validPackageManagers = new Set(['npm'])
@@ -89,7 +88,7 @@ const refreshExistingPackagesAndCreateNew = async (packages, maintainerId, db, c
 }
 
 const fetchNpmPackages = async (token) => {
-  const packages = await getOwnedPackagesModule.getOwnedPackages(token)
+  const packages = [] // await getOwnedPackagesModule.getOwnedPackages(token)
   // Prepend npm to the name so packages with same name accross pkg managers dont conflict
   return packages.map((pkg) => `npm:${pkg}`)
 }

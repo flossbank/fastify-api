@@ -50,6 +50,17 @@ module.exports = {
     this.createAdCampaign = sinon.stub().resolves('test-ad-campaign-0')
     this.updateAdCampaign = sinon.stub().resolves()
     this.activateAdCampaign = sinon.stub().resolves()
+    this.getOwnedPackages = sinon.stub().resolves([
+      {
+        id: 'test-package-0',
+        maintainers: ['test-maintainer-0'],
+        owner: 'test-maintainer-0',
+        name: 'yttrium-server',
+        dividend: 1,
+        dividendAge: 2,
+        totalRevenue: 3
+      }
+    ])
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds

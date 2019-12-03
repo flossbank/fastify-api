@@ -44,13 +44,11 @@ const maintainerRevenue = require('../api/maintainer/revenue')
 const updateMaintainer = require('../api/maintainer/update')
 const verifyMaintainer = require('../api/maintainer/verify')
 
-// Npm
-const getNpmPackages = require('../api/maintainer/npm/get')
-
 // Packages
-const getMaintainerPackages = require('../api/maintainer/packages/get')
-const refreshMaintainerPackages = require('../api/maintainer/packages/refresh')
-const updateMaintainerPackages = require('../api/maintainer/packages/update')
+const getPackages = require('../api/package/get')
+const getPackagesSchema = require('../schema/package/get')
+const refreshPackages = require('../api/package/refresh')
+const updatePackages = require('../api/package/update')
 
 // Session
 const completeSession = require('../api/session/complete')
@@ -89,13 +87,10 @@ async function routes (fastify, opts, next) {
   fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
   fastify.get('/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
 
-  // Npm
-  fastify.get('/maintainer/npm/get', (req, res) => getNpmPackages(req, res, fastify))
-
   // Packages
-  fastify.get('/maintainer/packages/get', (req, res) => getMaintainerPackages(req, res, fastify))
-  fastify.post('/maintainer/packages/refresh', (req, res) => refreshMaintainerPackages(req, res, fastify))
-  fastify.post('/maintainer/packages/update', (req, res) => updateMaintainerPackages(req, res, fastify))
+  fastify.get('/package/get', { schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
+  fastify.post('/package/refresh', (req, res) => refreshPackages(req, res, fastify))
+  fastify.post('/package/update', (req, res) => updatePackages(req, res, fastify))
 
   // Session
   fastify.post('/session/complete', { schema: completeSessionSchema }, (req, res) => completeSession(req, res, fastify))

@@ -136,6 +136,12 @@ Db.prototype.activateAdCampaign = async function activateAdCampaign (id) {
   }
 }
 
+Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
+  return this.db.collection('packages').find({
+    owner: maintainerId
+  }).toArray().map(({ _id: id, ...rest }) => ({ id, ...rest }))
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

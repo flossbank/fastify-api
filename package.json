@@ -23,7 +23,7 @@
     "fastify-cors": "^3.0.0",
     "fastify-plugin": "^1.6.0",
     "form-data": "^2.5.1",
-    "get-owned-packages": "^1.0.0",
+    "get-owned-packages": "^2.0.0",
     "got": "^9.6.0",
     "mongodb": "^3.3.2"
   },
