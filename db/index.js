@@ -156,6 +156,13 @@ Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
   })
 }
 
+Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
+  maintainer.password = await bcrypt.hash(maintainer.password, 10)
+  maintainer.verified = false
+  const { insertedId } = await this.db.collection('maintainers').insertOne(maintainer)
+  return insertedId
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

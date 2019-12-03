@@ -36,10 +36,10 @@ const validateEmail = require('../api/auth/validate-email')
 const validateEmailSchema = require('../schema/auth/validate-email')
 
 // Maintainer
-const createMaintainer = require('../api/maintainer/create')
 const loginMaintainer = require('../api/maintainer/login')
 const logoutMaintainer = require('../api/maintainer/logout')
 const registerMaintainer = require('../api/maintainer/register')
+const registerMaintainerSchema = require('../schema/maintainer/register')
 const maintainerRevenue = require('../api/maintainer/revenue')
 const updateMaintainer = require('../api/maintainer/update')
 const verifyMaintainer = require('../api/maintainer/verify')
@@ -80,10 +80,9 @@ async function routes (fastify, opts, next) {
   fastify.post('/auth/validate-email', { schema: validateEmailSchema }, (req, res) => validateEmail(req, res, fastify))
 
   // Maintainer
-  fastify.post('/maintainer/create', (req, res) => createMaintainer(req, res, fastify))
   fastify.post('/maintainer/login', (req, res) => loginMaintainer(req, res, fastify))
   fastify.get('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
-  fastify.post('/maintainer/register', (req, res) => registerMaintainer(req, res, fastify))
+  fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
   fastify.get('/maintainer/revenue', (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
   fastify.get('/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
