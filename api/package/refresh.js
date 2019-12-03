@@ -1,5 +1,5 @@
-const sanitizePackageInput = require('../../sanitize/packageInput')
-const santizePackageMantainerRel = require('../../sanitize/packageMaintainerRelInput')
+const sanitizePackageInput = () => {}
+const santizePackageMantainerRel = () => {}
 
 // Set of supported package managers
 const validPackageManagers = new Set(['npm'])
