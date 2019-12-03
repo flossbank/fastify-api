@@ -61,6 +61,16 @@ module.exports = {
         totalRevenue: 3
       }
     ])
+    this.getPackage = sinon.stub().resolves({
+      id: 'test-package-0',
+      maintainers: ['test-maintainer-0'],
+      owner: 'test-maintainer-0',
+      name: 'yttrium-server',
+      dividend: 1,
+      dividendAge: 2,
+      totalRevenue: 3
+    })
+    this.updatePackage = sinon.stub().resolves()
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds

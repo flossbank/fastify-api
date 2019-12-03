@@ -142,6 +142,20 @@ Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
   }).toArray().map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
+Db.prototype.getPackage = async function getPackage (packageId) {
+  return this.db.collection('packages').findOne({
+    _id: ObjectId(packageId)
+  })
+}
+
+Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
+  return this.db.collection('packages').updateOne({
+    _id: ObjectId(packageId)
+  }, {
+    $set: { package: pkg }
+  })
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
