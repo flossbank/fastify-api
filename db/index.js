@@ -163,6 +163,15 @@ Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
   return insertedId
 }
 
+Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
+  const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
+  if (!foundMaintainer) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!foundMaintainer.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  const passMatch = await bcrypt.compare(password, foundMaintainer.password)
+  if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  return { success: true }
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

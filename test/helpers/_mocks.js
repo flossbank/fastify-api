@@ -72,6 +72,7 @@ module.exports = {
     })
     this.updatePackage = sinon.stub().resolves()
     this.createMaintainer = sinon.stub().resolves('test-maintainer-0')
+    this.authenticateMaintainer = sinon.stub().resolves({ success: true })
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
@@ -82,6 +83,7 @@ module.exports = {
     this.deleteAdvertiserSession = sinon.stub().resolves()
     this.validateCaptcha = sinon.stub().resolves('api-key')
     this.validateUserToken = sinon.stub().resolves(true)
+    this.createMaintainerSession = sinon.stub().resolves('maintainer-session')
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()
