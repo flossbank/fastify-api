@@ -1,19 +1,10 @@
-const auth = require('../../auth')
-
-const logoutMaintainer = async (sessionId) => {
-  // Delete session Id from our maintainer session table
-  await auth.deleteMaintainerSession(sessionId)
-  return { success: true }
-}
-
-module.exports = async (req, res) => {
-  if (!req.cookies || !req.cookies.flossbank_m_sess_id) {
-    return res.send()
-  }
+module.exports = async (req, res, ctx) => {
+  const sessionId = req.cookies.flossbank_m_sess_id
   try {
-    res.send(await logoutMaintainer(req.cookies.flossbank_m_sess_id))
+    await ctx.auth.deleteMaintainerSession(sessionId)
+    res.send({ success: true })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

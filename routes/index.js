@@ -82,7 +82,7 @@ async function routes (fastify, opts, next) {
 
   // Maintainer
   fastify.post('/maintainer/login', { schema: loginMaintainerSchema }, (req, res) => loginMaintainer(req, res, fastify))
-  fastify.get('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
+  fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
   fastify.get('/maintainer/revenue', (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))

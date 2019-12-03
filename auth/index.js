@@ -215,6 +215,7 @@ Auth.prototype.createMaintainerSession = async function createMaintainerSession 
 }
 
 Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: MaintainerSessionTableName,
     Key: { sessionId }
