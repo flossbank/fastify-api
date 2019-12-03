@@ -71,6 +71,7 @@ module.exports = {
       totalRevenue: 3
     })
     this.updatePackage = sinon.stub().resolves()
+    this.getRevenue = sinon.stub().resolves(3)
     this.createMaintainer = sinon.stub().resolves('test-maintainer-0')
     this.authenticateMaintainer = sinon.stub().resolves({ success: true })
   },

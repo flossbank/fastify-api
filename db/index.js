@@ -156,6 +156,16 @@ Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
   })
 }
 
+Db.prototype.getRevenue = async function getRevenue (maintainerId) {
+  const packages = this.db.collection('packages').find({
+    maintainers: { $elemMatch: { maintainerId } }
+  }).toArray()
+  return packages.reduce((totalRevenue, pkg) => {
+    const { revenuePercent } = pkg.maintainers.find((maintainer) => maintainer.maintainerId === maintainerId)
+    return totalRevenue + (pkg.totalRevenue * (revenuePercent / 100))
+  }, 0)
+}
+
 Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
   maintainer.password = await bcrypt.hash(maintainer.password, 10)
   maintainer.verified = false

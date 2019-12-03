@@ -42,6 +42,7 @@ const logoutMaintainer = require('../api/maintainer/logout')
 const registerMaintainer = require('../api/maintainer/register')
 const registerMaintainerSchema = require('../schema/maintainer/register')
 const maintainerRevenue = require('../api/maintainer/revenue')
+const maintainerRevenueSchema = require('../schema/maintainer/revenue')
 const updateMaintainer = require('../api/maintainer/update')
 const verifyMaintainer = require('../api/maintainer/verify')
 
@@ -84,7 +85,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/maintainer/login', { schema: loginMaintainerSchema }, (req, res) => loginMaintainer(req, res, fastify))
   fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
-  fastify.get('/maintainer/revenue', (req, res) => maintainerRevenue(req, res, fastify))
+  fastify.get('/maintainer/revenue', { schema: maintainerRevenueSchema }, (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
   fastify.get('/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
 
