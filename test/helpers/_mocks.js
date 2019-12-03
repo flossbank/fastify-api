@@ -74,6 +74,7 @@ module.exports = {
     this.getRevenue = sinon.stub().resolves(3)
     this.createMaintainer = sinon.stub().resolves('test-maintainer-0')
     this.authenticateMaintainer = sinon.stub().resolves({ success: true })
+    this.verifyMaintainer = sinon.stub().resolves()
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds

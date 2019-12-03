@@ -182,6 +182,14 @@ Db.prototype.authenticateMaintainer = async function authenticateMaintainer (ema
   return { success: true }
 }
 
+Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
+  return this.db.collection('maintainers').updateOne({
+    email
+  }, {
+    $set: { verified: true }
+  })
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {

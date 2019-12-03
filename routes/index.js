@@ -45,6 +45,7 @@ const maintainerRevenue = require('../api/maintainer/revenue')
 const maintainerRevenueSchema = require('../schema/maintainer/revenue')
 const updateMaintainer = require('../api/maintainer/update')
 const verifyMaintainer = require('../api/maintainer/verify')
+const verifyMaintainerSchema = require('../schema/maintainer/verify')
 
 // Packages
 const getPackages = require('../api/package/get')
@@ -87,7 +88,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
   fastify.get('/maintainer/revenue', { schema: maintainerRevenueSchema }, (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update', (req, res) => updateMaintainer(req, res, fastify))
-  fastify.get('/maintainer/verify', (req, res) => verifyMaintainer(req, res, fastify))
+  fastify.post('/maintainer/verify', { schema: verifyMaintainerSchema }, (req, res) => verifyMaintainer(req, res, fastify))
 
   // Packages
   fastify.get('/package/get', { schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
