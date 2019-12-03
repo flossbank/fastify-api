@@ -190,6 +190,14 @@ Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
   })
 }
 
+Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer) {
+  return this.db.collection('maintainers').updateOne({
+    _id: ObjectId(id)
+  }, {
+    $set: maintainer
+  })
+}
+
 exports.Db = Db
 
 exports.dbPlugin = (db) => fastifyPlugin(async (fastify) => {
