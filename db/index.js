@@ -156,6 +156,60 @@ Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
   })
 }
 
+Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (packages, registry, maintainerId) {
+  const existingPackages = await this.db.collection('packages').find({
+    $or: [
+      { name: { $in: packages } },
+      { owner: maintainerId }
+    ],
+    registry
+  }).toArray()
+
+  const packageDeletions = existingPackages
+    .filter(pkg => !packages.includes(pkg.name))
+    .map(pkg => ({
+      criteria: { name: pkg.name, registry },
+      update: { $set: { owner: undefined } }
+    }))
+  const packageInsertions = packages
+    .filter(pkg => !existingPackages.some((ePkg) => ePkg.name === pkg))
+    .map(pkg => ({
+      name: pkg,
+      registry,
+      owner: maintainerId,
+      maintainers: [{ maintainerId, revenuePercent: 100 }]
+    }))
+  const packageUpdates = existingPackages
+    .filter(pkg => pkg.owner !== maintainerId)
+    .map(pkg => {
+      const alreadyMaintains = pkg.maintainers.some(maintainer => maintainer.maintainerId === maintainerId)
+      return {
+        criteria: { name: pkg.name, registry },
+        update: {
+          $set: {
+            owner: maintainerId,
+            maintainers: alreadyMaintains
+              ? pkg.maintainers
+              : pkg.maintainers.concat([{ maintainerId, revenuePercent: 0 }])
+          }
+        }
+      }
+    })
+  const bulkPackages = this.db.collection('packages').initializeUnorderedBulkOp()
+
+  for (const insertion of packageInsertions) {
+    bulkPackages.insert(insertion)
+  }
+  for (const update of packageUpdates) {
+    bulkPackages.find(update.criteria).update(update.update)
+  }
+  for (const deletion of packageDeletions) {
+    bulkPackages.find(deletion.criteria).update(deletion.update)
+  }
+
+  return bulkPackages.execute()
+}
+
 Db.prototype.getRevenue = async function getRevenue (maintainerId) {
   const packages = this.db.collection('packages').find({
     maintainers: { $elemMatch: { maintainerId } }
@@ -196,6 +250,13 @@ Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer)
   }, {
     $set: maintainer
   })
+}
+
+Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
+  const { _id: id, ...rest } = await this.db.collection('maintainers')
+    .findOne({ _id: ObjectId(maintainerId) })
+  delete rest.password
+  return { id, ...rest }
 }
 
 exports.Db = Db

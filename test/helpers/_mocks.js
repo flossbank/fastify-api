@@ -71,7 +71,13 @@ module.exports = {
       totalRevenue: 3
     })
     this.updatePackage = sinon.stub().resolves()
+    this.refreshPackageOwnership = sinon.stub().resolves()
     this.getRevenue = sinon.stub().resolves(3)
+    this.getMaintainer = sinon.stub().resolves({
+      id: 'test-maintainer-0',
+      email: 'maintenance@amazon.com',
+      tokens: { npm: 'npm-token' }
+    })
     this.createMaintainer = sinon.stub().resolves('test-maintainer-0')
     this.authenticateMaintainer = sinon.stub().resolves({ success: true })
     this.verifyMaintainer = sinon.stub().resolves()
@@ -91,5 +97,10 @@ module.exports = {
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()
+  },
+  Registry: function Registry () {
+    this.npm = {
+      getOwnedPackages: sinon.stub().resolves()
+    }
   }
 }

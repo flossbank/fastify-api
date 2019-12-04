@@ -52,6 +52,7 @@ const verifyMaintainerSchema = require('../schema/maintainer/verify')
 const getPackages = require('../api/package/get')
 const getPackagesSchema = require('../schema/package/get')
 const refreshPackages = require('../api/package/refresh')
+const refreshPackagesSchema = require('../schema/package/refresh')
 const updatePackages = require('../api/package/update')
 const updatePackagesSchema = require('../schema/package/update')
 
@@ -93,7 +94,7 @@ async function routes (fastify, opts, next) {
 
   // Packages
   fastify.get('/package/get', { schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
-  fastify.post('/package/refresh', (req, res) => refreshPackages(req, res, fastify))
+  fastify.post('/package/refresh', { schema: refreshPackagesSchema }, (req, res) => refreshPackages(req, res, fastify))
   fastify.post('/package/update', { schema: updatePackagesSchema }, (req, res) => updatePackages(req, res, fastify))
 
   // Session

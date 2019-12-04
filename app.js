@@ -3,8 +3,10 @@ const routes = require('./routes')
 const { authPlugin } = require('./auth')
 const { dbPlugin } = require('./db')
 const { sqsPlugin } = require('./sqs')
+const { registryPlugin } = require('./registry')
 
-module.exports = async function buildFastify ({ db, auth, sqs, logger = true }) {
+module.exports = async function buildFastify (deps) {
+  const { db, auth, sqs, registry, logger = true } = deps
   const fastify = Fastify({ logger })
   fastify.register(require('fastify-cookie'))
 
@@ -17,6 +19,7 @@ module.exports = async function buildFastify ({ db, auth, sqs, logger = true }) 
   fastify.register(dbPlugin(db))
   fastify.register(authPlugin(auth))
   fastify.register(sqsPlugin(sqs))
+  fastify.register(registryPlugin(registry))
 
   return fastify
 }

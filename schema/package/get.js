@@ -15,6 +15,7 @@ module.exports = {
             type: 'object',
             properties: {
               id: { type: 'string' },
+              registry: { type: 'string' },
               maintainers: {
                 type: 'array',
                 items: { type: 'string' }
