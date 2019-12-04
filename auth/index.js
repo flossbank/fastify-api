@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
+const fastifyPlugin = require('fastify-plugin')
 const ApiKeyCache = require('./cache')
 const config = require('../config')
 
@@ -214,6 +215,7 @@ Auth.prototype.createMaintainerSession = async function createMaintainerSession 
 }
 
 Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: MaintainerSessionTableName,
     Key: { sessionId }
@@ -230,10 +232,15 @@ Auth.prototype.createAdvertiserSession = async function createAdvertiserSession 
 }
 
 Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: AdvertiserSessionTableName,
     Key: { sessionId }
   }).promise()
 }
 
-module.exports = new Auth()
+exports.Auth = Auth
+
+exports.authPlugin = (auth) => fastifyPlugin(async (fastify) => {
+  fastify.decorate('auth', auth)
+})

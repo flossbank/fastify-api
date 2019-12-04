@@ -1,80 +1,74 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const mockFastify = require('../../helpers/_mockFastify')
-const update = require('../../../api/ad/update')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-const updatedAd1 = {
-  ...mockData.ads[0],
-  content: {
-    title: 'lord of the rings',
-    url: 'hello.com',
-    body: 'Golem'
-  },
-  adCampaigns: ['1234'],
-  name: 'old-name'
-}
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
 
-test.beforeEach(() => {
-  mockFastify.mongo.collection.returns({
-    updateOne: sinon.stub().resolves(updatedAd1)
+test.failing('POST `/ad/update` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/update',
+    payload: {
+      adId: 'test-ad-0',
+      ad: {
+        name: 'ad',
+        content: { body: 'abc', title: 'abc', url: 'abc' }
+      }
+    },
+    headers: { authorization: 'not a valid token' }
   })
+  t.deepEqual(res.statusCode, 401)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongo.collection.reset()
-  mockFastify.mongoObjectID.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('POST `/ad/update` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/update',
+    payload: {
+      adId: 'test-ad-0',
+      ad: {
+        name: 'new name',
+        content: { body: 'abc', title: 'abc', url: 'abc' }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test.after(() => {
-  console.error.restore()
+test('POST `/ad/update` 400 bad request', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/update',
+    payload: {},
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('success updating ad', async (t) => {
-  const sanitizedAd = {
-    name: updatedAd1.name,
-    content: {
-      body: updatedAd1.content.body,
-      url: updatedAd1.content.url,
-      title: updatedAd1.content.title
-    }
-  }
-  await update({ body: { ad: updatedAd1 } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: true }))
-  t.true(mockFastify.mongo.collection.calledWith('ads'))
-  t.true(mockFastify.mongo.collection().updateOne.calledWith({ _id: updatedAd1._id }, { $set: sanitizedAd }))
-})
-
-test('invalid input, no name', async (t) => {
-  await update({ body: { ad: { advertiserId: '1' } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('invalid input, no content for update', async (t) => {
-  await update({ body: { ad: { advertiserId: '1', name: 'valid-name', content: { title: 'hello' } } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('instance failure', async (t) => {
-  mockFastify.mongo.collection.throws()
-  await update({ body: { ad: mockData.ads[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(console.error.called)
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().updateOne.throws()
-  await update({ body: { ad: mockData.ads[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('POST `/ad/update` 500 server error', async (t) => {
+  t.context.db.updateAd.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/update',
+    payload: {
+      adId: 'test-ad-0',
+      ad: {
+        name: 'ad',
+        content: {
+          title: 'abc',
+          body: 'abc',
+          url: 'abc'
+        }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

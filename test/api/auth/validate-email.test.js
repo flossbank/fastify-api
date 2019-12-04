@@ -1,59 +1,77 @@
 const test = require('ava')
-const sinon = require('sinon')
-const auth = require('../../../auth')
-const res = require('../../helpers/_response')
-const validate = require('../../../api/auth/validate-email')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
-  sinon.stub(auth, 'validateUserToken')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  res.status.reset()
+test.afterEach(async (t) => {
+  await afterEach(t)
 })
 
-test.after(() => {
-  console.error.restore()
-  auth.validateUserToken.restore()
+test('POST `/auth/validate-email` 400 bad request', async (t) => {
+  let res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: {}
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', token: 'token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', kind: 'USER' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', token: 'token', kind: 'BAD_KIND' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('missing params', async (t) => {
-  await validate({}, res)
-  t.true(res.status.calledWith(400))
-  res.status.reset()
-
-  await validate({ body: {} }, res)
-  t.true(res.status.calledWith(400))
-  res.status.reset()
-
-  await validate({ body: { email: 'email' } }, res)
-  t.true(res.status.calledWith(400))
-  res.status.reset()
-
-  await validate({ body: { token: 'token' } }, res)
-  t.true(res.status.calledWith(400))
+test('POST `/auth/validate-email` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', token: 'token', kind: 'USER' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test('unauthorized', async (t) => {
-  auth.validateUserToken.returns(false)
-  await validate({ body: { email: 'email', token: 'token', kind: auth.authKinds.USER } }, res)
-  t.true(auth.validateUserToken.calledWith('email', 'token', auth.authKinds.USER))
-  t.true(res.send.calledWith({ valid: false }))
+test('POST `/auth/validate-email` 401 unauthorized', async (t) => {
+  t.context.auth.validateUserToken.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', token: 'token', kind: 'USER' }
+  })
+  t.deepEqual(res.statusCode, 401)
 })
 
-test('success', async (t) => {
-  auth.validateUserToken.returns(true)
-  await validate({ body: { email: 'email', token: 'token', kind: auth.authKinds.USER } }, res)
-  t.true(auth.validateUserToken.calledWith('email', 'token', auth.authKinds.USER))
-  t.true(res.send.calledWith({ valid: true }))
-})
-
-test('validation failure', async (t) => {
-  auth.validateUserToken.rejects()
-  await validate({ body: { email: 'email', token: 'token', kind: auth.authKinds.USER } }, res)
-  t.true(auth.validateUserToken.calledWith('email', 'token', auth.authKinds.USER))
-  t.true(console.error.calledOnce)
-  t.true(res.status.calledWith(500))
+test('POST `/auth/validate-email` 500 server error', async (t) => {
+  t.context.auth.validateUserToken.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/validate-email',
+    payload: { email: 'email', token: 'token', kind: 'USER' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

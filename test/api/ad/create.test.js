@@ -1,66 +1,143 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const mockFastify = require('../../helpers/_mockFastify')
-const sanitizeAd = require('../../../sanitize/adInput')
-const create = require('../../../api/ad/create')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.beforeEach(() => {
-  mockFastify.mongo.collection.returns({
-    insertOne: sinon.stub().resolves({
-      ops: [sanitizeAd(mockData.ads[0])]
-    })
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
+
+test.failing('POST `/ad/create` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: 'advertiser-id',
+        content: { body: 'abc', title: 'abc', url: 'abc' }
+      }
+    },
+    headers: { authorization: 'not a valid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/ad/create` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: 'advertiser-id',
+        content: { body: 'abc', title: 'abc', url: 'abc' }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    id: await t.context.db.createAd()
   })
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('POST `/ad/create` 400 bad request', async (t) => {
+  let res
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {},
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: { ad: {} },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: { ad: { advertiserId: 'advertiserId' } },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: { ad: { advertiserId: 'advertiserId', content: {} } },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: { ad: { advertiserId: 'advertiserId', content: {}, name: 'ad' } },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: 'advertiserId',
+        content: {
+          title: 'abc'
+        }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: 'advertiserId',
+        content: {
+          title: 'abc',
+          body: 'abc'
+        }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test.after(() => {
-  console.error.restore()
-})
-
-test('success', async (t) => {
-  await create({ body: { ad: mockData.ads[0] } }, res, mockFastify)
-  t.true(res.send.calledWith(sanitizeAd(mockData.ads[0])))
-  t.true(mockFastify.mongo.collection.calledWith('ads'))
-  t.true(mockFastify.mongo.collection().insertOne.calledWith(sanitizeAd(mockData.ads[0])))
-})
-
-test('invalid input, no name', async (t) => {
-  await create({ body: { ad: { advertiserId: '1' } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('invalid input, no content', async (t) => {
-  await create({ body: { ad: { advertiserId: '1', name: 'adname', content: { title: 'hello' } } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('instance failure', async (t) => {
-  mockFastify.mongo.collection.throws()
-  await create({ body: { ad: mockData.ads[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().insertOne.throws()
-  await create({ body: { ad: mockData.ads[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('POST `/ad/create` 500 server error', async (t) => {
+  t.context.db.createAd.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: 'advertiserId',
+        content: {
+          title: 'abc',
+          body: 'abc',
+          url: 'abc'
+        }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

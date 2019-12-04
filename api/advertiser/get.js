@@ -1,17 +1,11 @@
-const getAdvertiser = async (advertiserId, db, ObjectID) => {
-  return db.collection('advertisers').findOne({ _id: ObjectID(advertiserId) })
-}
-
-module.exports = async (req, res, fastify) => {
-  // Check required params
-  if (!req.query.advertiserId) {
-    res.status(400)
-    return res.send()
-  }
+module.exports = async (req, res, ctx) => {
   try {
-    res.send(await getAdvertiser(req.query.advertiserId, fastify.mongo, fastify.mongoObjectID))
+    res.send({
+      success: true,
+      advertiser: await ctx.db.getAdvertiser(req.query.advertiserId)
+    })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

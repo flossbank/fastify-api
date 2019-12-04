@@ -1,43 +1,39 @@
 const test = require('ava')
-const sinon = require('sinon')
-const auth = require('../../../auth')
-const res = require('../../helpers/_response')
-const send = require('../../../api/auth/send')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
-  sinon.stub(auth, 'sendUserToken')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  res.status.reset()
+test.afterEach(async (t) => {
+  await afterEach(t)
 })
 
-test.after(() => {
-  console.error.restore()
-  auth.sendUserToken.restore()
+test('POST `/auth/send` 400 bad request', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/send',
+    payload: {}
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('missing params', async (t) => {
-  await send({}, res)
-  t.true(res.status.calledWith(400))
-  res.status.reset()
-
-  await send({ body: {} }, res)
-  t.true(res.status.calledWith(400))
-  res.status.reset()
+test('POST `/auth/send` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/send',
+    payload: { email: 'peter@quo.cc' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test('success', async (t) => {
-  await send({ body: { email: 'email' } }, res)
-  t.true(auth.sendUserToken.calledWith('email', auth.authKinds.USER))
-})
-
-test('send failure', async (t) => {
-  auth.sendUserToken.rejects()
-  await send({ body: { email: 'email' } }, res)
-  t.true(auth.sendUserToken.calledWith('email', auth.authKinds.USER))
-  t.true(console.error.calledOnce)
-  t.true(res.status.calledWith(500))
+test('POST `/auth/send` 500 server error', async (t) => {
+  t.context.auth.sendUserToken.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/send',
+    payload: { email: 'peter@quo.cc' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

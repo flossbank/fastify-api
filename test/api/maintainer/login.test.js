@@ -1,105 +1,64 @@
 const test = require('ava')
-const sinon = require('sinon')
-const bcrypt = require('bcrypt')
-const auth = require('../../../auth')
-const res = require('../../helpers/_response')
-const mockFastify = require('../../helpers/_mockFastify')
-const login = require('../../../api/maintainer/login')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 const { maintainerSessionKey } = require('../../../helpers/constants')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongoObjectID.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test.afterEach(async (t) => {
+  await afterEach(t)
 })
 
-test.after(() => {
-  console.error.restore()
-})
-
-test('reject with invalid params', async (t) => {
-  await login({ body: { email: 'pete' } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-})
-
-test('reject logging in because not verified user', async (t) => {
-  const maintainer = {
-    email: 'peter@laura.com',
-    password: 'hashedpassword',
-    verified: false
-  }
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().returns(maintainer)
+test('POST `/maintainer/login` 401 unauthorized', async (t) => {
+  t.context.db.authenticateMaintainer.resolves({ success: false })
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { email: 'email', password: 'pwd' }
   })
-  await login({ body: { email: 'peter@laura.com', password: 'unhashed' } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: false, message: 'Email address has not been verified' }))
-  t.true(mockFastify.mongo.collection.calledWith('maintainers'))
-  t.true(mockFastify.mongo.collection().findOne.calledWith({ email: 'peter@laura.com' }))
-  mockFastify.mongo.collection.reset()
+  t.deepEqual(res.statusCode, 401)
 })
 
-test('reject logging in because no account for email', async (t) => {
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().returns(undefined)
+test('POST `/maintainer/login` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { email: 'email', password: 'pwd' }
   })
-  await login({ body: { email: 'peter@laura.com', password: 'unhashed' } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: false, message: 'Login failed; Invalid user ID or password' }))
-  t.true(mockFastify.mongo.collection.calledWith('maintainers'))
-  t.true(mockFastify.mongo.collection().findOne.calledWith({ email: 'peter@laura.com' }))
-  mockFastify.mongo.collection.reset()
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session`)
 })
 
-test('reject with invalid password', async (t) => {
-  sinon.stub(bcrypt, 'compare').returns(false)
-  const maintainer = {
-    email: 'peter@laura.com',
-    password: 'diffpass',
-    verified: true
-  }
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().returns(maintainer)
+test('POST `/maintainer/login` 400 bad request', async (t) => {
+  let res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: {}
   })
-  await login({ body: { email: 'pete@pete.com', password: 'pass' } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: false, message: 'Login failed; Invalid user ID or password' }))
-  t.true(mockFastify.mongo.collection.calledWith('maintainers'))
-  t.true(mockFastify.mongo.collection().findOne.calledWith({ email: 'pete@pete.com' }))
-  mockFastify.mongo.collection.reset()
-  bcrypt.compare.restore()
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { email: 'email' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { password: 'pwd' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('succesful login', async (t) => {
-  sinon.stub(auth, 'createMaintainerSession').resolves('1234')
-  sinon.stub(bcrypt, 'compare').returns(true)
-  const maintainer = {
-    email: 'peter@laura.com',
-    password: 'hashedpassword',
-    verified: true
-  }
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().returns(maintainer)
+test('POST `/maintainer/login` 500 server error', async (t) => {
+  t.context.db.authenticateMaintainer.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { email: 'email', password: 'pwd' }
   })
-  await login({ body: { email: 'pete@pete.com', password: 'pass' } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: true }))
-  t.true(mockFastify.mongo.collection.calledWith('maintainers'))
-  t.true(mockFastify.mongo.collection().findOne.calledWith({ email: 'pete@pete.com' }))
-  t.true(res.setCookie.calledWith(maintainerSessionKey, '1234'))
-  mockFastify.mongo.collection.reset()
-  auth.createMaintainerSession.restore()
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().throws()
-  })
-  await login({ body: { email: 'pete@pete', password: 'pass' } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
-  mockFastify.mongo.collection.reset()
+  t.deepEqual(res.statusCode, 500)
 })

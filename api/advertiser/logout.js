@@ -1,19 +1,12 @@
-const auth = require('../../auth')
+const { advertiserSessionKey } = require('../../helpers/constants')
 
-const logoutAdvertiser = async (sessionId) => {
-  // Delete session Id from our advertiser session table
-  await auth.deleteAdvertiserSession(sessionId)
-  return { success: true }
-}
-
-module.exports = async (req, res) => {
-  if (!req.cookies || !req.cookies.flossbank_a_sess_id) {
-    return res.send()
-  }
+module.exports = async (req, res, ctx) => {
+  const sessionId = req.cookies[advertiserSessionKey]
   try {
-    res.send(await logoutAdvertiser(req.cookies.flossbank_a_sess_id))
+    await ctx.auth.deleteAdvertiserSession(sessionId)
+    res.send({ success: true })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

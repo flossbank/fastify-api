@@ -7,9 +7,10 @@
     "start": "node index.js",
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
-    "unit-tests": "recaptcha_secret=test mongo_uri=test nyc ava --serial",
-    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --serial --watch",
-    "test": "npm run lint && npm run unit-tests"
+    "coverage": "nyc npm run unit-tests",
+    "unit-tests": "recaptcha_secret=test mongo_uri=test ava",
+    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --watch",
+    "test": "npm run lint && npm run coverage"
   },
   "author": "",
   "license": "ISC",
@@ -22,7 +23,7 @@
     "fastify-cors": "^3.0.0",
     "fastify-plugin": "^1.6.0",
     "form-data": "^2.5.1",
-    "get-owned-packages": "^1.0.0",
+    "get-owned-packages": "^2.0.0",
     "got": "^9.6.0",
     "mongodb": "^3.3.2"
   },

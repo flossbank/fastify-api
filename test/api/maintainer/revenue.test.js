@@ -1,68 +1,55 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const mockFastify = require('../../helpers/_mockFastify')
-const getRevenue = require('../../../api/maintainer/revenue')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.beforeEach(() => {
-  mockFastify.mongo.collection.onFirstCall().returns({
-    find: sinon.stub().returns({
-      toArray: sinon.stub().resolves([mockData.maintainerPackageRels[0]])
-    })
-  }).onSecondCall().returns({
-    findOne: sinon.stub().resolves(mockData.packages[0])
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
+
+test.failing('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/revenue',
+    query: { maintainerId: 'test-maintainer-0' },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('GET `/maintainer/revenue` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/revenue',
+    query: { maintainerId: 'test-maintainer-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    revenue: await t.context.db.getRevenue()
   })
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongoObjectID.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
-})
-
-test.after(() => {
-  console.error.restore()
-})
-
-test('success get revenue for maintainer 1', async (t) => {
-  await getRevenue({ query: { maintainerId: mockData.maintainers[0]._id } }, res, mockFastify)
-  t.true(res.send.calledWith(90))
-  t.true(mockFastify.mongo.collection.calledWith('packages'))
-  t.true(mockFastify.mongo.collection.calledWith('maintainer_package_rel'))
-})
-
-test('success get revenue for maintainer 2', async (t) => {
-  // Overwrite stub to return the second maintainers relationship
-  mockFastify.mongo.collection.onFirstCall().returns({
-    find: sinon.stub().returns({
-      toArray: sinon.stub().resolves([mockData.maintainerPackageRels[1]])
-    })
+test('GET `/maintainer/revenue` 400 bad request', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/revenue',
+    query: {},
+    headers: { authorization: 'valid-session-token' }
   })
-
-  await getRevenue({ query: { maintainerId: mockData.maintainers[1]._id } }, res, mockFastify)
-  t.true(res.send.calledWith(10))
-  t.true(mockFastify.mongo.collection.calledWith('packages'))
-  t.true(mockFastify.mongo.collection.calledWith('maintainer_package_rel'))
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('failure with 400 with no maintainerId', async (t) => {
-  await getRevenue({ query: { maintainerId: null } }, res, mockFastify)
-  t.true(res.send.called)
-  t.true(res.status.calledWith(400))
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().find.throws()
-  try {
-    await getRevenue({ query: { maintainerId: mockData.maintainers[0]._id } }, res, mockFastify)
-  } catch (_) {}
-  t.true(res.send.called)
-  t.true(res.status.calledWith(500))
-  t.true(console.error.called)
+test('GET `/maintainer/revenue` 500 server error', async (t) => {
+  t.context.db.getRevenue.throws()
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/revenue',
+    query: { maintainerId: 'test-maintainer-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

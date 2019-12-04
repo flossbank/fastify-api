@@ -1,48 +1,55 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const mockFastify = require('../../helpers/_mockFastify')
-const getPackages = require('../../../api/advertiser/get')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.beforeEach(() => {
-  mockFastify.mongo.collection.returns({
-    findOne: sinon.stub().returns(mockData.advertisers[0])
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
+
+test.failing('GET `/advertiser/get` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: 'test-advertiser-0' },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('GET `/advertiser/get` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: 'test-advertiser-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    advertiser: await t.context.db.getAdvertiser()
   })
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongo.collection.reset()
-  mockFastify.mongoObjectID.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('GET `/advertiser/get` 400 bad request', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: {},
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test.after(() => {
-  console.error.restore()
-})
-
-test('success get advertiser', async (t) => {
-  await getPackages({ query: { advertiserId: mockData.advertisers[0]._id } }, res, mockFastify)
-  t.true(res.send.calledWith(mockData.advertisers[0]))
-  t.true(mockFastify.mongo.collection.calledWith('advertisers'))
-  t.true(mockFastify.mongo.collection().findOne.calledWith({ _id: mockData.advertisers[0]._id }))
-})
-
-test('failure with 400 with no advertiserId', async (t) => {
-  await getPackages({ query: { advertiserId: null } }, res, mockFastify)
-  t.true(res.send.called)
-  t.true(res.status.calledWith(400))
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().findOne.throws()
-  await getPackages({ query: { advertiserId: mockData.advertisers[0]._id } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('GET `/advertiser/get` 500 server error', async (t) => {
+  t.context.db.getAdvertiser.throws()
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: 'test-advertiser-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

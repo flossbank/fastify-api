@@ -1,60 +1,71 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const sanitize = require('../../../sanitize/advertiserInput')
-const mockFastify = require('../../helpers/_mockFastify')
-const update = require('../../../api/advertiser/update')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.beforeEach(async () => {
-  const sanitizedModified = sanitize({ ...mockData.advertisers[0], name: 'newPeter' })
-  delete sanitizedModified.password
-  mockFastify.mongo.collection.returns({
-    updateOne: sinon.stub().resolves(sanitizedModified)
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
+
+test.failing('POST `/advertiser/update` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/update',
+    payload: {
+      advertiserId: 'test-advertiser-0',
+      advertiser: {
+        organization: 'ad org'
+      }
+    },
+    headers: { authorization: 'not a valid token' }
   })
+  t.deepEqual(res.statusCode, 401)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('POST `/advertiser/update` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/update',
+    payload: {
+      advertiserId: 'test-advertiser-0',
+      advertiser: {
+        organization: 'ad org'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test.after(() => {
-  console.error.restore()
+test('POST `/advertiser/update` 400 bad request', async (t) => {
+  let res
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/update',
+    payload: {},
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/update',
+    payload: { advertiserId: 'test-advertiser-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('success updating adCampaigns even when full advertiser is passed', async (t) => {
-  await update({ body: { advertiser: { ...mockData.advertisers[0], adCampaigns: ['newcampaign'] } } }, res, mockFastify)
-  const expected = {
-    billingInfo: mockData.advertisers[0].billingInfo,
-    organization: mockData.advertisers[0].organization,
-    adCampaigns: ['newcampaign']
-  }
-  t.true(res.send.calledWith({ success: true }))
-  t.true(mockFastify.mongo.collection.calledWith('advertisers'))
-  t.true(mockFastify.mongo.collection().updateOne.calledWith(
-    { _id: mockData.advertisers[0]._id },
-    { $set: expected }
-  ))
-})
-
-test('reject with invalid params', async (t) => {
-  // No ID passed in, so can't update
-  await update({ body: { advertiser: { name: 'pete', email: 'pete@pete' } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().updateOne.throws()
-  await update({ body: { advertiser: mockData.advertisers[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('POST `/advertiser/update` 500 server error', async (t) => {
+  t.context.db.updateAdvertiser.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/update',
+    payload: { advertiserId: 'test-advertiser-0', advertiser: {} },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

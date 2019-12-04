@@ -1,30 +1,12 @@
-const bcrypt = require('bcrypt')
-const auth = require('../../auth')
-
-const registerMaintainer = async (body, db) => {
-  const { email, password, name } = body
-  const encPassword = await bcrypt.hash(password, 10)
-  const maintainer = {
-    name,
-    email,
-    password: encPassword,
-    verified: false
-  }
-  await db.collection('maintainers').insertOne(maintainer)
-  await auth.sendUserToken(email, auth.authKinds.MAINTAINER)
-  return { success: true }
-}
-
-module.exports = async (req, res, fastify) => {
-  if (!req.body.email || !req.body.password || !req.body.name) {
-    res.status(400)
-    return res.send()
-  }
+module.exports = async (req, res, ctx) => {
   // TODO: validate email against regex
+  const { maintainer } = req.body
   try {
-    res.send(await registerMaintainer(req.body, fastify.mongo))
+    const id = await ctx.db.createMaintainer(maintainer)
+    await ctx.auth.sendUserToken(maintainer.email, ctx.auth.authKinds.MAINTAINER)
+    res.send({ success: true, id })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

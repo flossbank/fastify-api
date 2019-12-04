@@ -1,21 +1,23 @@
-const fastify = require('fastify')({
-  logger: true
-})
-fastify.register(require('fastify-cookie'))
 require('dotenv').config()
 
-fastify.register(require('fastify-cors'), {
-  // TODO stricter CORS settings when we have a frontend
-})
-fastify.register(require('./db/index'))
-fastify.register(require('./routes/index'))
+const App = require('./app')
+const { Db } = require('./db')
+const { Auth } = require('./auth')
+const { Sqs } = require('./sqs')
+const { Registry } = require('./registry')
 
-const start = async () => {
+;(async function () {
+  const db = new Db()
+  const auth = new Auth()
+  const sqs = new Sqs()
+  const registry = new Registry()
+  await db.connect()
+
+  const app = await App({ db, auth, sqs, registry })
   try {
-    await fastify.listen(8081)
+    await app.listen(8081)
   } catch (err) {
-    fastify.log.error(err)
+    app.log.error(err)
     process.exit(1)
   }
-}
-start()
+})()

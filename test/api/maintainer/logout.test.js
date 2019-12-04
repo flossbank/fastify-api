@@ -1,32 +1,38 @@
 const test = require('ava')
-const sinon = require('sinon')
-const auth = require('../../../auth')
-const res = require('../../helpers/_response')
-const mockFastify = require('../../helpers/_mockFastify')
-const logout = require('../../../api/maintainer/logout')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
+const { maintainerSessionKey } = require('../../../helpers/constants')
 
-test.before(() => {
-  sinon.stub(console, 'error')
-  sinon.stub(auth, 'deleteMaintainerSession')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongoObjectID.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test.afterEach(async (t) => {
+  await afterEach(t)
 })
 
-test.after(() => {
-  console.error.restore()
+test('POST `/maintainer/logout` 200 success', async (t) => {
+  let res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/logout',
+    headers: {
+      cookie: `${maintainerSessionKey}=maintainer-session`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+
+  // no cookie is still 200
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/logout'
+  })
+  t.deepEqual(res.statusCode, 200)
 })
 
-test('reject with invalid params', async (t) => {
-  await logout({ cookies: { flossbank_m_sess_id: undefined } }, res, mockFastify)
-  t.true(res.send.called)
-})
-
-test('succesful log out', async (t) => {
-  await logout({ cookies: { flossbank_m_sess_id: 'ff' } }, res, mockFastify)
-  t.true(res.send.calledWith({ success: true }))
+test('POST `/maintainer/logout` 500 server error', async (t) => {
+  t.context.auth.deleteMaintainerSession.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/logout'
+  })
+  t.deepEqual(res.statusCode, 500)
 })

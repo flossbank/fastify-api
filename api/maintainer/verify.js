@@ -1,29 +1,14 @@
-const auth = require('../../auth')
-
-// First check that the user token is valid
-const valid = async (query) => {
-  if (!query.email || !query.token) return false
-  const { email, token } = query
-  return auth.validateUserToken(email, token, auth.authKinds.MAINTAINER)
-}
-
-// Update verified field for maintainer
-const verifyMaintainer = async (query, db) => {
-  const { email } = query
-  await db.collection('maintainers').updateOne({ email }, { $set: { verified: true } })
-  return { success: true }
-}
-
-module.exports = async (req, res, fastify) => {
+module.exports = async (req, res, ctx) => {
+  const { email, token } = req.body
   try {
-    const authValid = await valid(req.query)
-    if (!authValid) {
-      res.status(400)
+    if (!await ctx.auth.validateUserToken(email, token, ctx.auth.authKinds.MAINTAINER)) {
+      res.status(401)
       return res.send()
     }
-    res.send(await verifyMaintainer(req.query, fastify.mongo))
+    await ctx.db.verifyMaintainer(email)
+    res.send({ success: true })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }

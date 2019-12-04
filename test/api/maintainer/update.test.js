@@ -1,56 +1,84 @@
 const test = require('ava')
-const sinon = require('sinon')
-const res = require('../../helpers/_response')
-const mockData = require('../../helpers/_mockData')
-const mockFastify = require('../../helpers/_mockFastify')
-const update = require('../../../api/maintainer/update')
+const { beforeEach, afterEach } = require('../../helpers/_setup')
 
-test.before(() => {
-  sinon.stub(console, 'error')
+test.beforeEach(async (t) => {
+  await beforeEach(t)
 })
 
-test.beforeEach(async () => {
-  const sanitizedModified = { ...mockData.maintainers[0], payoutEmail: 'newPayoutEmail' }
-  delete sanitizedModified.password
-  mockFastify.mongo.collection.returns({
-    updateOne: sinon.stub().resolves(sanitizedModified)
+test.afterEach(async (t) => {
+  await afterEach(t)
+})
+
+test.failing('POST `/maintainer/update` 401 unauthorized', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: {
+      maintainerId: 'test-maintainer-0',
+      maintainer: {
+        payoutEmail: 'help@quo.cc'
+      }
+    },
+    headers: { authorization: 'not a valid token' }
   })
+  t.deepEqual(res.statusCode, 401)
 })
 
-test.afterEach(() => {
-  console.error.reset()
-  mockFastify.mongoObjectID.reset()
-  mockFastify.mongo.collection.reset()
-  Object.keys(res).forEach(fn => res[fn].reset())
+test('POST `/maintainer/update` 200 success', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: {
+      maintainerId: 'test-maintainer-0',
+      maintainer: {
+        payoutEmail: 'help@quo.cc'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test.after(() => {
-  console.error.restore()
+test('POST `/maintainer/update` 400 bad request', async (t) => {
+  let res
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: {},
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: { maintainerId: 'test-maintainer-0' },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: { maintainerId: 'test-maintainer-0', maintainer: {} },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
-test('success updating maintainer payoutEmail', async (t) => {
-  await update({ body: { maintainer: { ...mockData.maintainers[0], payoutEmail: 'newPayoutEmail' } } }, res, mockFastify)
-  const expected = { payoutEmail: 'newPayoutEmail' }
-  t.true(res.send.calledWith({ success: true }))
-  t.true(mockFastify.mongo.collection.calledWith('maintainers'))
-  t.true(mockFastify.mongo.collection().updateOne.calledWith(
-    { _id: mockData.maintainers[0]._id },
-    { $set: expected }
-  ))
-})
-
-test('reject with invalid params', async (t) => {
-  // No ID passed in, so can't update
-  await update({ body: { maintainer: { name: 'pete', email: 'pete@pete' } } }, res, mockFastify)
-  t.true(res.status.calledWith(400))
-  t.true(res.send.called)
-  t.true(mockFastify.mongo.collection.notCalled)
-})
-
-test('query failure', async (t) => {
-  mockFastify.mongo.collection().updateOne.throws()
-  await update({ body: { maintainer: mockData.maintainers[0] } }, res, mockFastify)
-  t.true(res.status.calledWith(500))
-  t.true(res.send.called)
-  t.true(console.error.called)
+test('POST `/maintainer/update` 500 server error', async (t) => {
+  t.context.db.updateMaintainer.throws()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/update',
+    payload: {
+      maintainerId: 'test-maintainer-0',
+      maintainer: {
+        payoutEmail: 'help@quo.cc'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

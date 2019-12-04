@@ -1,66 +1,22 @@
-const valid = async (req, db, ObjectID) => {
-  if (!req.body.advertiserId || !req.body.adCampaignId) {
-    return { success: false, message: 'advertiserId and adCampaignId are required' }
-  }
-
-  const adCampaign = await db.collection('adCampaigns').findOne({ _id: ObjectID(req.body.adCampaignId) })
-  if (!adCampaign || (adCampaign.advertiserId !== req.body.advertiserId)) {
-    return { success: false, message: 'Invalid advertiser id for ad campaign' }
-  }
-
-  // validate ads
-  const ads = await db.collection('ads').find({
-    _id: { $in: adCampaign.ads.map(ObjectID) }
-  }).toArray()
-  if (!ads.every(ad => ad.approved)) {
-    return {
-      success: false,
-      message: 'All ads in a campaign must be approved before activating'
-    }
-  }
-  return { success: true }
-}
-
-const activateAdCampaign = async (body, fastify) => {
-  const { mongoClient, mongo: db, mongoObjectID } = fastify
-  const campaign = await db.collection('adCampaigns').findOne({
-    _id: mongoObjectID(body.adCampaignId)
-  })
-
-  // activate ads and campaign in a transaction
-  const session = mongoClient.startSession()
+module.exports = async (req, res, ctx) => {
   try {
-    await session.withTransaction(async () => {
-      await db.collection('ads').updateMany({
-        _id: { $in: campaign.ads.map(mongoObjectID) }
-      }, {
-        $set: { active: true }
-      }, { session })
-      await db.collection('adCampaigns').updateOne({
-        _id: mongoObjectID(body.adCampaignId)
-      }, {
-        $set: { active: true }
-      }, { session })
-    })
-  } catch (e) {
-    console.error(e)
-    return { success: false }
-  } finally {
-    await session.endSession()
-  }
-  return { success: true }
-}
+    const { adCampaignId: id } = req.body
+    const campaign = await ctx.db.getAdCampaign(id)
+    // TODO allow activation only if advertiser session matches advertiser id on campaign
 
-module.exports = async (req, res, fastify) => {
-  try {
-    const isValid = await valid(req, fastify.mongo, fastify.mongoObjectID)
-    if (!isValid.success) {
+    const ads = await ctx.db.getAdsByIds(campaign.ads)
+    if (!ads.every(ad => ad.approved)) {
       res.status(400)
-      return res.send(isValid)
+      return res.send({
+        success: false,
+        message: 'All ads in a campaign must be approved before activating'
+      })
     }
-    res.send(await activateAdCampaign(req.body, fastify))
+
+    await ctx.db.activateAdCampaign(id)
+    res.send({ success: true })
   } catch (e) {
-    console.error(e)
+    ctx.log.error(e)
     res.status(500)
     res.send()
   }
