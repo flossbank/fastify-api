@@ -44,9 +44,11 @@ Db.prototype.getAdsByIds = async function getAdsByIds (ids) {
 }
 
 Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserId) {
-  return this.db.collection('ads').find({
+  const ads = await this.db.collection('ads').find({
     advertiserId
-  }).toArray().map(({ _id: id, name, content, advertiserId, active, approved }) => ({
+  }).toArray()
+
+  return ads.map(({ _id: id, name, content, advertiserId, active, approved }) => ({
     id, name, content, advertiserId, active, approved
   }))
 }

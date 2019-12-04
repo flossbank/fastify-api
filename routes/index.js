@@ -1,3 +1,6 @@
+// Health
+const health = require('../api/health')
+
 // Ads
 const createAd = require('../api/ad/create')
 const createAdSchema = require('../schema/ad/create')
@@ -61,6 +64,9 @@ const completeSession = require('../api/session/complete')
 const completeSessionSchema = require('../schema/session/complete')
 
 async function routes (fastify, opts, next) {
+  // Health
+  fastify.get('/health', health)
+
   // Ads
   fastify.post('/ad/create', { schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
   fastify.get('/ad/get-all', { schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
