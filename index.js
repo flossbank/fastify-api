@@ -17,7 +17,7 @@ const { Registry } = require('./registry')
   try {
     await app.listen(8081)
   } catch (err) {
-    app.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })()
