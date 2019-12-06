@@ -218,8 +218,9 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
   if (!apiKey) return false
   const { seen } = req.body
 
+  let item
   try {
-    await docs.update({
+    const { Attributes } = await docs.update({
       TableName: ApiTableName,
       Key: { key: apiKey },
       UpdateExpression: 'SET totalAdsSeen = totalAdsSeen + :seenLen, adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
@@ -230,8 +231,10 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
       ExpressionAttributeValues: {
         ':seenLen': seen.length,
         ':key': apiKey
-      }
+      },
+      ReturnValues: 'ALL_OLD'
     }).promise()
+    item = Attributes
   } catch (e) {
     if (e.code === 'ConditionalCheckFailedException') {
       // this means an invalid API key was sent up
@@ -239,7 +242,7 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
     }
     throw e
   }
-  return true
+  return item
 }
 
 Auth.prototype.createMaintainerSession = async function createMaintainerSession (email) {

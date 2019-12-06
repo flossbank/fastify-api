@@ -87,7 +87,14 @@ module.exports = {
     this.authKinds = originalAuth.prototype.authKinds
     this.isAdSessionAllowed = sinon.stub().resolves(true)
     this.createAdSession = sinon.stub().resolves('random-session-id')
-    this.completeAdSession = sinon.stub().resolves(true)
+    this.completeAdSession = sinon.stub().resolves({
+      resetTime: 0,
+      email: 'pjs@sjp.com',
+      key: 'abc',
+      totalAdsSeen: 2,
+      adsSeenThisPeriod: 2,
+      timestamp: 1571253769601
+    })
     this.sendUserToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
     this.deleteAdvertiserSession = sinon.stub().resolves()

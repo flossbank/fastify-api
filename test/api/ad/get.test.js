@@ -49,6 +49,20 @@ test('POST `/ad/get` 200 success', async (t) => {
   })
 })
 
+test('POST `/ad/get` 200 success | no ads no session', async (t) => {
+  t.context.db.getAdBatch.resolves([])
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'npm', packages: ['yttrium-server@latest'] }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    ads: [],
+    sessionId: ''
+  })
+})
+
 test('POST `/ad/get` 200 success | existing session', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',

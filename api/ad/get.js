@@ -6,8 +6,8 @@ module.exports = async (req, res, ctx) => {
   }
   try {
     const ads = await ctx.db.getAdBatch()
-    let sessionId = null
-    if (ads) {
+    let sessionId = ''
+    if (ads.length) {
       sessionId = req.body.sessionId || await ctx.auth.createAdSession(req)
     }
     res.send({ ads, sessionId })
