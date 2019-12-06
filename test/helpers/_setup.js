@@ -1,21 +1,23 @@
-const { MongoDBServer } = require('mongomem')
+const { MongoMemoryServer } = require('mongodb-memory-server')
 const App = require('../../app')
 const { Db } = require('../../db')
 const mocks = require('./_mocks')
 
 exports.before = async function (t, insertData) {
-  await MongoDBServer.start()
+  const mongo = new MongoMemoryServer()
 
-  const db = new Db(await MongoDBServer.getConnectionString())
+  const db = new Db(await mongo.getConnectionString())
   await db.connect()
 
   await insertData(t, db)
 
   await db.client.close()
+
+  t.context.mongo = mongo
 }
 
 exports.beforeEach = async function (t) {
-  t.context.db = new Db(await MongoDBServer.getConnectionString())
+  t.context.db = new Db(await t.context.mongo.getConnectionString())
 
   await t.context.db.connect()
 
@@ -37,5 +39,5 @@ exports.afterEach = async function (t) {
 }
 
 exports.after = async function (t) {
-  MongoDBServer.tearDown()
+  t.context.mongo.stop()
 }
