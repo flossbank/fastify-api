@@ -1,6 +1,14 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const id = await ctx.db.createAd(req.body.ad)
+    const { ad } = req.body
+    const advertiser = await ctx.db.getAdvertiser(ad.advertiserId)
+
+    if (!advertiser || !advertiser.id) {
+      res.status(400)
+      return res.send()
+    }
+
+    const id = await ctx.db.createAd(ad)
     res.send({ success: true, id })
   } catch (e) {
     ctx.log.error(e)

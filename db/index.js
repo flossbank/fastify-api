@@ -26,6 +26,17 @@ Db.prototype.getDb = function getDb () {
 }
 
 /** Ads */
+Db.prototype.getAd = async function getAd (adId) {
+  const ad = await this.db.collection('ads').findOne({
+    _id: ObjectId(adId)
+  })
+
+  if (!ad) return ad
+
+  const { _id: id, ...rest } = ad
+  return { id, ...rest }
+}
+
 Db.prototype.getAdBatch = async function getAdBatch () {
   const ads = await this.db.collection('ads').find({
     active: true, approved: true
@@ -81,8 +92,12 @@ Db.prototype.updateAdvertiser = async function updateAdvertiser (id, advertiser)
 }
 
 Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
-  const { _id: id, ...rest } = await this.db.collection('advertisers')
+  const advertiser = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })
+
+  if (!advertiser) return advertiser
+
+  const { _id: id, ...rest } = advertiser
   delete rest.password
   return { id, ...rest }
 }
@@ -105,8 +120,15 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   return insertedId
 }
 
-Db.prototype.getAdCampaign = async function getAdCampaign (id) {
-  return this.db.collection('adCampaigns').findOne({ _id: ObjectId(id) })
+Db.prototype.getAdCampaign = async function getAdCampaign (campaignId) {
+  const campaign = await this.db.collection('adCampaigns').findOne({
+    _id: ObjectId(campaignId)
+  })
+
+  if (!campaign) return campaign
+
+  const { _id: id, ...rest } = campaign
+  return { id, ...rest }
 }
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign) {
@@ -139,15 +161,22 @@ Db.prototype.activateAdCampaign = async function activateAdCampaign (id) {
 }
 
 Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
-  return this.db.collection('packages').find({
+  const pkgs = await this.db.collection('packages').find({
     owner: maintainerId
-  }).toArray().map(({ _id: id, ...rest }) => ({ id, ...rest }))
+  }).toArray()
+
+  return pkgs.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
 Db.prototype.getPackage = async function getPackage (packageId) {
-  return this.db.collection('packages').findOne({
+  const pkg = await this.db.collection('packages').findOne({
     _id: ObjectId(packageId)
   })
+
+  if (!pkg) return pkg
+
+  const { _id: id, ...rest } = pkg
+  return { id, ...rest }
 }
 
 Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
@@ -255,8 +284,12 @@ Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer)
 }
 
 Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
-  const { _id: id, ...rest } = await this.db.collection('maintainers')
+  const maintainer = await this.db.collection('maintainers')
     .findOne({ _id: ObjectId(maintainerId) })
+
+  if (!maintainer) return maintainer
+
+  const { _id: id, ...rest } = maintainer
   delete rest.password
   return { id, ...rest }
 }

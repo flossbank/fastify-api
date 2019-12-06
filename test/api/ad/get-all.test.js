@@ -45,7 +45,7 @@ test.afterEach(async (t) => {
   await afterEach(t)
 })
 
-test.after.always('cleanup', async (t) => {
+test.after.always(async (t) => {
   await after(t)
 })
 
