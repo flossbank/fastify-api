@@ -8,10 +8,6 @@ module.exports = {
         type: 'object',
         properties: {
           organization: { type: 'string' },
-          adCampaigns: {
-            type: 'array',
-            items: { type: 'string' }
-          },
           billingInfo: { type: 'string' }
         }
       }
