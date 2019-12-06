@@ -10,7 +10,7 @@ test.afterEach(async (t) => {
 })
 
 test('POST `/session/complete` 401 unauthorized', async (t) => {
-  t.context.auth.isRequestAllowed.resolves(false)
+  t.context.auth.completeAdSession.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',

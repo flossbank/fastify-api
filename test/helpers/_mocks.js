@@ -85,12 +85,14 @@ module.exports = {
   },
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
-    this.isRequestAllowed = sinon.stub().resolves(true)
+    this.isAdSessionAllowed = sinon.stub().resolves(true)
     this.createAdSession = sinon.stub().resolves('random-session-id')
+    this.completeAdSession = sinon.stub().resolves(true)
     this.sendUserToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
     this.deleteAdvertiserSession = sinon.stub().resolves()
-    this.validateCaptcha = sinon.stub().resolves('api-key')
+    this.validateCaptcha = sinon.stub().resolves(true)
+    this.createApiKey = sinon.stub().resolves('api-key')
     this.validateUserToken = sinon.stub().resolves(true)
     this.createMaintainerSession = sinon.stub().resolves('maintainer-session')
     this.deleteMaintainerSession = sinon.stub().resolves()

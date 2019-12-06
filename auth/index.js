@@ -3,8 +3,8 @@ const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
-const ApiKeyCache = require('./cache')
 const config = require('../config')
+const { MAX_ADS_PER_PERIOD } = require('../helpers/constants')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -25,7 +25,6 @@ function Auth () {
 
   this.recaptchaSecret = config.getRecaptchaSecret()
   if (!this.recaptchaSecret) console.error('No reCAPTCHA secret found in env')
-  this.apiKeyCache = new ApiKeyCache()
 }
 
 // Kind of auth tokens enum
@@ -35,11 +34,11 @@ Auth.prototype.authKinds = {
   ADVERTISER: 'ADVERTISER'
 }
 
-Auth.prototype.isRequestAllowed = async function isRequestAllowed (req) {
+Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
   if (!req.headers || !req.headers.authorization) return false
   const token = req.headers.authorization.split(' ').pop()
 
-  return this.apiKeyCache.has(token) || this.validateApiKey(token)
+  return this.validateApiKey(token)
 }
 
 /**  */
@@ -151,14 +150,25 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
     return
   }
 
+  await this.deleteUserToken(email)
+
+  return true
+}
+
+Auth.prototype.createApiKey = async function createApiKey (email) {
   const key = crypto.randomBytes(32).toString('hex')
 
   await docs.put({
     TableName: ApiTableName,
-    Item: { key, email, timestamp: Date.now(), lastAccess: Date.now() }
+    Item: {
+      key,
+      email,
+      totalAdsSeen: 0,
+      adsSeenThisPeriod: 0,
+      resetTime: 0,
+      timestamp: Date.now()
+    }
   }).promise()
-
-  await this.deleteUserToken(email)
 
   return key
 }
@@ -177,14 +187,11 @@ Auth.prototype.validateApiKey = async function validateApiKey (key) {
     return false
   }
 
-  const valid = !!item
-  if (valid) {
-    this.apiKeyCache.add(key)
-  } else {
-    this.apiKeyCache.remove(key)
+  if (item.adsSeenThisPeriod >= MAX_ADS_PER_PERIOD) {
+    return false
   }
 
-  return valid
+  return true
 }
 
 Auth.prototype.createAdSession = async function createSession (req) {
@@ -203,6 +210,36 @@ Auth.prototype.createAdSession = async function createSession (req) {
     }
   }).promise()
   return sessionId
+}
+
+Auth.prototype.completeAdSession = async function completeAdSession (req) {
+  if (!req.headers || !req.headers.authorization) return false
+  const apiKey = req.headers.authorization.split(' ').pop()
+  if (!apiKey) return false
+  const { seen } = req.body
+
+  try {
+    await docs.update({
+      TableName: ApiTableName,
+      Key: { key: apiKey },
+      UpdateExpression: 'SET totalAdsSeen = totalAdsSeen + :seenLen, adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
+      ConditionExpression: '#key = :key',
+      ExpressionAttributeNames: {
+        '#key': 'key'
+      },
+      ExpressionAttributeValues: {
+        ':seenLen': seen.length,
+        ':key': apiKey
+      }
+    }).promise()
+  } catch (e) {
+    if (e.code === 'ConditionalCheckFailedException') {
+      // this means an invalid API key was sent up
+      return false
+    }
+    throw e
+  }
+  return true
 }
 
 Auth.prototype.createMaintainerSession = async function createMaintainerSession (email) {

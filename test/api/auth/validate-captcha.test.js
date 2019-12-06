@@ -48,7 +48,7 @@ test('POST `/auth/validate-captcha` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    apiKey: await t.context.auth.validateCaptcha()
+    apiKey: await t.context.auth.createApiKey()
   })
 })
 
