@@ -6,9 +6,10 @@ module.exports = {
       maintainerId: { type: 'string' },
       maintainer: {
         type: 'object',
-        required: ['payoutEmail'],
+        required: ['payoutInfo'],
         properties: {
-          payoutEmail: { type: 'string' }
+          payoutInfo: { type: 'string' },
+          npmToken: { type: 'string' }
         }
       }
     }

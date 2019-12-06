@@ -9,7 +9,10 @@ module.exports = {
         properties: {
           name: { type: 'string' },
           email: { type: 'string' },
-          password: { type: 'string' }
+          organization: { type: 'string' },
+          password: { type: 'string' },
+          verified: { type: 'boolean', default: false },
+          active: { type: 'boolean', default: true }
         }
       }
     }

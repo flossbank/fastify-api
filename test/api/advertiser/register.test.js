@@ -9,10 +9,30 @@ test.afterEach(async (t) => {
   await afterEach(t)
 })
 
-test('POST `/advertiser/create` 200 success', async (t) => {
-  const res = await t.context.app.inject({
+test('POST `/advertiser/register` 200 success', async (t) => {
+  let res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
+    payload: {
+      advertiser: {
+        name: 'advertiser',
+        email: 'advertiser@ads.com',
+        password: 'papi',
+        organization: 'fb'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    id: await t.context.db.createAdvertiser()
+  })
+
+  // Without organization
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/register',
     payload: {
       advertiser: {
         name: 'advertiser',
@@ -29,11 +49,11 @@ test('POST `/advertiser/create` 200 success', async (t) => {
   })
 })
 
-test('POST `/advertiser/create` 400 bad request', async (t) => {
+test('POST `/advertiser/register` 400 bad request', async (t) => {
   let res
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
     payload: {},
     headers: { authorization: 'valid-session-token' }
   })
@@ -41,7 +61,7 @@ test('POST `/advertiser/create` 400 bad request', async (t) => {
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
     payload: { advertiser: {} },
     headers: { authorization: 'valid-session-token' }
   })
@@ -49,7 +69,7 @@ test('POST `/advertiser/create` 400 bad request', async (t) => {
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
     payload: { advertiser: { name: 'name' } },
     headers: { authorization: 'valid-session-token' }
   })
@@ -57,7 +77,7 @@ test('POST `/advertiser/create` 400 bad request', async (t) => {
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
     payload: { advertiser: { name: 'name', email: 'email' } },
     headers: { authorization: 'valid-session-token' }
   })
@@ -65,20 +85,24 @@ test('POST `/advertiser/create` 400 bad request', async (t) => {
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
-    payload: { advertiser: { email: 'email', password: 'email' } },
+    url: '/advertiser/register',
+    payload: { advertiser: { email: 'email', password: 'pwd' } },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/advertiser/create` 500 server error', async (t) => {
+test('POST `/advertiser/register` 500 server error', async (t) => {
   t.context.db.createAdvertiser.throws()
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/create',
+    url: '/advertiser/register',
     payload: {
-      advertiser: { name: 'name', email: 'email', password: 'pwd' }
+      advertiser: {
+        name: 'advertiser',
+        email: 'advertiser@ads.com',
+        password: 'papi'
+      }
     },
     headers: { authorization: 'valid-session-token' }
   })

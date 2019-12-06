@@ -80,6 +80,14 @@ Db.prototype.updateAdvertiser = async function updateAdvertiser (id, advertiser)
   })
 }
 
+Db.prototype.verifyAdvertiser = async function verifyAdvertiser (email) {
+  return this.db.collection('advertisers').updateOne({
+    email
+  }, {
+    $set: { verified: true }
+  })
+}
+
 Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   const { _id: id, ...rest } = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })

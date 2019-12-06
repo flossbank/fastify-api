@@ -9,7 +9,11 @@ module.exports = {
         properties: {
           name: { type: 'string' },
           email: { type: 'string' },
-          password: { type: 'string' }
+          password: { type: 'string' },
+          npmToken: { type: 'string' },
+          payoutInfo: { type: 'string' },
+          verified: { type: 'boolean', default: false },
+          active: { type: 'boolean', default: true }
         }
       }
     }
