@@ -5,6 +5,7 @@ module.exports = async (req, res, ctx) => {
 
     const ads = await ctx.db.getAdsByIds(req.body.adCampaign.ads)
     if (!ads.every(ad => ad.advertiserId === req.body.adCampaign.advertiserId)) {
+      // TODO use the advertiser id from session, not body
       res.status(400)
       return res.send()
     }
