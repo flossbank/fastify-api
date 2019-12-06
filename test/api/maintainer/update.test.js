@@ -1,5 +1,9 @@
 const test = require('ava')
-const { beforeEach, afterEach } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+
+test.before(async (t) => {
+  await before(t, () => {})
+})
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
@@ -9,12 +13,22 @@ test.afterEach(async (t) => {
   await afterEach(t)
 })
 
+test.after.always(async (t) => {
+  await after(t)
+})
+
 test.failing('POST `/maintainer/update` 401 unauthorized', async (t) => {
+  const maintainerId = (await t.context.db.createMaintainer({
+    name: 'Honesty',
+    email: 'honey1@etsy.com',
+    password: 'beekeeperbookkeeper'
+  })).toHexString()
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/update',
     payload: {
-      maintainerId: 'test-maintainer-0',
+      maintainerId,
       maintainer: {
         payoutEmail: 'help@quo.cc'
       }
@@ -25,11 +39,17 @@ test.failing('POST `/maintainer/update` 401 unauthorized', async (t) => {
 })
 
 test('POST `/maintainer/update` 200 success', async (t) => {
+  const maintainerId = (await t.context.db.createMaintainer({
+    name: 'Honesty',
+    email: 'honey2@etsy.com',
+    password: 'beekeeperbookkeeper'
+  })).toHexString()
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/update',
     payload: {
-      maintainerId: 'test-maintainer-0',
+      maintainerId,
       maintainer: {
         payoutEmail: 'help@quo.cc'
       }
@@ -38,6 +58,9 @@ test('POST `/maintainer/update` 200 success', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
+
+  const maintainer = await t.context.db.getMaintainer(maintainerId)
+  t.deepEqual(maintainer.payoutEmail, 'help@quo.cc')
 })
 
 test('POST `/maintainer/update` 400 bad request', async (t) => {
@@ -68,7 +91,7 @@ test('POST `/maintainer/update` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/update` 500 server error', async (t) => {
-  t.context.db.updateMaintainer.throws()
+  t.context.db.updateMaintainer = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/update',
