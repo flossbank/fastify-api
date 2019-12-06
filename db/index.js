@@ -168,6 +168,11 @@ Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
   return pkgs.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
+Db.prototype.createPackage = async function createPackage (pkg) {
+  const { insertedId } = await this.db.collection('packages').insertOne(pkg)
+  return insertedId
+}
+
 Db.prototype.getPackage = async function getPackage (packageId) {
   const pkg = await this.db.collection('packages').findOne({
     _id: ObjectId(packageId)
@@ -242,7 +247,7 @@ Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (p
 }
 
 Db.prototype.getRevenue = async function getRevenue (maintainerId) {
-  const packages = this.db.collection('packages').find({
+  const packages = await this.db.collection('packages').find({
     maintainers: { $elemMatch: { maintainerId } }
   }).toArray()
   return packages.reduce((totalRevenue, pkg) => {
