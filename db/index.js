@@ -3,10 +3,10 @@ const { MongoClient, ObjectId } = require('mongodb')
 const bcrypt = require('bcrypt')
 const config = require('../config')
 
-function Db () {
-  const url = config.getMongoUri()
-  if (!url) throw new Error('no mongo uri in environment')
-  this.mongoClient = new MongoClient(url, {
+function Db (url) {
+  const _url = url || config.getMongoUri()
+  if (!_url) throw new Error('no mongo uri in environment')
+  this.mongoClient = new MongoClient(_url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
