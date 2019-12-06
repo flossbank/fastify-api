@@ -105,8 +105,14 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   return insertedId
 }
 
-Db.prototype.getAdCampaign = async function getAdCampaign (id) {
-  return this.db.collection('adCampaigns').findOne({ _id: ObjectId(id) })
+Db.prototype.getAdCampaign = async function getAdCampaign (campaignId) {
+  const { _id: id, ...rest } = this.db.collection('adCampaigns').findOne({ _id: ObjectId(campaignId) })
+  return { id, ...rest }
+}
+
+Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaign (advertiserId) {
+  const adCampaigns = this.db.collection('adCampaigns').find({ advertiserId: advertiserId }).toArray()
+  return adCampaigns.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign) {
