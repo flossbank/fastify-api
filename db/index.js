@@ -110,8 +110,8 @@ Db.prototype.getAdCampaign = async function getAdCampaign (campaignId) {
   return { id, ...rest }
 }
 
-Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaign (advertiserId) {
-  const adCampaigns = this.db.collection('adCampaigns').find({ advertiserId: advertiserId }).toArray()
+Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
+  const adCampaigns = this.db.collection('adCampaigns').find({ advertiserId }).toArray()
   return adCampaigns.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 

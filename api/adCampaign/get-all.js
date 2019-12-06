@@ -6,6 +6,7 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
     res.send({
+      success: true,
       adCampaigns: await ctx.db.getAdCampaignsForAdvertiser(req.query.advertiserId)
     })
   } catch (e) {

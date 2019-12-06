@@ -1,9 +1,8 @@
 module.exports = {
   querystring: {
     type: 'object',
-    required: ['advertiserId', 'adCampaignId'],
+    required: ['adCampaignId'],
     properties: {
-      advertiserId: { type: 'string' },
       adCampaignId: { type: 'string' }
     }
   },
