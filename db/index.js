@@ -205,7 +205,10 @@ Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (p
     .filter(pkg => !packages.includes(pkg.name))
     .map(pkg => ({
       criteria: { name: pkg.name, registry },
-      update: { $set: { owner: undefined } }
+      update: {
+        $set: { owner: null },
+        $pull: { maintainers: { maintainerId } }
+      }
     }))
   const packageInsertions = packages
     .filter(pkg => !existingPackages.some((ePkg) => ePkg.name === pkg))
