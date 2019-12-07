@@ -123,6 +123,11 @@ Db.prototype.getAdCampaign = async function getAdCampaign (campaignId) {
   return { id, ...rest }
 }
 
+Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
+  const adCampaigns = await this.db.collection('adCampaigns').find({ advertiserId }).toArray()
+  return adCampaigns.map(({ _id: id, ...rest }) => ({ id, ...rest }))
+}
+
 Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign) {
   return this.db.collection('adCampaigns').updateOne({
     _id: ObjectId(id)
