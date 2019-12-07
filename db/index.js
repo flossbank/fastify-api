@@ -188,7 +188,7 @@ Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
   return this.db.collection('packages').updateOne({
     _id: ObjectId(packageId)
   }, {
-    $set: { package: pkg }
+    $set: pkg
   })
 }
 

@@ -15,7 +15,12 @@ module.exports = {
               required: ['maintainerId'],
               properties: {
                 maintainerId: { type: 'string' },
-                revenuePercent: { type: 'number', default: 0 }
+                revenuePercent: {
+                  type: 'number',
+                  default: 0,
+                  minimum: 0,
+                  maximum: 100
+                }
               }
             }
           },
