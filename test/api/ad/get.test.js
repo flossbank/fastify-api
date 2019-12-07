@@ -10,7 +10,7 @@ test.afterEach(async (t) => {
 })
 
 test('POST `/ad/get` 401 unauthorized', async (t) => {
-  t.context.auth.isRequestAllowed.resolves(false)
+  t.context.auth.isAdSessionAllowed.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/get',
@@ -46,6 +46,20 @@ test('POST `/ad/get` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), {
     ads: await t.context.db.getAdBatch(),
     sessionId: await t.context.auth.createAdSession()
+  })
+})
+
+test('POST `/ad/get` 200 success | no ads no session', async (t) => {
+  t.context.db.getAdBatch.resolves([])
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/get',
+    payload: { packageManager: 'npm', packages: ['yttrium-server@latest'] }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    ads: [],
+    sessionId: ''
   })
 })
 

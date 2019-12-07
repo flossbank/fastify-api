@@ -10,6 +10,7 @@ module.exports = {
     200: {
       type: 'object',
       properties: {
+        success: { type: 'boolean' },
         adCampaigns: {
           type: 'array',
           items: {

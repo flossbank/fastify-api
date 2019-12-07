@@ -38,6 +38,7 @@ test('GET `/ad-campaign/get-all` 200 success', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
+    success: true,
     adCampaigns: await t.context.db.getAdCampaignsForAdvertiser()
   })
 })

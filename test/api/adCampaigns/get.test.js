@@ -14,7 +14,6 @@ test.failing('GET `/ad-campaign/get` 401 unauthorized', async (t) => {
     method: 'GET',
     url: '/ad-campaign/get',
     query: {
-      advertiserId: 'test-advertiser-0',
       adCampaignId: 'test-ad-campaign-0'
     },
     headers: { authorization: 'not a valid token' }
@@ -27,7 +26,6 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
     method: 'GET',
     url: '/ad-campaign/get',
     query: {
-      advertiserId: 'test-advertiser-0',
       adCampaignId: 'test-ad-campaign-0'
     },
     headers: { authorization: 'valid-session-token' }
@@ -39,25 +37,12 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
   })
 })
 
-test('GET `/ad-campaign/get` 400 bad request | no advertiser id', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/ad-campaign/get',
-    query: {
-      adCampaignId: 'test-ad-campaign-0'
-    },
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-})
-
 test('GET `/ad-campaign/get` 500 server error campaign get threw', async (t) => {
   t.context.db.getAdCampaign.throws()
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get',
     query: {
-      advertiserId: 'test-advertiser-0',
       adCampaignId: 'test-ad-campaign-0'
     },
     headers: { authorization: 'valid-session-token' }
