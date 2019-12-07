@@ -17,14 +17,6 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.getClient = function getClient () {
-  return this.client
-}
-
-Db.prototype.getDb = function getDb () {
-  return this.db
-}
-
 /** Ads */
 Db.prototype.getAd = async function getAd (adId) {
   const ad = await this.db.collection('ads').findOne({
@@ -176,6 +168,17 @@ Db.prototype.createPackage = async function createPackage (pkg) {
 Db.prototype.getPackage = async function getPackage (packageId) {
   const pkg = await this.db.collection('packages').findOne({
     _id: ObjectId(packageId)
+  })
+
+  if (!pkg) return pkg
+
+  const { _id: id, ...rest } = pkg
+  return { id, ...rest }
+}
+
+Db.prototype.getPackageByName = async function getPackageByName (name, registry) {
+  const pkg = await this.db.collection('packages').findOne({
+    name, registry
   })
 
   if (!pkg) return pkg

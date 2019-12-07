@@ -136,6 +136,7 @@ test.failing('POST `/package/refresh` 401 unauthorized', async (t) => {
 
 test('POST `/package/refresh` 200 success', async (t) => {
   t.context.registry.npm.getOwnedPackages.resolves([
+    'caesar', // a new pkg
     'yttrium-server', // remains the same
     'js-deep-equals', // new ownership, already maintaining
     // 'sodium-native' is not here
@@ -153,18 +154,23 @@ test('POST `/package/refresh` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
+  const caesar = await t.context.db.getPackageByName('caesar', 'npm')
   const yttrium = await t.context.db.getPackage(t.context.yttriumId)
   const jsDeepEquals = await t.context.db.getPackage(t.context.jsDeepEquals)
   const sodium = await t.context.db.getPackage(t.context.sodium)
   const chive = await t.context.db.getPackage(t.context.chive)
 
   // ownership
+  t.deepEqual(caesar.owner, t.context.maintainerId1)
   t.deepEqual(yttrium.owner, t.context.maintainerId1)
   t.deepEqual(jsDeepEquals.owner, t.context.maintainerId1)
   t.deepEqual(sodium.owner, null)
   t.deepEqual(chive.owner, t.context.maintainerId1)
 
   // maintainers
+  t.deepEqual(caesar.maintainers, [
+    { maintainerId: t.context.maintainerId1, revenuePercent: 100 }
+  ])
   t.deepEqual(yttrium.maintainers, [
     { maintainerId: t.context.maintainerId1, revenuePercent: 100 }
   ])
