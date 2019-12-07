@@ -42,11 +42,25 @@ module.exports = {
       advertiserId: 'test-advertiser-0',
       ads: ['test-ad-0'],
       name: 'camp pain',
+      spend: 100,
       maxSpend: 1000,
       cpm: 100,
       startDate: 0,
       endDate: 100
     })
+    this.getAdCampaignsForAdvertiser = sinon.stub().resolves([
+      {
+        id: 'test-ad-campaign-0',
+        advertiserId: 'test-advertiser-0',
+        ads: ['test-ad-0'],
+        name: 'camp pain',
+        spend: 100,
+        maxSpend: 1000,
+        cpm: 100,
+        startDate: 0,
+        endDate: 100
+      }
+    ])
     this.createAdCampaign = sinon.stub().resolves('test-ad-campaign-0')
     this.updateAdCampaign = sinon.stub().resolves()
     this.activateAdCampaign = sinon.stub().resolves()
