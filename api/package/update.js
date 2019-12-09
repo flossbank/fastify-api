@@ -4,7 +4,7 @@ module.exports = async (req, res, ctx) => {
     // Fetch package to check if maintainer making request is the owner
     const pkg = await ctx.db.getPackage(req.body.packageId)
     // TODO: if maintainer id from session isn't owner of pkg, throw
-    if (!pkg.id) {
+    if (!pkg || !pkg.id) {
       res.status(400)
       return res.send()
     }

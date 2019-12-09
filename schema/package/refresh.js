@@ -1,6 +1,7 @@
 module.exports = {
   body: {
     type: 'object',
+    required: ['maintainerId', 'packageRegistry'],
     properties: {
       maintainerId: { type: 'string' },
       packageRegistry: {

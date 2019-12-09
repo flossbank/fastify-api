@@ -3,10 +3,10 @@ const { MongoClient, ObjectId } = require('mongodb')
 const bcrypt = require('bcrypt')
 const config = require('../config')
 
-function Db () {
-  const url = config.getMongoUri()
-  if (!url) throw new Error('no mongo uri in environment')
-  this.mongoClient = new MongoClient(url, {
+function Db (url) {
+  const _url = url || config.getMongoUri()
+  if (!_url) throw new Error('no mongo uri in environment')
+  this.mongoClient = new MongoClient(_url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -17,15 +17,18 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.getClient = function getClient () {
-  return this.client
-}
-
-Db.prototype.getDb = function getDb () {
-  return this.db
-}
-
 /** Ads */
+Db.prototype.getAd = async function getAd (adId) {
+  const ad = await this.db.collection('ads').findOne({
+    _id: ObjectId(adId)
+  })
+
+  if (!ad) return ad
+
+  const { _id: id, ...rest } = ad
+  return { id, ...rest }
+}
+
 Db.prototype.getAdBatch = async function getAdBatch () {
   const ads = await this.db.collection('ads').find({
     active: true, approved: true
@@ -89,8 +92,12 @@ Db.prototype.verifyAdvertiser = async function verifyAdvertiser (email) {
 }
 
 Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
-  const { _id: id, ...rest } = await this.db.collection('advertisers')
+  const advertiser = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })
+
+  if (!advertiser) return advertiser
+
+  const { _id: id, ...rest } = advertiser
   delete rest.password
   return { id, ...rest }
 }
@@ -114,12 +121,18 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
 }
 
 Db.prototype.getAdCampaign = async function getAdCampaign (campaignId) {
-  const { _id: id, ...rest } = this.db.collection('adCampaigns').findOne({ _id: ObjectId(campaignId) })
+  const campaign = await this.db.collection('adCampaigns').findOne({
+    _id: ObjectId(campaignId)
+  })
+
+  if (!campaign) return campaign
+
+  const { _id: id, ...rest } = campaign
   return { id, ...rest }
 }
 
 Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
-  const adCampaigns = this.db.collection('adCampaigns').find({ advertiserId }).toArray()
+  const adCampaigns = await this.db.collection('adCampaigns').find({ advertiserId }).toArray()
   return adCampaigns.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
@@ -153,22 +166,45 @@ Db.prototype.activateAdCampaign = async function activateAdCampaign (id) {
 }
 
 Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
-  return this.db.collection('packages').find({
+  const pkgs = await this.db.collection('packages').find({
     owner: maintainerId
-  }).toArray().map(({ _id: id, ...rest }) => ({ id, ...rest }))
+  }).toArray()
+
+  return pkgs.map(({ _id: id, ...rest }) => ({ id, ...rest }))
+}
+
+Db.prototype.createPackage = async function createPackage (pkg) {
+  const { insertedId } = await this.db.collection('packages').insertOne(pkg)
+  return insertedId
 }
 
 Db.prototype.getPackage = async function getPackage (packageId) {
-  return this.db.collection('packages').findOne({
+  const pkg = await this.db.collection('packages').findOne({
     _id: ObjectId(packageId)
   })
+
+  if (!pkg) return pkg
+
+  const { _id: id, ...rest } = pkg
+  return { id, ...rest }
+}
+
+Db.prototype.getPackageByName = async function getPackageByName (name, registry) {
+  const pkg = await this.db.collection('packages').findOne({
+    name, registry
+  })
+
+  if (!pkg) return pkg
+
+  const { _id: id, ...rest } = pkg
+  return { id, ...rest }
 }
 
 Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
   return this.db.collection('packages').updateOne({
     _id: ObjectId(packageId)
   }, {
-    $set: { package: pkg }
+    $set: pkg
   })
 }
 
@@ -185,7 +221,10 @@ Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (p
     .filter(pkg => !packages.includes(pkg.name))
     .map(pkg => ({
       criteria: { name: pkg.name, registry },
-      update: { $set: { owner: undefined } }
+      update: {
+        $set: { owner: null },
+        $pull: { maintainers: { maintainerId } }
+      }
     }))
   const packageInsertions = packages
     .filter(pkg => !existingPackages.some((ePkg) => ePkg.name === pkg))
@@ -227,7 +266,7 @@ Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (p
 }
 
 Db.prototype.getRevenue = async function getRevenue (maintainerId) {
-  const packages = this.db.collection('packages').find({
+  const packages = await this.db.collection('packages').find({
     maintainers: { $elemMatch: { maintainerId } }
   }).toArray()
   return packages.reduce((totalRevenue, pkg) => {
@@ -269,8 +308,12 @@ Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer)
 }
 
 Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
-  const { _id: id, ...rest } = await this.db.collection('maintainers')
+  const maintainer = await this.db.collection('maintainers')
     .findOne({ _id: ObjectId(maintainerId) })
+
+  if (!maintainer) return maintainer
+
+  const { _id: id, ...rest } = maintainer
   delete rest.password
   return { id, ...rest }
 }
