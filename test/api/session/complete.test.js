@@ -1,6 +1,10 @@
 const test = require('ava')
-const { beforeEach, afterEach } = require('../../helpers/_setup')
 const { MAX_ADS_PER_PERIOD } = require('../../../helpers/constants')
+const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+
+test.before(async (t) => {
+  await before(t, () => {})
+})
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
@@ -8,6 +12,10 @@ test.beforeEach(async (t) => {
 
 test.afterEach(async (t) => {
   await afterEach(t)
+})
+
+test.after(async (t) => {
+  await after(t)
 })
 
 test('POST `/session/complete` 401 unauthorized', async (t) => {

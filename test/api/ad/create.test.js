@@ -1,5 +1,16 @@
 const test = require('ava')
-const { beforeEach, afterEach } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+
+test.before(async (t) => {
+  await before(t, async (t, db) => {
+    const advertiserId1 = await db.createAdvertiser({
+      name: 'Honesty',
+      email: 'honey@etsy.com',
+      password: 'beekeeperbookkeeper'
+    })
+    t.context.advertiserId1 = advertiserId1.toHexString()
+  })
+})
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
@@ -9,6 +20,10 @@ test.afterEach(async (t) => {
   await afterEach(t)
 })
 
+test.after.always(async (t) => {
+  await after(t)
+})
+
 test.failing('POST `/ad/create` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
@@ -16,7 +31,7 @@ test.failing('POST `/ad/create` 401 unauthorized', async (t) => {
     payload: {
       ad: {
         name: 'ad',
-        advertiserId: 'advertiser-id',
+        advertiserId: t.context.advertiserId1,
         content: { body: 'abc', title: 'abc', url: 'abc' }
       }
     },
@@ -32,17 +47,20 @@ test('POST `/ad/create` 200 success', async (t) => {
     payload: {
       ad: {
         name: 'ad',
-        advertiserId: 'advertiser-id',
+        advertiserId: t.context.advertiserId1,
         content: { body: 'abc', title: 'abc', url: 'abc' }
       }
     },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), {
-    success: true,
-    id: await t.context.db.createAd()
-  })
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, true)
+  const { id } = payload
+
+  const ad = await t.context.db.getAd(id)
+  t.deepEqual(ad.advertiserId, t.context.advertiserId1)
 })
 
 test('POST `/ad/create` 400 bad request', async (t) => {
@@ -121,8 +139,24 @@ test('POST `/ad/create` 400 bad request', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
+test('POST `/ad/create` 400 bad request | invalid advertiser id', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad/create',
+    payload: {
+      ad: {
+        name: 'ad',
+        advertiserId: '000000000000',
+        content: { body: 'abc', title: 'abc', url: 'abc' }
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+})
+
 test('POST `/ad/create` 500 server error', async (t) => {
-  t.context.db.createAd.throws()
+  t.context.db.getAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/create',

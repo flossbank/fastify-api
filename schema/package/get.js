@@ -18,7 +18,13 @@ module.exports = {
               registry: { type: 'string' },
               maintainers: {
                 type: 'array',
-                items: { type: 'string' }
+                items: {
+                  type: 'object',
+                  properties: {
+                    maintainerId: { type: 'string' },
+                    revenuePercent: { type: 'number' }
+                  }
+                }
               },
               owner: { type: 'string' },
               name: { type: 'string' },

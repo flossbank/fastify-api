@@ -1,5 +1,16 @@
 const test = require('ava')
-const { beforeEach, afterEach } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+
+test.before(async (t) => {
+  await before(t, async (t, db) => {
+    const advertiserId1 = await db.createAdvertiser({
+      name: 'Honesty',
+      email: 'honey@etsy.com',
+      password: 'beekeeperbookkeeper'
+    })
+    t.context.advertiserId1 = advertiserId1.toHexString()
+  })
+})
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
@@ -9,16 +20,20 @@ test.afterEach(async (t) => {
   await afterEach(t)
 })
 
+test.after.always(async (t) => {
+  await after(t)
+})
+
 test.failing('POST `/ad-campaign/create` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       maxSpend: 1000,
       cpm: 100,
-      name: 'camp pain'
+      name: 'camp pain 1'
     },
     headers: { authorization: 'not a valid token' }
   })
@@ -30,32 +45,34 @@ test('POST `/ad-campaign/create` 200 success', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       maxSpend: 1000,
       cpm: 100,
-      name: 'camp pain'
+      name: 'camp pain 2'
     },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), {
-    success: true,
-    id: await t.context.db.createAdCampaign()
-  })
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, true)
+  const { id } = payload
+
+  const campaign = await t.context.db.getAdCampaign(id)
+  t.deepEqual(campaign.advertiserId, t.context.advertiserId1)
 })
 
 test('POST `/ad-campaign/create` 400 bad request | no advertiser', async (t) => {
-  t.context.db.getAdvertiser.resolves() // no advertiser
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: '000000000000',
       ads: [],
       maxSpend: 1000,
       cpm: 100,
-      name: 'camp pain'
+      name: 'camp pain 3'
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -139,7 +156,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
 })
 
 test('POST `/ad-campaign/create` 500 server error', async (t) => {
-  t.context.db.createAdCampaign.throws()
+  t.context.db.createAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
