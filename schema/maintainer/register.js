@@ -10,9 +10,13 @@ module.exports = {
           name: { type: 'string' },
           email: { type: 'string' },
           password: { type: 'string' },
-          npmToken: { type: 'string' },
+          tokens: {
+            type: 'object',
+            properties: {
+              npm: { type: 'string' }
+            }
+          },
           payoutInfo: { type: 'string' },
-          verified: { type: 'boolean', default: false },
           active: { type: 'boolean', default: true }
         }
       }

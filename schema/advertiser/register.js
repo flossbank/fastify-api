@@ -11,7 +11,6 @@ module.exports = {
           email: { type: 'string' },
           organization: { type: 'string' },
           password: { type: 'string' },
-          verified: { type: 'boolean', default: false },
           active: { type: 'boolean', default: true }
         }
       }

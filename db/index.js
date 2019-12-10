@@ -70,6 +70,8 @@ Db.prototype.updateAd = async function updateAd (id, ad) {
 }
 
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
+  advertiser.adCampaigns = []
+  advertiser.verified = false
   advertiser.password = await bcrypt.hash(advertiser.password, 10)
   const { insertedId } = await this.db.collection('advertisers').insertOne(advertiser)
   return insertedId

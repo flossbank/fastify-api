@@ -60,7 +60,7 @@ test('POST `/maintainer/update` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   const maintainer = await t.context.db.getMaintainer(maintainerId)
-  t.deepEqual(maintainer.payoutEmail, 'help@quo.cc')
+  t.deepEqual(maintainer.payoutInfo, 'help@quo.cc')
 })
 
 test('POST `/maintainer/update` 400 bad request', async (t) => {

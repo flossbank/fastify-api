@@ -1,5 +1,9 @@
 const test = require('ava')
-const { beforeEach, afterEach } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+
+test.before(async (t) => {
+  await before(t, () => {})
+})
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
@@ -7,6 +11,10 @@ test.beforeEach(async (t) => {
 
 test.afterEach(async (t) => {
   await afterEach(t)
+})
+
+test.after(async (t) => {
+  await after(t)
 })
 
 test('POST `/advertiser/verify` 401 unauthorized', async (t) => {
@@ -53,7 +61,7 @@ test('POST `/advertiser/verify` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/verify` 500 server error', async (t) => {
-  t.context.db.verifyAdvertiser.throws()
+  t.context.db.verifyAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/verify',
