@@ -70,10 +70,13 @@ Db.prototype.updateAd = async function updateAd (id, ad) {
 }
 
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
-  advertiser.adCampaigns = []
-  advertiser.verified = false
-  advertiser.password = await bcrypt.hash(advertiser.password, 10)
-  const { insertedId } = await this.db.collection('advertisers').insertOne(advertiser)
+  const advertiserWithDefaults = Object.assign({}, advertiser, {
+    adCampaigns: [],
+    verified: false,
+    active: true,
+    password: await bcrypt.hash(advertiser.password, 10)
+  })
+  const { insertedId } = await this.db.collection('advertisers').insertOne(advertiserWithDefaults)
   return insertedId
 }
 
@@ -278,9 +281,12 @@ Db.prototype.getRevenue = async function getRevenue (maintainerId) {
 }
 
 Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
-  maintainer.password = await bcrypt.hash(maintainer.password, 10)
-  maintainer.verified = false
-  const { insertedId } = await this.db.collection('maintainers').insertOne(maintainer)
+  const maintainerWithDefaults = Object.assign({}, maintainer, {
+    verified: false,
+    active: true,
+    password: await bcrypt.hash(maintainer.password, 10)
+  })
+  const { insertedId } = await this.db.collection('maintainers').insertOne(maintainerWithDefaults)
   return insertedId
 }
 

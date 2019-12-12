@@ -9,7 +9,12 @@ module.exports = {
         required: ['payoutInfo'],
         properties: {
           payoutInfo: { type: 'string' },
-          npmToken: { type: 'string' }
+          tokens: {
+            type: 'object',
+            properties: {
+              npm: { type: 'string' }
+            }
+          }
         }
       }
     }

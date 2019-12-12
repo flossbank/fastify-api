@@ -18,23 +18,36 @@ test.after(async (t) => {
 })
 
 test('POST `/advertiser/verify` 401 unauthorized', async (t) => {
+  await t.context.db.createAdvertiser({
+    name: 'Honesty',
+    email: 'honey1@etsy.com',
+    password: 'beekeeperbookkeeper'
+  })
   t.context.auth.validateUserToken.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/verify',
-    body: { email: 'email', token: 'token' }
+    body: { email: 'honey1@etsy.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('POST `/advertiser/verify` 200 success', async (t) => {
+  const advertiserId = (await t.context.db.createAdvertiser({
+    name: 'Honesty',
+    email: 'honey2@etsy.com',
+    password: 'beekeeperbookkeeper'
+  })).toHexString()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/verify',
-    body: { email: 'email', token: 'token' }
+    body: { email: 'honey2@etsy.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
+
+  const advertiser = await t.context.db.getAdvertiser(advertiserId)
+  t.true(advertiser.verified)
 })
 
 test('POST `/advertiser/verify` 400 bad request', async (t) => {

@@ -10,8 +10,7 @@ module.exports = {
           name: { type: 'string' },
           email: { type: 'string' },
           organization: { type: 'string' },
-          password: { type: 'string' },
-          active: { type: 'boolean', default: true }
+          password: { type: 'string' }
         }
       }
     }
