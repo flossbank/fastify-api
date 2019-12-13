@@ -16,8 +16,7 @@ module.exports = {
               npm: { type: 'string' }
             }
           },
-          payoutInfo: { type: 'string' },
-          active: { type: 'boolean', default: true }
+          payoutInfo: { type: 'string' }
         }
       }
     }
