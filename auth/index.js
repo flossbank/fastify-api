@@ -41,6 +41,45 @@ Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
   return this.validateApiKey(token)
 }
 
+Auth.prototype.isUIRequestAllowed = async function isUIRequestAllowed (req, kind) {
+  if (!req.headers || !req.headers.authorization) return false
+  const token = req.headers.authorization.split(' ').pop()
+
+  if (!token) return false
+
+  let item
+  // Validate based on the type of session being auth'd
+  try {
+    switch (this.authKinds[kind]) {
+      case (this.authKinds.MAINTAINER):
+          const { Item } = await docs.get({
+            TableName: MaintainerSessionTableName,
+            Key: { key }
+          }).promise()
+          item = Item
+        break
+      case (this.authKinds.ADVERTISER):
+          const { Item } = await docs.get({
+            TableName: AdvertiserSessionTableName,
+            Key: { key }
+          }).promise()
+          item = Item
+        break
+      default:
+        console.error('Attempting to validate invalid session kind')
+        return false
+    }
+  } catch (_) {
+    return false
+  }
+
+  if (item.expires > Date.now()) {
+    return false
+  }
+
+  return true
+}
+
 /**  */
 Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   if (!email) throw new Error('email is required')
