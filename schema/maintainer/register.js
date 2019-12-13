@@ -9,7 +9,14 @@ module.exports = {
         properties: {
           name: { type: 'string' },
           email: { type: 'string' },
-          password: { type: 'string' }
+          password: { type: 'string' },
+          tokens: {
+            type: 'object',
+            properties: {
+              npm: { type: 'string' }
+            }
+          },
+          payoutInfo: { type: 'string' }
         }
       }
     }

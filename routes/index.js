@@ -24,8 +24,8 @@ const getAdCampaigns = require('../api/adCampaign/get-all')
 const getAdCampaignsSchema = require('../schema/adCampaign/get-all')
 
 // Advertiser
-const createAdvertiser = require('../api/advertiser/create')
-const createAdvertiserSchema = require('../schema/advertiser/create')
+const registerAdvertiser = require('../api/advertiser/register')
+const registerAdvertiserSchema = require('../schema/advertiser/register')
 const getAdvertiser = require('../api/advertiser/get')
 const getAdvertiserSchema = require('../schema/advertiser/get')
 const loginAdvertiser = require('../api/advertiser/login')
@@ -33,6 +33,8 @@ const loginAdvertiserSchema = require('../schema/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
 const updateAdvertiser = require('../api/advertiser/update')
 const updateAdvertiserSchema = require('../schema/advertiser/update')
+const verifyAdvertiser = require('../api/advertiser/verify')
+const verifyAdvertiserSchema = require('../schema/advertiser/verify')
 
 // Auth
 const sendAuth = require('../api/auth/send')
@@ -85,11 +87,12 @@ async function routes (fastify, opts, next) {
   fastify.get('/ad-campaign/get-all', { schema: getAdCampaignsSchema }, (req, res) => getAdCampaigns(req, res, fastify))
 
   // Advertiser
-  fastify.post('/advertiser/create', { schema: createAdvertiserSchema }, (req, res) => createAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/register', { schema: registerAdvertiserSchema }, (req, res) => registerAdvertiser(req, res, fastify))
   fastify.get('/advertiser/get', { schema: getAdvertiserSchema }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: loginAdvertiserSchema }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
   fastify.post('/advertiser/update', { schema: updateAdvertiserSchema }, (req, res) => updateAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/verify', { schema: verifyAdvertiserSchema }, (req, res) => verifyAdvertiser(req, res, fastify))
 
   // Auth
   fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))

@@ -30,7 +30,7 @@ test.failing('POST `/maintainer/update` 401 unauthorized', async (t) => {
     payload: {
       maintainerId,
       maintainer: {
-        payoutEmail: 'help@quo.cc'
+        payoutInfo: 'help@quo.cc'
       }
     },
     headers: { authorization: 'not a valid token' }
@@ -51,7 +51,7 @@ test('POST `/maintainer/update` 200 success', async (t) => {
     payload: {
       maintainerId,
       maintainer: {
-        payoutEmail: 'help@quo.cc'
+        payoutInfo: 'help@quo.cc'
       }
     },
     headers: { authorization: 'valid-session-token' }
@@ -60,7 +60,7 @@ test('POST `/maintainer/update` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   const maintainer = await t.context.db.getMaintainer(maintainerId)
-  t.deepEqual(maintainer.payoutEmail, 'help@quo.cc')
+  t.deepEqual(maintainer.payoutInfo, 'help@quo.cc')
 })
 
 test('POST `/maintainer/update` 400 bad request', async (t) => {
@@ -98,7 +98,7 @@ test('POST `/maintainer/update` 500 server error', async (t) => {
     payload: {
       maintainerId: 'test-maintainer-0',
       maintainer: {
-        payoutEmail: 'help@quo.cc'
+        payoutInfo: 'help@quo.cc'
       }
     },
     headers: { authorization: 'valid-session-token' }

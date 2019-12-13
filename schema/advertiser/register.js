@@ -9,6 +9,7 @@ module.exports = {
         properties: {
           name: { type: 'string' },
           email: { type: 'string' },
+          organization: { type: 'string' },
           password: { type: 'string' }
         }
       }
