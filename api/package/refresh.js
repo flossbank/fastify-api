@@ -5,6 +5,10 @@
  * 4) create any packages that aren't in our system but were returned from the package manager
  */
 module.exports = async (req, res, ctx) => {
+  if (!await ctx.auth.isUIRequestAllowed(req, ctx.auth.authKinds.MAINTAINER)) {
+    res.status(401)
+    return res.send()
+  }
   try {
     const { maintainerId, packageRegistry } = req.body
     const maintainer = await ctx.db.getMaintainer(maintainerId)

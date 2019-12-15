@@ -1,4 +1,8 @@
 module.exports = async (req, res, ctx) => {
+  if (!await ctx.auth.isUIRequestAllowed(req, ctx.auth.authKinds.ADVERTISER)) {
+    res.status(401)
+    return res.send()
+  }
   try {
     const { adCampaignId: id } = req.body
     const campaign = await ctx.db.getAdCampaign(id)
