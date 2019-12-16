@@ -77,24 +77,24 @@ async function routes (fastify, opts, next) {
   fastify.get('/health', health)
 
   // Ads
-  fastify.post('/ad/create', {preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
-  fastify.get('/ad/get-all', { schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
+  fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
+  fastify.get('/ad/get-all', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
   fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
-  fastify.post('/ad/update', { schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
+  fastify.post('/ad/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
-  fastify.post('/ad-campaign/create', { schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
-  fastify.post('/ad-campaign/update', { schema: updateAdCampaignSchema }, (req, res) => updateAdCampaign(req, res, fastify))
-  fastify.post('/ad-campaign/activate', { schema: activateAdCampaignSchema }, (req, res) => activateAdCampaign(req, res, fastify))
-  fastify.get('/ad-campaign/get', { schema: getAdCampaignSchema }, (req, res) => getAdCampaign(req, res, fastify))
-  fastify.get('/ad-campaign/get-all', { schema: getAdCampaignsSchema }, (req, res) => getAdCampaigns(req, res, fastify))
+  fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdCampaignSchema }, (req, res) => updateAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/activate', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: activateAdCampaignSchema }, (req, res) => activateAdCampaign(req, res, fastify))
+  fastify.get('/ad-campaign/get', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: getAdCampaignSchema }, (req, res) => getAdCampaign(req, res, fastify))
+  fastify.get('/ad-campaign/get-all', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: getAdCampaignsSchema }, (req, res) => getAdCampaigns(req, res, fastify))
 
   // Advertiser
   fastify.post('/advertiser/register', { schema: registerAdvertiserSchema }, (req, res) => registerAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/get', { schema: getAdvertiserSchema }, (req, res) => getAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: getAdvertiserSchema }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: loginAdvertiserSchema }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
-  fastify.post('/advertiser/update', { schema: updateAdvertiserSchema }, (req, res) => updateAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdvertiserSchema }, (req, res) => updateAdvertiser(req, res, fastify))
   fastify.post('/advertiser/verify', { schema: verifyAdvertiserSchema }, (req, res) => verifyAdvertiser(req, res, fastify))
 
   // Auth

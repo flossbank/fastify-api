@@ -1,8 +1,4 @@
 module.exports = async (req, res, ctx) => {
-  if (!await ctx.auth.isUIRequestAllowed(req, ctx.auth.authKinds.MAINTAINER)) {
-    res.status(401)
-    return res.send()
-  }
   try {
     // Only the owner can make a change to a package
     // Fetch package to check if maintainer making request is the owner
