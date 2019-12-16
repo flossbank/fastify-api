@@ -33,10 +33,11 @@ test.after(async (t) => {
   await after(t)
 })
 
-test.failing('GET `/ad-campaign/get-all` 401 unauthorized', async (t) => {
+test('GET `/ad-campaign/get-all` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/ad/ad-campaign',
+    url: '/ad-campaign/get-all',
     query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'not a valid token' }
   })

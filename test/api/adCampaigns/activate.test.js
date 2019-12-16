@@ -42,7 +42,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
+test('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const adCampaignId = (await t.context.db.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     ads: [t.context.adId2],

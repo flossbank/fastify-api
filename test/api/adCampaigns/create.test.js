@@ -24,7 +24,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/ad-campaign/create` 401 unauthorized', async (t) => {
+test('POST `/ad-campaign/create` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',

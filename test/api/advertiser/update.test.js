@@ -17,7 +17,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/advertiser/update` 401 unauthorized', async (t) => {
+test('POST `/advertiser/update` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const advertiserId = (await t.context.db.createAdvertiser({
     name: 'Honesty',
     email: 'honey1@etsy.com',
