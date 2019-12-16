@@ -6,10 +6,9 @@ module.exports = async (req, res, ctx, done) => {
       return res.send()
     }
     ctx.session = session
+    done()
   } catch (e) {
     res.status(401)
     return res.send()
-  } finally {
-    done()
   }
 }
