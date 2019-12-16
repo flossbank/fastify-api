@@ -290,11 +290,11 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
   return item
 }
 
-Auth.prototype.createMaintainerSession = async function createMaintainerSession (email, maintainerId) {
+Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: MaintainerSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email, maintainerId }
+    Item: { sessionId, expires: Date.now() + weekExpiration, maintainerId }
   }).promise()
   return sessionId
 }
@@ -307,11 +307,11 @@ Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession 
   }).promise()
 }
 
-Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (email, advertiserId) {
+Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (advertiserId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: AdvertiserSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email, advertiserId }
+    Item: { sessionId, expires: Date.now() + weekExpiration, advertiserId }
   }).promise()
   return sessionId
 }
