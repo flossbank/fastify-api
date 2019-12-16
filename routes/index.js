@@ -69,12 +69,15 @@ const updatePackagesSchema = require('../schema/package/update')
 const completeSession = require('../api/session/complete')
 const completeSessionSchema = require('../schema/session/complete')
 
+// Middleware
+const advertiserUIAuthMiddleware = require('../middleware/advertiser')
+
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
 
   // Ads
-  fastify.post('/ad/create', { schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
+  fastify.post('/ad/create', {preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
   fastify.get('/ad/get-all', { schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
   fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
   fastify.post('/ad/update', { schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
