@@ -34,11 +34,56 @@ Auth.prototype.authKinds = {
   ADVERTISER: 'ADVERTISER'
 }
 
-Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
+// Returns auth token or false
+Auth.prototype.getAuthToken = function getAuthToken (req) {
   if (!req.headers || !req.headers.authorization) return false
-  const token = req.headers.authorization.split(' ').pop()
+  return req.headers.authorization.split(' ').pop()
+}
+
+Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
+  const token = this.getAuthToken(req)
+  if (!token) return false
 
   return this.validateApiKey(token)
+}
+
+// Returns a UI Session | null
+Auth.prototype.getUISession = async function getUISession (req, kind) {
+  const token = this.getAuthToken(req)
+  if (!token) return null
+
+  let item, Item
+  // Validate based on the type of session being auth'd
+  try {
+    switch (this.authKinds[kind]) {
+      case (this.authKinds.MAINTAINER):
+        ({ Item } = await docs.get({
+          TableName: MaintainerSessionTableName,
+          Key: { token }
+        }).promise())
+        item = Item
+        break
+      case (this.authKinds.ADVERTISER):
+        ({ Item } = await docs.get({
+          TableName: AdvertiserSessionTableName,
+          Key: { token }
+        }).promise())
+        item = Item
+        break
+      default:
+        console.error('Attempting to validate invalid session kind')
+        return null
+    }
+  } catch (err) {
+    console.error(err.message)
+    return null
+  }
+
+  if (item.expires > Date.now()) {
+    return null
+  }
+
+  return item
 }
 
 /**  */
@@ -245,11 +290,11 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
   return item
 }
 
-Auth.prototype.createMaintainerSession = async function createMaintainerSession (email) {
+Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: MaintainerSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email }
+    Item: { sessionId, expires: Date.now() + weekExpiration, maintainerId }
   }).promise()
   return sessionId
 }
@@ -262,11 +307,11 @@ Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession 
   }).promise()
 }
 
-Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (email) {
+Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (advertiserId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: AdvertiserSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email }
+    Item: { sessionId, expires: Date.now() + weekExpiration, advertiserId }
   }).promise()
   return sessionId
 }
