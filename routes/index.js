@@ -71,6 +71,7 @@ const completeSessionSchema = require('../schema/session/complete')
 
 // Middleware
 const advertiserUIAuthMiddleware = require('../middleware/advertiser')
+const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 
 async function routes (fastify, opts, next) {
   // Health
@@ -106,14 +107,14 @@ async function routes (fastify, opts, next) {
   fastify.post('/maintainer/login', { schema: loginMaintainerSchema }, (req, res) => loginMaintainer(req, res, fastify))
   fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
-  fastify.get('/maintainer/revenue', { schema: maintainerRevenueSchema }, (req, res) => maintainerRevenue(req, res, fastify))
-  fastify.post('/maintainer/update', { schema: updateMaintainerSchema }, (req, res) => updateMaintainer(req, res, fastify))
+  fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: maintainerRevenueSchema }, (req, res) => maintainerRevenue(req, res, fastify))
+  fastify.post('/maintainer/update', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: updateMaintainerSchema }, (req, res) => updateMaintainer(req, res, fastify))
   fastify.post('/maintainer/verify', { schema: verifyMaintainerSchema }, (req, res) => verifyMaintainer(req, res, fastify))
 
   // Packages
-  fastify.get('/package/get', { schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
-  fastify.post('/package/refresh', { schema: refreshPackagesSchema }, (req, res) => refreshPackages(req, res, fastify))
-  fastify.post('/package/update', { schema: updatePackagesSchema }, (req, res) => updatePackages(req, res, fastify))
+  fastify.get('/package/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
+  fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: refreshPackagesSchema }, (req, res) => refreshPackages(req, res, fastify))
+  fastify.post('/package/update', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: updatePackagesSchema }, (req, res) => updatePackages(req, res, fastify))
 
   // Session
   fastify.post('/session/complete', { schema: completeSessionSchema }, (req, res) => completeSession(req, res, fastify))
