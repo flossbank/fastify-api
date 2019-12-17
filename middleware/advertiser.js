@@ -5,7 +5,7 @@ module.exports = async (req, res, ctx, done) => {
       res.status(401)
       return res.send()
     }
-    ctx.session = session
+    ctx.decorateRequest('session', session)
     done()
   } catch (e) {
     res.status(401)
