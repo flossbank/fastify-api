@@ -50,7 +50,8 @@ test.after(async (t) => {
   await after(t)
 })
 
-test.failing('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
+test('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',

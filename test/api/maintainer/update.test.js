@@ -17,7 +17,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/maintainer/update` 401 unauthorized', async (t) => {
+test('POST `/maintainer/update` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const maintainerId = (await t.context.db.createMaintainer({
     name: 'Honesty',
     email: 'honey1@etsy.com',
