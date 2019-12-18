@@ -31,7 +31,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/package/update` 401 unauthorized', async (t) => {
+test('POST `/package/update` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   const pkgId1 = (await t.context.db.createPackage({
     name: 'yttrium-server',
     registry: 'npm',

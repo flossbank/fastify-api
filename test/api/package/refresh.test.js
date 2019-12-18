@@ -120,7 +120,8 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test.failing('POST `/package/refresh` 401 unauthorized', async (t) => {
+test('POST `/package/refresh` 401 unauthorized', async (t) => {
+  t.context.auth.getUISession.resolves(null)
   t.context.registry.npm.getOwnedPackages.resolves(['unc-bootcamp-project-a'])
   const res = await t.context.app.inject({
     method: 'POST',
