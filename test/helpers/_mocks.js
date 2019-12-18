@@ -5,6 +5,10 @@ module.exports = {
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
     this.isAdSessionAllowed = sinon.stub().resolves(true)
+    this.getUISession = sinon.stub().resolves({
+      maintainerId: 'valid-id',
+      advertiserId: 'valid-id'
+    })
     this.createAdSession = sinon.stub().resolves('random-session-id')
     this.completeAdSession = sinon.stub().resolves({
       resetTime: 0,
