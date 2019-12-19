@@ -39,36 +39,6 @@ Db.prototype.getAdBatch = async function getAdBatch () {
   )
 }
 
-Db.prototype.getAdsByIds = async function getAdsByIds (ids) {
-  if (!ids || !ids.length) return []
-  return this.db.collection('ads').find({
-    _id: { $in: ids.map(ObjectId) }
-  }).toArray()
-}
-
-Db.prototype.getAdsByAdvertiser = async function getAdsByAdvertiser (advertiserId) {
-  const ads = await this.db.collection('ads').find({
-    advertiserId
-  }).toArray()
-
-  return ads.map(({ _id: id, name, content, advertiserId, active, approved }) => ({
-    id, name, content, advertiserId, active, approved
-  }))
-}
-
-Db.prototype.createAd = async function createAd (ad) {
-  const { insertedId } = await this.db.collection('ads').insertOne(ad)
-  return insertedId
-}
-
-Db.prototype.updateAd = async function updateAd (id, ad) {
-  return this.db.collection('ads').updateOne({
-    _id: ObjectId(id)
-  }, {
-    $set: ad
-  })
-}
-
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   const advertiserWithDefaults = Object.assign({}, advertiser, {
     adCampaigns: [],

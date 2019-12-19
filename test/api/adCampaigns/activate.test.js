@@ -81,8 +81,7 @@ test.failing('POST `/ad-campaign/activate` 200 success', async (t) => {
 
   const campaign = await t.context.db.getAdCampaign(adCampaignId)
   t.true(campaign.active)
-  const ads = await t.context.db.getAdsByIds(campaign.ads)
-  t.true(ads.every(ad => ad.active))
+  t.true(campaign.ads.every(ad => ad.active))
 })
 
 test('POST `/ad-campaign/activate` 400 bad request | invalid ads', async (t) => {
