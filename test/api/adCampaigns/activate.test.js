@@ -10,23 +10,17 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    const adId1 = await db.createAd({
+    t.context.adId1 = {
       name: 'unapproved ad',
       content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
-      advertiserId: t.context.advertiserId1,
-      active: false,
       approved: false
-    })
-    t.context.adId1 = adId1.toHexString()
+    }
 
-    const adId2 = await db.createAd({
+    t.context.adId2 = {
       name: 'approved ad',
       content: { body: 'def', title: 'DEF', url: 'https://def.com' },
-      advertiserId: t.context.advertiserId1,
-      active: false,
       approved: true
-    })
-    t.context.adId2 = adId2.toHexString()
+    }
   })
 })
 
@@ -81,7 +75,6 @@ test.failing('POST `/ad-campaign/activate` 200 success', async (t) => {
 
   const campaign = await t.context.db.getAdCampaign(adCampaignId)
   t.true(campaign.active)
-  t.true(campaign.ads.every(ad => ad.active))
 })
 
 test('POST `/ad-campaign/activate` 400 bad request | invalid ads', async (t) => {

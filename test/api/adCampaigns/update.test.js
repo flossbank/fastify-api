@@ -17,23 +17,17 @@ test.before(async (t) => {
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
 
-    const adId1 = await db.createAd({
+    t.context.adId1 = {
       name: 'ad #1',
       content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
-      advertiserId: t.context.advertiserId1,
-      active: false,
       approved: false
-    })
-    t.context.adId1 = adId1.toHexString()
+    }
 
-    const adId2 = await db.createAd({
+    t.context.adId2 = {
       name: 'ad #2',
       content: { body: 'def', title: 'DEF', url: 'https://def.com' },
-      advertiserId: t.context.advertiserId2,
-      active: false,
       approved: false
-    })
-    t.context.adId2 = adId2.toHexString()
+    }
   })
 })
 
@@ -86,6 +80,7 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
     name: 'camp pain 2'
   })).toHexString()
 
+  const newName = 'camp pain 3'
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/update',
@@ -96,7 +91,7 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
         ads: [t.context.adId1],
         maxSpend: 1000,
         cpm: 100,
-        name: 'camp pain 2'
+        name: newName
       }
     },
     headers: { authorization: 'valid-session-token' }
@@ -105,6 +100,8 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
   const updatedAdCampaign = await t.context.db.getAdCampaign(adCampaignId)
   t.deepEqual(updatedAdCampaign.ads, [t.context.adId1])
+  t.equal(updatedAdCampaign.name, newName)
+  t.equal(updatedAdCampaign.active, false)
 })
 
 test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
@@ -122,7 +119,7 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
       adCampaignId,
       adCampaign: {
         advertiserId: t.context.advertiserId1,
-        ads: [t.context.adId2],
+        ads: [t.context.adId1],
         maxSpend: 1000,
         cpm: 100,
         name: 'camp pain 3'

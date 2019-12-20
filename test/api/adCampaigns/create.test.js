@@ -64,6 +64,37 @@ test('POST `/ad-campaign/create` 200 success', async (t) => {
   t.deepEqual(campaign.advertiserId, t.context.advertiserId1)
 })
 
+test('POST `/ad-campaign/create` 200 success with ads', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/create',
+    payload: {
+      advertiserId: t.context.advertiserId1,
+      ads: [{
+        name: 'unapproved ad',
+        content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
+        approved: false
+      },{
+        name: 'approved ad',
+        content: { body: 'def', title: 'DEF', url: 'https://def.com' },
+        approved: true
+      }],
+      maxSpend: 1000,
+      cpm: 100,
+      name: 'camp pain 2'
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, true)
+  const { id } = payload
+
+  const campaign = await t.context.db.getAdCampaign(id)
+  t.deepEqual(campaign.advertiserId, t.context.advertiserId1)
+})
+
 test('POST `/ad-campaign/create` 400 bad request | no advertiser', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',

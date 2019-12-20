@@ -1,4 +1,4 @@
-const { compareUnsorted } = require('js-deep-equals')
+const { compare } = require('js-deep-equals')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -9,30 +9,31 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    if (!req.body.adCampaign.ads.every(ad => ad.advertiserId === req.body.adCampaign.advertiserId)) {
-      res.status(400)
-      return res.send()
-    }
-
     // TODO: Validate ad values aren't too long in length
 
     // Set all modified as well as new ads approved key to "false"
-    const previousAds = campaign.ads.map(ad => ({
-      [ad.id]: ad
-    }))
+    const previousAds = campaign.ads.reduce((acc, ad) => {
+      acc[ad.id] = ad
+      return acc
+    }, {})
 
-    req.body.adCampaign.ads.forEach((ad) => {
-      const isExistingAd = previousAds[ad.id] !== undefined
+    req.body.adCampaign.ads.map((ad) => {
+      const isExistingAd = (typeof previousAds[ad.id] !== undefined)
       const adWasApproved = isExistingAd && previousAds[ad.id].approved === true
 
-      if (isExistingAd && adWasApproved && compareUnsorted(ad, previousAds[ad.id])) {
-        continue
+      if (!adWasApproved) unapprovedAdExists = true
+
+      if (adWasApproved && compare(ad, previousAds[ad.id])) {
+        return ad
       }
 
-      ad.approved = false
+      return Object.assign({}, ad, { approved: false })
     })
 
     const { adCampaignId: id, adCampaign } = req.body
+    // All ad campaigns that are updated should immediately be set to inactive 
+    adCampaign.active = false
+
     await ctx.db.updateAdCampaign(id, adCampaign)
     res.send({ success: true })
   } catch (e) {
