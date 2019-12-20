@@ -74,7 +74,7 @@ test('POST `/ad-campaign/create` 200 success with ads', async (t) => {
         name: 'unapproved ad',
         content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
         approved: false
-      },{
+      }, {
         name: 'approved ad',
         content: { body: 'def', title: 'DEF', url: 'https://def.com' },
         approved: true

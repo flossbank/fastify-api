@@ -18,10 +18,8 @@ module.exports = async (req, res, ctx) => {
     }, {})
 
     req.body.adCampaign.ads.map((ad) => {
-      const isExistingAd = (typeof previousAds[ad.id] !== undefined)
+      const isExistingAd = (typeof previousAds[ad.id] !== 'undefined')
       const adWasApproved = isExistingAd && previousAds[ad.id].approved === true
-
-      if (!adWasApproved) unapprovedAdExists = true
 
       if (adWasApproved && compare(ad, previousAds[ad.id])) {
         return ad
@@ -31,7 +29,7 @@ module.exports = async (req, res, ctx) => {
     })
 
     const { adCampaignId: id, adCampaign } = req.body
-    // All ad campaigns that are updated should immediately be set to inactive 
+    // All ad campaigns that are updated should immediately be set to inactive
     adCampaign.active = false
 
     await ctx.db.updateAdCampaign(id, adCampaign)

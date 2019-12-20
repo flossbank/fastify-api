@@ -18,7 +18,7 @@ module.exports = {
             name: { type: 'string' },
             ads: {
               type: 'array',
-              items: { 
+              items: {
                 type: 'object',
                 properties: {
                   name: { type: 'string' },

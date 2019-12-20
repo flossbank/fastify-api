@@ -1,6 +1,6 @@
 module.exports = async (req, res, ctx) => {
   if (req.query.advertiserId !== req.session.advertiserId) {
-    res.status(401) 
+    res.status(401)
     return res.send({ success: false })
   }
   try {

@@ -23,6 +23,9 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId1
+  })
 })
 
 test.afterEach(async (t) => {
@@ -84,7 +87,7 @@ test('GET `/ad-campaign/get-all` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get-all',
-    query: { advertiserId: 'advertiser-id-0' },
+    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)

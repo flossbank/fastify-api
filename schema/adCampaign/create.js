@@ -6,7 +6,7 @@ module.exports = {
       advertiserId: { type: 'string' },
       ads: {
         type: 'array',
-        items: { 
+        items: {
           type: 'object',
           required: ['name', 'content'],
           properties: {

@@ -66,7 +66,7 @@ const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
-  
+
   // Ad Campaigns
   fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
   fastify.post('/ad-campaign/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdCampaignSchema }, (req, res) => updateAdCampaign(req, res, fastify))
