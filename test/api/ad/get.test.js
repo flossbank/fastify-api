@@ -1,7 +1,7 @@
 const test = require('ava')
 // const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
 
-test(t => {
+test('blah', t => {
   t.true(true)
 })
 

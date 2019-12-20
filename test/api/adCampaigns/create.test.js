@@ -14,6 +14,9 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId1
+  })
 })
 
 test.afterEach(async (t) => {
