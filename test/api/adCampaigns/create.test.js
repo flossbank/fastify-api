@@ -98,22 +98,6 @@ test('POST `/ad-campaign/create` 200 success with ads', async (t) => {
   t.deepEqual(campaign.advertiserId, t.context.advertiserId1)
 })
 
-test('POST `/ad-campaign/create` 400 bad request | no advertiser', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'POST',
-    url: '/ad-campaign/create',
-    payload: {
-      advertiserId: '000000000000',
-      ads: [],
-      maxSpend: 1000,
-      cpm: 100,
-      name: 'camp pain 3'
-    },
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-})
-
 test('POST `/ad-campaign/create` 400 bad request', async (t) => {
   let res
   res = await t.context.app.inject({
@@ -146,7 +130,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       cpm: 100,
       name: 'camp pain'
@@ -159,7 +143,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       maxSpend: 1000,
       name: 'camp pain'
@@ -172,7 +156,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       maxSpend: 1000,
       cpm: 100
@@ -196,7 +180,7 @@ test('POST `/ad-campaign/create` 500 server error', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
-      advertiserId: 'test-advertiser-0',
+      advertiserId: t.context.advertiserId1,
       ads: [],
       maxSpend: 1000,
       cpm: 100,

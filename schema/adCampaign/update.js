@@ -13,10 +13,12 @@ module.exports = {
             type: 'array',
             items: {
               type: 'object',
+              required: ['name', 'content'],
               properties: {
                 name: { type: 'string' },
                 content: {
                   type: 'object',
+                  required: ['title', 'body', 'url'],
                   properties: {
                     title: { type: 'string' },
                     body: { type: 'string' },

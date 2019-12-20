@@ -103,8 +103,8 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
   const updatedAdCampaign = await t.context.db.getAdCampaign(adCampaignId)
   t.deepEqual(updatedAdCampaign.ads, [t.context.adId1])
-  t.equal(updatedAdCampaign.name, newName)
-  t.equal(updatedAdCampaign.active, false)
+  t.deepEqual(updatedAdCampaign.name, newName)
+  t.deepEqual(updatedAdCampaign.active, false)
 })
 
 test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
@@ -122,7 +122,9 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
       adCampaignId,
       adCampaign: {
         advertiserId: t.context.advertiserId1,
-        ads: [t.context.adId1],
+        ads: [{
+          rent: 'is too damn high'
+        }],
         maxSpend: 1000,
         cpm: 100,
         name: 'camp pain 3'

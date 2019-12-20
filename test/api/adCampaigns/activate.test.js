@@ -58,7 +58,7 @@ test('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test.failing('POST `/ad-campaign/activate` 200 success', async (t) => {
+test('POST `/ad-campaign/activate` 200 success', async (t) => {
   const adCampaignId = (await t.context.db.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     ads: [t.context.adId2],
