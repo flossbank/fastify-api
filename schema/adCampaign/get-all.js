@@ -3,7 +3,7 @@ module.exports = {
     type: 'object',
     required: ['advertiserId'],
     properties: {
-      advertiserId: { type: 'string' }
+      advertiserId: { type: 'string', maxLength: 128 }
     }
   },
   response: {

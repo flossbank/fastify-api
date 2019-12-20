@@ -3,7 +3,7 @@ module.exports = {
     type: 'object',
     required: ['maintainerId', 'packageRegistry'],
     properties: {
-      maintainerId: { type: 'string' },
+      maintainerId: { type: 'string', maxLength: 128 },
       packageRegistry: {
         type: 'string',
         enum: ['npm']

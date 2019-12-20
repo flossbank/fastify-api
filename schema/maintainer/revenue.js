@@ -3,7 +3,7 @@ module.exports = {
     type: 'object',
     required: ['maintainerId'],
     properties: {
-      maintainerId: { type: 'string' }
+      maintainerId: { type: 'string', maxLength: 128 }
     }
   },
   response: {

@@ -5,8 +5,8 @@ module.exports = {
     type: 'object',
     required: ['email', 'token', 'kind'],
     properties: {
-      email: { type: 'string' },
-      token: { type: 'string' },
+      email: { type: 'string', maxLength: 128 },
+      token: { type: 'string', maxLength: 128 },
       kind: {
         type: 'string',
         enum: Object.keys(Auth.prototype.authKinds)

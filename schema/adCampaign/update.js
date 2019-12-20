@@ -3,32 +3,32 @@ module.exports = {
     type: 'object',
     required: ['adCampaign', 'adCampaignId'],
     properties: {
-      adCampaignId: { type: 'string' },
+      adCampaignId: { type: 'string', maxLength: 128 },
       adCampaign: {
         type: 'object',
         required: ['advertiserId'],
         properties: {
-          advertiserId: { type: 'string' },
+          advertiserId: { type: 'string', maxLength: 128 },
           ads: {
             type: 'array',
             items: {
               type: 'object',
               required: ['name', 'content'],
               properties: {
-                name: { type: 'string' },
+                name: { type: 'string', maxLength: 128 },
                 content: {
                   type: 'object',
                   required: ['title', 'body', 'url'],
                   properties: {
-                    title: { type: 'string' },
-                    body: { type: 'string' },
-                    url: { type: 'string' }
+                    title: { type: 'string', maxLength: 128 },
+                    body: { type: 'string', maxLength: 256 },
+                    url: { type: 'string', maxLength: 128 }
                   }
                 }
               }
             }
           },
-          name: { type: 'string' },
+          name: { type: 'string', maxLength: 128 },
           maxSpend: { type: 'number' },
           cpm: { type: 'number', minimum: 100 },
           startDate: { type: 'number' },

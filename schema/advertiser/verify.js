@@ -3,8 +3,8 @@ module.exports = {
     type: 'object',
     required: ['token', 'email'],
     properties: {
-      token: { type: 'string' },
-      email: { type: 'string' }
+      token: { type: 'string', maxLength: 128 },
+      email: { type: 'string', maxLength: 128 }
     }
   },
   response: {

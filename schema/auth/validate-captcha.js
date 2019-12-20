@@ -3,9 +3,9 @@ module.exports = {
     type: 'object',
     required: ['token', 'email', 'response'],
     properties: {
-      token: { type: 'string' },
-      email: { type: 'string' },
-      response: { type: 'string' }
+      token: { type: 'string', maxLength: 128 },
+      email: { type: 'string', maxLength: 128 },
+      response: { type: 'string', maxLength: 1024 }
     }
   },
   response: {

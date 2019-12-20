@@ -3,12 +3,12 @@ module.exports = {
     type: 'object',
     required: ['advertiserId', 'advertiser'],
     properties: {
-      advertiserId: { type: 'string' },
+      advertiserId: { type: 'string', maxLength: 128 },
       advertiser: {
         type: 'object',
         properties: {
-          organization: { type: 'string' },
-          billingInfo: { type: 'string' }
+          organization: { type: 'string', maxLength: 128 },
+          billingInfo: { type: 'string', maxLength: 128 }
         }
       }
     }

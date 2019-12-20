@@ -3,16 +3,16 @@ module.exports = {
     type: 'object',
     required: ['maintainerId', 'maintainer'],
     properties: {
-      maintainerId: { type: 'string' },
+      maintainerId: { type: 'string', maxLength: 128 },
       maintainer: {
         type: 'object',
         required: ['payoutInfo'],
         properties: {
-          payoutInfo: { type: 'string' },
+          payoutInfo: { type: 'string', maxLength: 256 },
           tokens: {
             type: 'object',
             properties: {
-              npm: { type: 'string' }
+              npm: { type: 'string', maxLength: 512 }
             }
           }
         }
