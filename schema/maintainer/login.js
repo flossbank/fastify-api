@@ -20,12 +20,6 @@ module.exports = {
             name: { type: 'string' },
             email: { type: 'string' },
             payoutInfo: { type: 'string' },
-            tokens: {
-              type: 'object',
-              properties: {
-                npm: { type: 'string' }
-              }
-            }
           }
         }
       }
