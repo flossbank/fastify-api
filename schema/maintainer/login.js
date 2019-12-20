@@ -3,8 +3,8 @@ module.exports = {
     type: 'object',
     required: ['email', 'password'],
     properties: {
-      email: { type: 'string' },
-      password: { type: 'string' }
+      email: { type: 'string', maxLength: 128 },
+      password: { type: 'string', maxLength: 128 }
     }
   },
   response: {
@@ -19,7 +19,7 @@ module.exports = {
             id: { type: 'string' },
             name: { type: 'string' },
             email: { type: 'string' },
-            payoutInfo: { type: 'string' },
+            payoutInfo: { type: 'string' }
           }
         }
       }

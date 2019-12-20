@@ -5,7 +5,7 @@ module.exports = {
     properties: {
       seen: {
         type: 'array',
-        items: { type: 'string' }
+        items: { type: 'string', maxLength: 128 }
       },
       sessionId: { type: 'string' }
     }

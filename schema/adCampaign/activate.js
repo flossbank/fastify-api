@@ -3,7 +3,7 @@ module.exports = {
     type: 'object',
     required: ['adCampaignId'],
     properties: {
-      adCampaignId: { type: 'string' }
+      adCampaignId: { type: 'string', maxLength: 128 }
     }
   },
   response: {

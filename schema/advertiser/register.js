@@ -7,10 +7,10 @@ module.exports = {
         type: 'object',
         required: ['name', 'email', 'password'],
         properties: {
-          name: { type: 'string' },
-          email: { type: 'string' },
-          organization: { type: 'string' },
-          password: { type: 'string' }
+          name: { type: 'string', maxLength: 128 },
+          email: { type: 'string', maxLength: 128 },
+          organization: { type: 'string', maxLength: 128 },
+          password: { type: 'string', maxLength: 128 }
         }
       }
     }

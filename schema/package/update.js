@@ -3,7 +3,7 @@ module.exports = {
     type: 'object',
     required: ['packageId', 'package'],
     properties: {
-      packageId: { type: 'string' },
+      packageId: { type: 'string', maxLength: 128 },
       package: {
         type: 'object',
         required: ['maintainers', 'owner'],
@@ -14,7 +14,7 @@ module.exports = {
               type: 'object',
               required: ['maintainerId'],
               properties: {
-                maintainerId: { type: 'string' },
+                maintainerId: { type: 'string', maxLength: 128 },
                 revenuePercent: {
                   type: 'number',
                   default: 0,
@@ -25,7 +25,7 @@ module.exports = {
             }
           },
           owner: {
-            type: 'string'
+            type: 'string', maxLength: 128
           }
         }
       }
