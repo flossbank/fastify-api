@@ -12,7 +12,10 @@ test.before(async (t) => {
 
     const campaignId1 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
-      ads: [],
+      ads: [{
+        name: 'approved ad',
+        content: { body: 'def', title: 'DEF', url: 'https://def.com' }
+      }],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain'
@@ -63,7 +66,10 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
       active: false,
       spend: 0,
       advertiserId: t.context.advertiserId1,
-      ads: [],
+      ads: [{
+        name: 'approved ad',
+        content: { body: 'def', title: 'DEF', url: 'https://def.com' }
+      }],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain'

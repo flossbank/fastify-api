@@ -6,7 +6,22 @@ module.exports = {
       advertiserId: { type: 'string' },
       ads: {
         type: 'array',
-        items: { type: 'string' }
+        items: {
+          type: 'object',
+          required: ['name', 'content'],
+          properties: {
+            name: { type: 'string' },
+            content: {
+              type: 'object',
+              required: ['title', 'body', 'url'],
+              properties: {
+                title: { type: 'string' },
+                body: { type: 'string' },
+                url: { type: 'string' }
+              }
+            }
+          }
+        }
       },
       maxSpend: { type: 'number' },
       cpm: {

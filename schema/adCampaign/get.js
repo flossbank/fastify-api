@@ -18,7 +18,20 @@ module.exports = {
             name: { type: 'string' },
             ads: {
               type: 'array',
-              items: { type: 'string' }
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  content: {
+                    type: 'object',
+                    properties: {
+                      title: { type: 'string' },
+                      body: { type: 'string' },
+                      url: { type: 'string' }
+                    }
+                  }
+                }
+              }
             },
             advertiserId: { type: 'string' },
             maxSpend: { type: 'number' },

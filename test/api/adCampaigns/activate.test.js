@@ -10,28 +10,25 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    const adId1 = await db.createAd({
+    t.context.adId1 = {
       name: 'unapproved ad',
       content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
-      advertiserId: t.context.advertiserId1,
-      active: false,
       approved: false
-    })
-    t.context.adId1 = adId1.toHexString()
+    }
 
-    const adId2 = await db.createAd({
+    t.context.adId2 = {
       name: 'approved ad',
       content: { body: 'def', title: 'DEF', url: 'https://def.com' },
-      advertiserId: t.context.advertiserId1,
-      active: false,
       approved: true
-    })
-    t.context.adId2 = adId2.toHexString()
+    }
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId1
+  })
 })
 
 test.afterEach(async (t) => {
@@ -42,7 +39,7 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
+test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const adCampaignId = (await t.context.db.createAdCampaign({
     advertiserId: t.context.advertiserId1,
@@ -61,7 +58,25 @@ test('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test.failing('POST `/ad-campaign/activate` 200 success', async (t) => {
+test('POST `/ad-campaign/activate` 401 unauthorized req advertiser id bad', async (t) => {
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: 'poop-advertiser-id',
+    ads: [t.context.adId2],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 1'
+  })).toHexString()
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/activate',
+    payload: { adCampaignId },
+    headers: { authorization: 'not a valid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/ad-campaign/activate` 200 success', async (t) => {
   const adCampaignId = (await t.context.db.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     ads: [t.context.adId2],
@@ -81,8 +96,6 @@ test.failing('POST `/ad-campaign/activate` 200 success', async (t) => {
 
   const campaign = await t.context.db.getAdCampaign(adCampaignId)
   t.true(campaign.active)
-  const ads = await t.context.db.getAdsByIds(campaign.ads)
-  t.true(ads.every(ad => ad.active))
 })
 
 test('POST `/ad-campaign/activate` 400 bad request | invalid ads', async (t) => {
@@ -111,4 +124,23 @@ test('POST `/ad-campaign/activate` 400 bad request', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
+})
+
+test('POST `/ad-campaign/activate` 500 server error', async (t) => {
+  t.context.db.activateAdCampaign = () => { throw new Error() }
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    ads: [t.context.adId2],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 2'
+  })).toHexString()
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/activate',
+    payload: { adCampaignId },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })

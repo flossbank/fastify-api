@@ -1,16 +1,6 @@
 // Health
 const health = require('../api/health')
 
-// Ads
-const createAd = require('../api/ad/create')
-const createAdSchema = require('../schema/ad/create')
-const getAllAds = require('../api/ad/get-all')
-const getAllAdsSchema = require('../schema/ad/get-all')
-const getAd = require('../api/ad/get')
-const getAdSchema = require('../schema/ad/get')
-const updateAd = require('../api/ad/update')
-const updateAdSchema = require('../schema/ad/update')
-
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
 const createAdCampaignSchema = require('../schema/adCampaign/create')
@@ -76,12 +66,6 @@ const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
-
-  // Ads
-  fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
-  fastify.get('/ad/get-all', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: getAllAdsSchema }, (req, res) => getAllAds(req, res, fastify))
-  fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
-  fastify.post('/ad/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdSchema }, (req, res) => updateAd(req, res, fastify))
 
   // Ad Campaigns
   fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))

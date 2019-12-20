@@ -1,9 +1,8 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const advertiser = await ctx.db.getAdvertiser(req.body.advertiserId)
-    if (!advertiser || !advertiser.id) {
-      res.status(400)
-      return res.send()
+    if (req.body.advertiserId !== req.session.advertiserId) {
+      res.status(401)
+      return res.send({ success: false })
     }
     res.send({
       success: true,

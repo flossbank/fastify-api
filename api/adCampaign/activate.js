@@ -2,10 +2,12 @@ module.exports = async (req, res, ctx) => {
   try {
     const { adCampaignId: id } = req.body
     const campaign = await ctx.db.getAdCampaign(id)
-    // TODO allow activation only if advertiser session matches advertiser id on campaign
+    if (req.session.advertiserId !== campaign.advertiserId) {
+      res.status(401)
+      return res.send({ success: false })
+    }
 
-    const ads = await ctx.db.getAdsByIds(campaign.ads)
-    if (!ads.every(ad => ad.approved)) {
+    if (!campaign.ads.every(ad => ad.approved)) {
       res.status(400)
       return res.send({
         success: false,
