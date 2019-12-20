@@ -6,11 +6,10 @@ module.exports = async (req, res, ctx) => {
     const result = await ctx.db.authenticateMaintainer(email, password)
     if (result.success) {
       res.setCookie(maintainerSessionKey, await ctx.auth.createMaintainerSession(result.maintainerId))
-      res.send({ success: true })
     } else {
       res.status(401)
-      res.send(result)
     }
+    res.send(result)
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

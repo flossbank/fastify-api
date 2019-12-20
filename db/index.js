@@ -83,7 +83,9 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
   if (!foundAdvertiser.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
   const passMatch = await bcrypt.compare(password, foundAdvertiser.password)
   if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
-  return { success: true, advertiserId: foundAdvertiser._id }
+  const { _id: id, ...rest } = foundAdvertiser
+  delete rest.password
+  return { success: true, advertiser: { id, ...rest } }
 }
 
 Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
@@ -253,7 +255,9 @@ Db.prototype.authenticateMaintainer = async function authenticateMaintainer (ema
   if (!foundMaintainer.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
   const passMatch = await bcrypt.compare(password, foundMaintainer.password)
   if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
-  return { success: true, maintainerId: foundMaintainer._id }
+  const { _id: id, ...rest } = foundMaintainer
+  delete rest.password
+  return { success: true, maintainer: { id, ...rest } }
 }
 
 Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {

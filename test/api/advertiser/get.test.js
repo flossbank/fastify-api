@@ -48,7 +48,10 @@ test('GET `/advertiser/get` 200 success', async (t) => {
     advertiser: {
       id: t.context.advertiserId1,
       name: 'Honesty',
-      email: 'honey@etsy.com'
+      email: 'honey@etsy.com',
+      adCampaigns: [],
+      verified: false,
+      active: true
     }
   })
 })
