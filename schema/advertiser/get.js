@@ -16,7 +16,14 @@ module.exports = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
+            email: { type: 'string' },
+            organization: { type: 'string' },
+            adCampaigns: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            active: { type: 'boolean' },
+            verified: { type: 'boolean' }
           }
         }
       }

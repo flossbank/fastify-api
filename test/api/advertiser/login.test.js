@@ -7,8 +7,10 @@ test.before(async (t) => {
     const advertiserId1 = await db.createAdvertiser({
       name: 'Honesty',
       email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      password: 'beekeeperbookkeeper',
+      organization: 'elf-world'
     })
+    t.context.advertiserId = advertiserId1.toHexString()
     await db.updateAdvertiser(advertiserId1.toHexString(), {
       verified: true
     })
@@ -65,6 +67,10 @@ test('POST `/advertiser/login` 200 success', async (t) => {
     url: '/advertiser/login',
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
+  const advertiserRetrieved = await t.context.db.getAdvertiser(t.context.advertiserId)
+  const payload = JSON.parse(res.payload)
+  t.deepEqual(payload.success, true)
+  t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(res.headers['set-cookie'], `${advertiserSessionKey}=advertiser-session`)
 })
