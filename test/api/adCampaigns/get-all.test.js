@@ -36,12 +36,22 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('GET `/ad-campaign/get-all` 401 unauthorized', async (t) => {
+test('GET `/ad-campaign/get-all` 401 unauthorized | no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get-all',
     query: { advertiserId: t.context.advertiserId1 },
+    headers: { authorization: 'not a valid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('GET `/ad-campaign/get-all` 401 unauthorized | bad advertiser id', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/ad-campaign/get-all',
+    query: { advertiserId: 'the harbringer of death' },
     headers: { authorization: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)

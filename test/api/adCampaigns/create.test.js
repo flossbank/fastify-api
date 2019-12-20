@@ -27,13 +27,29 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/ad-campaign/create` 401 unauthorized', async (t) => {
+test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {
       advertiserId: t.context.advertiserId1,
+      ads: [],
+      maxSpend: 1000,
+      cpm: 100,
+      name: 'camp pain 1'
+    },
+    headers: { authorization: 'not a valid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/ad-campaign/create` 401 unauthorized | worthless advertiser id passed', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/create',
+    payload: {
+      advertiserId: 'adfartizer-id',
       ads: [],
       maxSpend: 1000,
       cpm: 100,

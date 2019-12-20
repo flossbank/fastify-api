@@ -39,10 +39,28 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/ad-campaign/activate` 401 unauthorized', async (t) => {
+test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const adCampaignId = (await t.context.db.createAdCampaign({
     advertiserId: t.context.advertiserId1,
+    ads: [t.context.adId2],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 1'
+  })).toHexString()
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/activate',
+    payload: { adCampaignId },
+    headers: { authorization: 'not a valid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/ad-campaign/activate` 401 unauthorized req advertiser id bad', async (t) => {
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: 'poop-advertiser-id',
     ads: [t.context.adId2],
     maxSpend: 1000,
     cpm: 100,
@@ -106,4 +124,23 @@ test('POST `/ad-campaign/activate` 400 bad request', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
+})
+
+test('POST `/ad-campaign/activate` 500 server error', async (t) => {
+  t.context.db.activateAdCampaign = () => { throw new Error() }
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    ads: [t.context.adId2],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 2'
+  })).toHexString()
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/activate',
+    payload: { adCampaignId },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 500)
 })
