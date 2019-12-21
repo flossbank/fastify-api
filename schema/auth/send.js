@@ -3,7 +3,11 @@ module.exports = {
     type: 'object',
     required: ['email'],
     properties: {
-      email: { type: 'string', maxLength: 128 }
+      email: {
+        type: 'string',
+        maxLength: 128,
+        format: 'email'
+      }
     }
   },
   response: {
