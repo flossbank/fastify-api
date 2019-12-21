@@ -14,8 +14,8 @@ test.before(async (t) => {
     const campaignId1 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       ads: [
-        { id: 'tf-1', name: 'Teacher Fund #1', content: { title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }, approved: true },
-        { id: 'tf-2', name: 'Teacher Fund #2', content: { title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }, approved: true }
+        { name: 'Teacher Fund #1', content: { title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }, approved: true },
+        { name: 'Teacher Fund #2', content: { title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }, approved: true }
       ],
       maxSpend: 100,
       cpm: 100,
@@ -23,6 +23,7 @@ test.before(async (t) => {
     })
     t.context.campaignId1 = campaignId1.toHexString()
     await db.activateAdCampaign(t.context.campaignId1)
+    t.context.ads = (await db.getAdCampaign(t.context.campaignId1)).ads
 
     // inactive campaign
     const campaignId2 = await db.createAdCampaign({
@@ -87,14 +88,13 @@ test('POST `/ad/get` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, await t.context.auth.createAdSession())
-  t.deepEqual(
-    payload.ads.find(ad => ad.id === 'tf-1'),
-    { id: 'tf-1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }
-  )
-  t.deepEqual(
-    payload.ads.find(ad => ad.id === 'tf-2'),
-    { id: 'tf-2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }
-  )
+
+  t.context.ads.forEach((ad) => {
+    t.deepEqual(
+      payload.ads.find(payloadAd => payloadAd.id === ad.id),
+      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+    )
+  })
 })
 
 test('POST `/ad/get` 200 success | no ads no session', async (t) => {
@@ -124,14 +124,12 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, 'existing-session-id')
-  t.deepEqual(
-    payload.ads.find(ad => ad.id === 'tf-1'),
-    { id: 'tf-1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }
-  )
-  t.deepEqual(
-    payload.ads.find(ad => ad.id === 'tf-2'),
-    { id: 'tf-2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }
-  )
+  t.context.ads.forEach((ad) => {
+    t.deepEqual(
+      payload.ads.find(payloadAd => payloadAd.id === ad.id),
+      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+    )
+  })
 })
 
 test('POST `/ad/get` 500 server error', async (t) => {

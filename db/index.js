@@ -1,5 +1,6 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
+const { ulid } = require('ulid')
 const bcrypt = require('bcrypt')
 const config = require('../config')
 
@@ -94,6 +95,10 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   const adCampaignWithDefaults = Object.assign({}, adCampaign, {
     active: false,
     spend: 0
+  })
+  adCampaignWithDefaults.ads.map(ad => {
+    ad.id = ulid()
+    return ad
   })
   const { insertedId } = await this.db.collection('adCampaigns').insertOne(adCampaignWithDefaults)
   return insertedId
