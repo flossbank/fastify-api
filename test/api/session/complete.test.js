@@ -50,7 +50,6 @@ test('POST `/session/complete` 400 bad request', async (t) => {
 
 test('POST `/session/complete` 200 success | extra long seen', async (t) => {
   t.context.auth.completeAdSession.resolves({
-    resetTime: 0,
     email: 'pjs@sjp.com',
     key: 'abc',
     totalAdsSeen: 2,

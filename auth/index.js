@@ -210,8 +210,7 @@ Auth.prototype.createApiKey = async function createApiKey (email) {
       email,
       totalAdsSeen: 0,
       adsSeenThisPeriod: 0,
-      resetTime: 0,
-      timestamp: Date.now()
+      created: Date.now()
     }
   }).promise()
 

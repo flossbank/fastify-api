@@ -11,7 +11,6 @@ module.exports = {
     })
     this.createAdSession = sinon.stub().resolves('random-session-id')
     this.completeAdSession = sinon.stub().resolves({
-      resetTime: 0,
       email: 'pjs@sjp.com',
       key: 'abc',
       totalAdsSeen: 2,
