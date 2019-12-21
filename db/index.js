@@ -251,6 +251,17 @@ Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
   return insertedId
 }
 
+Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
+  const maintainer = await this.db.collection('maintainers')
+    .findOne({ _id: ObjectId(maintainerId) })
+
+  if (!maintainer) return maintainer
+
+  const { _id: id, ...rest } = maintainer
+  delete rest.password
+  return { id, ...rest }
+}
+
 Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
   const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
   if (!foundMaintainer) return { success: false, message: 'Login failed; Invalid user ID or password' }
@@ -276,17 +287,6 @@ Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer)
   }, {
     $set: maintainer
   })
-}
-
-Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
-  const maintainer = await this.db.collection('maintainers')
-    .findOne({ _id: ObjectId(maintainerId) })
-
-  if (!maintainer) return maintainer
-
-  const { _id: id, ...rest } = maintainer
-  delete rest.password
-  return { id, ...rest }
 }
 
 exports.Db = Db
