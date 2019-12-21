@@ -1,6 +1,10 @@
 // Health
 const health = require('../api/health')
 
+// Ad
+const getAd = require('../api/ad/get')
+const getAdSchema = require('../schema/ad/get')
+
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
 const createAdCampaignSchema = require('../schema/adCampaign/create')
@@ -66,6 +70,9 @@ const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
+
+  // Ad
+  fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
 
   // Ad Campaigns
   fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
