@@ -18,10 +18,17 @@ test.after(async (t) => {
 })
 
 test('POST `/auth/send` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
+  let res = await t.context.app.inject({
     method: 'POST',
     url: '/auth/send',
     payload: {}
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/auth/send',
+    payload: { email: 'not-valid-email' }
   })
   t.deepEqual(res.statusCode, 400)
 })
