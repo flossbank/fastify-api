@@ -19,24 +19,26 @@ Db.prototype.connect = async function connect () {
 
 /** Ads */
 Db.prototype.getAd = async function getAd (adId) {
-  const ad = await this.db.collection('ads').findOne({
-    _id: ObjectId(adId)
-  })
+  const ad = await this.db.collection('ads').findOne({ id: adId })
 
   if (!ad) return ad
 
   const { _id: id, ...rest } = ad
-  return { id, ...rest }
+  return { ...rest }
 }
 
 Db.prototype.getAdBatch = async function getAdBatch () {
-  const ads = await this.db.collection('ads').find({
-    active: true, approved: true
-  }).limit(12).toArray()
+  // more complicated logic and/or caching can come later
+  const ads = (await this.db.collection('adCampaigns').aggregate([
+    { $match: { active: true } }, // find active campaigns
+    { $project: { _id: false, ads: true } }, // pick just their ads fields
+    { $unwind: '$ads' }, // unwind ads into a single array
+    { $sample: { size: 12 } } // return a random sampling of size 12
+  ]).toArray())
 
-  return ads.map(
-    ({ _id, content: { title, body, url } }) => ({ id: _id, title, body, url })
-  )
+  return ads
+    .reduce((acc, { ads }) => acc.concat(ads), [])
+    .map(({ id, content: { title, body, url } }) => ({ id, title, body, url }))
 }
 
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
