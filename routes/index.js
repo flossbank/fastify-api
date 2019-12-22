@@ -29,6 +29,7 @@ const updateAdvertiser = require('../api/advertiser/update')
 const updateAdvertiserSchema = require('../schema/advertiser/update')
 const verifyAdvertiser = require('../api/advertiser/verify')
 const verifyAdvertiserSchema = require('../schema/advertiser/verify')
+const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // Auth
 const sendAuth = require('../api/auth/send')
@@ -52,6 +53,7 @@ const updateMaintainer = require('../api/maintainer/update')
 const updateMaintainerSchema = require('../schema/maintainer/update')
 const verifyMaintainer = require('../api/maintainer/verify')
 const verifyMaintainerSchema = require('../schema/maintainer/verify')
+const resumeMaintainerSession = require('../api/maintainer/resume')
 
 // Packages
 const getPackages = require('../api/package/get')
@@ -90,6 +92,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/advertiser/logout', (req, res) => logoutAdvertiser(req, res, fastify))
   fastify.post('/advertiser/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: updateAdvertiserSchema }, (req, res) => updateAdvertiser(req, res, fastify))
   fastify.post('/advertiser/verify', { schema: verifyAdvertiserSchema }, (req, res) => verifyAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // Auth
   fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))
@@ -104,6 +107,7 @@ async function routes (fastify, opts, next) {
   fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: maintainerRevenueSchema }, (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: updateMaintainerSchema }, (req, res) => updateMaintainer(req, res, fastify))
   fastify.post('/maintainer/verify', { schema: verifyMaintainerSchema }, (req, res) => verifyMaintainer(req, res, fastify))
+  fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
 
   // Packages
   fastify.get('/package/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: getPackagesSchema }, (req, res) => getPackages(req, res, fastify))
