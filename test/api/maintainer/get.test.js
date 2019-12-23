@@ -24,6 +24,9 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    maintainerId: t.context.maintainerId1
+  })
 })
 
 test.afterEach(async (t) => {
@@ -45,7 +48,21 @@ test('GET `/maintainer/get` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
+test('GET `/maintainer/get` 401 unauthorized | wrong maintainer id', async (t) => {
+  t.context.auth.getUISession.resolves(null)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/get',
+    query: { maintainerId: 'bogus-maintainer' },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
 test('GET `/maintainer/get` 400 | unverified', async (t) => {
+  t.context.auth.getUISession.resolves({
+    maintainerId: t.context.unverifiedMaintainerId
+  })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
@@ -89,7 +106,7 @@ test('GET `/maintainer/get` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: 'test-maintainer-0' },
+    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)
