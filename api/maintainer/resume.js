@@ -5,7 +5,7 @@ const { maintainerSessionKey } = require('../../helpers/constants')
 module.exports = async (req, res, ctx) => {
   try {
     const maintainer = await ctx.db.getMaintainer(req.session.maintainerId)
-    if (!maintainer) {
+    if (!maintainer || !maintainer.active || !maintainer.verified) {
       ctx.log.error(new Error('ERROR attempted to resume a session where the maintainer doesnt exist'))
       res.status(400)
       return res.send({ success: false })

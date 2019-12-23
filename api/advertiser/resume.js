@@ -5,7 +5,7 @@ const { advertiserSessionKey } = require('../../helpers/constants')
 module.exports = async (req, res, ctx) => {
   try {
     const advertiser = await ctx.db.getAdvertiser(req.session.advertiserId)
-    if (!advertiser) {
+    if (!advertiser || !advertiser.verified || !advertiser.active) {
       ctx.log.error(new Error('ERROR attempted to resume a session where the advertiser doesnt exist'))
       res.status(400)
       return res.send({ success: false })
