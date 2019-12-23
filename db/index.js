@@ -1,5 +1,7 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
+const { ulid } = require('ulid')
+const { compare } = require('js-deep-equals')
 const bcrypt = require('bcrypt')
 const config = require('../config')
 
@@ -17,14 +19,12 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-/** Ads */
-Db.prototype.getAd = async function getAd (adId) {
-  const ad = await this.db.collection('ads').findOne({ id: adId })
-
-  if (!ad) return ad
-
-  const { _id: id, ...rest } = ad
-  return { ...rest }
+Db.prototype.approveAd = async function approveAd (adCampaignId, adId) {
+  return this.db.collection('adCampaigns').updateOne({
+    _id: ObjectId(adCampaignId), 'ads.id': adId
+  }, {
+    $set: { 'ads.$.approved': true }
+  })
 }
 
 Db.prototype.getAdBatch = async function getAdBatch () {
@@ -95,6 +95,9 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
     active: false,
     spend: 0
   })
+  adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
+    return Object.assign({}, ad, { id: ulid(), approved: false })
+  })
   const { insertedId } = await this.db.collection('adCampaigns').insertOne(adCampaignWithDefaults)
   return insertedId
 }
@@ -116,10 +119,33 @@ Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdver
 }
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign) {
+  const campaign = await this.getAdCampaign(id)
+  // Set all modified as well as new ads approved key to "false"
+  const previousAds = campaign.ads.reduce((map, ad) => {
+    map.set(ad.id, ad)
+    return map
+  }, new Map())
+
+  const updatedCampaign = Object.assign({}, adCampaign)
+
+  updatedCampaign.ads = adCampaign.ads.map((ad) => {
+    const isExistingAd = previousAds.has(ad.id)
+    const adWasApproved = isExistingAd && previousAds.get(ad.id).approved
+
+    if (adWasApproved && compare(ad, previousAds.get(ad.id))) {
+      return ad
+    }
+
+    return Object.assign({ id: ulid() }, ad, { approved: false })
+  })
+
+  // All ad campaigns that are updated should immediately be set to inactive
+  updatedCampaign.active = false
+
   return this.db.collection('adCampaigns').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: adCampaign
+    $set: updatedCampaign
   })
 }
 

@@ -1,4 +1,8 @@
 module.exports = async (req, res, ctx) => {
+  if (req.session.maintainerId !== req.query.maintainerId) {
+    res.status(401)
+    return res.send({ success: false })
+  }
   try {
     const maintainer = await ctx.db.getMaintainer(req.query.maintainerId)
     if (!maintainer || !maintainer.verified) {
