@@ -9,11 +9,22 @@ test.before(async (t) => {
       password: 'beekeeperbookkeeper'
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
+    await db.verifyAdvertiser('honey@etsy.com')
+
+    const unverifiedAdvertiserId = await db.createAdvertiser({
+      name: 'Honesty',
+      email: 'honey@etsy.com',
+      password: 'beekeeperbookkeeper'
+    })
+    t.context.unverifiedAdvertiserId = unverifiedAdvertiserId.toHexString()
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId1
+  })
 })
 
 test.afterEach(async (t) => {
@@ -35,6 +46,29 @@ test('GET `/advertiser/get` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
+test('GET `/advertiser/get` 401 unauthorized wrong advertiser', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: 'bogus-id' },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
+test('GET `/advertiser/get` 400 | unverified', async (t) => {
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.unverifiedAdvertiserId
+  })
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: t.context.unverifiedAdvertiserId },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+})
+
 test('GET `/advertiser/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
@@ -50,7 +84,7 @@ test('GET `/advertiser/get` 200 success', async (t) => {
       name: 'Honesty',
       email: 'honey@etsy.com',
       adCampaigns: [],
-      verified: false,
+      verified: true,
       active: true
     }
   })
@@ -71,7 +105,7 @@ test('GET `/advertiser/get` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: 'test-advertiser-0' },
+    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)

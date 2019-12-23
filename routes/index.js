@@ -39,6 +39,8 @@ const validateEmail = require('../api/auth/validate-email')
 const validateEmailSchema = require('../schema/auth/validate-email')
 
 // Maintainer
+const getMaintainer = require('../api/maintainer/get')
+const getMaintainerSchema = require('../schema/maintainer/get')
 const loginMaintainer = require('../api/maintainer/login')
 const loginMaintainerSchema = require('../schema/maintainer/login')
 const logoutMaintainer = require('../api/maintainer/logout')
@@ -95,6 +97,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/auth/validate-email', { schema: validateEmailSchema }, (req, res) => validateEmail(req, res, fastify))
 
   // Maintainer
+  fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: getMaintainerSchema }, (req, res) => getMaintainer(req, res, fastify))
   fastify.post('/maintainer/login', { schema: loginMaintainerSchema }, (req, res) => loginMaintainer(req, res, fastify))
   fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: registerMaintainerSchema }, (req, res) => registerMaintainer(req, res, fastify))
