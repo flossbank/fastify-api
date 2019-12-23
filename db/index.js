@@ -31,14 +31,16 @@ Db.prototype.getAdBatch = async function getAdBatch () {
   // more complicated logic and/or caching can come later
   const ads = (await this.db.collection('adCampaigns').aggregate([
     { $match: { active: true } }, // find active campaigns
-    { $project: { _id: false, ads: true } }, // pick just their ads fields
+    { $project: { _id: '$_id', ads: true } }, // pick just their ads fields
     { $unwind: '$ads' }, // unwind ads into a single array
     { $sample: { size: 12 } } // return a random sampling of size 12
   ]).toArray())
 
+  // return ids in the form campaignId_adId for easier processing later
   return ads
-    .reduce((acc, { ads }) => acc.concat(ads), [])
-    .map(({ id, content: { title, body, url } }) => ({ id, title, body, url }))
+    .reduce((acc, { ads: { id, content: { title, body, url } }, _id: campaignId }) => acc.concat({
+      id: campaignId + '_' + id, title, body, url
+    }), [])
 }
 
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
@@ -92,6 +94,7 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
 
 Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   const adCampaignWithDefaults = Object.assign({}, adCampaign, {
+    impressionValue: adCampaign.cpm / 1000,
     active: false,
     spend: 0
   })
@@ -126,7 +129,9 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign)
     return map
   }, new Map())
 
-  const updatedCampaign = Object.assign({}, adCampaign)
+  const updatedCampaign = Object.assign({}, adCampaign, {
+    impressionValue: adCampaign.cpm / 1000
+  })
 
   updatedCampaign.ads = adCampaign.ads.map((ad) => {
     const isExistingAd = previousAds.has(ad.id)
