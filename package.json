@@ -7,9 +7,10 @@
     "start": "node index.js",
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
-    "unit-tests": "recaptcha_secret_test=test mongo_uri_test=test nyc ava --serial",
-    "watch:unit-tests": "recaptcha_secret_test=test mongo_uri_test=test ava --serial --watch",
-    "test": "npm run lint && npm run depcheck && npm run unit-tests"
+    "coverage": "nyc npm run unit-tests",
+    "unit-tests": "recaptcha_secret=test mongo_uri=test ava",
+    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --watch",
+    "test": "npm run lint && npm run coverage"
   },
   "author": "",
   "license": "ISC",
@@ -18,16 +19,21 @@
     "bcrypt": "^3.0.6",
     "dotenv": "^8.2.0",
     "fastify": "^2.10.0",
+    "fastify-cookie": "^3.2.0",
+    "fastify-cors": "^3.0.0",
     "fastify-plugin": "^1.6.0",
     "form-data": "^2.5.1",
-    "get-owned-packages": "^1.0.0",
+    "get-owned-packages": "^2.0.0",
     "got": "^9.6.0",
-    "mongodb": "^3.3.2"
+    "js-deep-equals": "^2.1.1",
+    "mongodb": "^3.3.2",
+    "ulid": "^2.3.0"
   },
   "devDependencies": {
     "ava": "^2.4.0",
     "dependency-check": "^4.1.0",
     "husky": "^3.0.8",
+    "mongodb-memory-server": "^6.0.2",
     "nyc": "^14.1.1",
     "sinon": "^7.5.0",
     "standard": "^14.3.1"

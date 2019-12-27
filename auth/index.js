@@ -2,8 +2,9 @@ const crypto = require('crypto')
 const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
-const ApiKeyCache = require('./cache')
+const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
+const { MAX_ADS_PER_PERIOD } = require('../helpers/constants')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -24,7 +25,6 @@ function Auth () {
 
   this.recaptchaSecret = config.getRecaptchaSecret()
   if (!this.recaptchaSecret) console.error('No reCAPTCHA secret found in env')
-  this.apiKeyCache = new ApiKeyCache()
 }
 
 // Kind of auth tokens enum
@@ -34,11 +34,56 @@ Auth.prototype.authKinds = {
   ADVERTISER: 'ADVERTISER'
 }
 
-Auth.prototype.isRequestAllowed = async function isRequestAllowed (req) {
+// Returns auth token or false
+Auth.prototype.getAuthToken = function getAuthToken (req) {
   if (!req.headers || !req.headers.authorization) return false
-  const token = req.headers.authorization.split(' ').pop()
+  return req.headers.authorization.split(' ').pop()
+}
 
-  return this.apiKeyCache.has(token) || this.validateApiKey(token)
+Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
+  const token = this.getAuthToken(req)
+  if (!token) return false
+
+  return this.validateApiKey(token)
+}
+
+// Returns a UI Session | null
+Auth.prototype.getUISession = async function getUISession (req, kind) {
+  const token = this.getAuthToken(req)
+  if (!token) return null
+
+  let item, Item
+  // Validate based on the type of session being auth'd
+  try {
+    switch (this.authKinds[kind]) {
+      case (this.authKinds.MAINTAINER):
+        ({ Item } = await docs.get({
+          TableName: MaintainerSessionTableName,
+          Key: { token }
+        }).promise())
+        item = Item
+        break
+      case (this.authKinds.ADVERTISER):
+        ({ Item } = await docs.get({
+          TableName: AdvertiserSessionTableName,
+          Key: { token }
+        }).promise())
+        item = Item
+        break
+      default:
+        console.error('Attempting to validate invalid session kind')
+        return null
+    }
+  } catch (err) {
+    console.error(err.message)
+    return null
+  }
+
+  if (item.expires > Date.now()) {
+    return null
+  }
+
+  return item
 }
 
 /**  */
@@ -150,14 +195,24 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
     return
   }
 
+  await this.deleteUserToken(email)
+
+  return true
+}
+
+Auth.prototype.createApiKey = async function createApiKey (email) {
   const key = crypto.randomBytes(32).toString('hex')
 
   await docs.put({
     TableName: ApiTableName,
-    Item: { key, email, timestamp: Date.now(), lastAccess: Date.now() }
+    Item: {
+      key,
+      email,
+      totalAdsSeen: 0,
+      adsSeenThisPeriod: 0,
+      created: Date.now()
+    }
   }).promise()
-
-  await this.deleteUserToken(email)
 
   return key
 }
@@ -176,27 +231,24 @@ Auth.prototype.validateApiKey = async function validateApiKey (key) {
     return false
   }
 
-  const valid = !!item
-  if (valid) {
-    this.apiKeyCache.add(key)
-  } else {
-    this.apiKeyCache.remove(key)
+  if (item.adsSeenThisPeriod >= MAX_ADS_PER_PERIOD) {
+    return false
   }
 
-  return valid
+  return true
 }
 
 Auth.prototype.createAdSession = async function createSession (req) {
   // standard authorization header is `{ authorization: 'Bearer token' }`
   const apiKey = req.headers.authorization.split(' ').pop()
-  const { packages, packageManager } = req.body
+  const { packages, registry } = req.body
   const sessionId = crypto.randomBytes(16).toString('hex')
   await docs.put({
     TableName: AdSessionTableName,
     Item: {
       sessionId,
       apiKey,
-      packageManager,
+      registry,
       packages,
       created: Date.now()
     }
@@ -204,36 +256,75 @@ Auth.prototype.createAdSession = async function createSession (req) {
   return sessionId
 }
 
-Auth.prototype.createMaintainerSession = async function createMaintainerSession (email) {
+Auth.prototype.completeAdSession = async function completeAdSession (req) {
+  if (!req.headers || !req.headers.authorization) return false
+  const apiKey = req.headers.authorization.split(' ').pop()
+  if (!apiKey) return false
+  const { seen } = req.body
+
+  let item
+  try {
+    const { Attributes } = await docs.update({
+      TableName: ApiTableName,
+      Key: { key: apiKey },
+      UpdateExpression: 'SET totalAdsSeen = totalAdsSeen + :seenLen, adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
+      ConditionExpression: '#key = :key',
+      ExpressionAttributeNames: {
+        '#key': 'key'
+      },
+      ExpressionAttributeValues: {
+        ':seenLen': seen.length,
+        ':key': apiKey
+      },
+      ReturnValues: 'ALL_OLD'
+    }).promise()
+    item = Attributes
+  } catch (e) {
+    if (e.code === 'ConditionalCheckFailedException') {
+      // this means an invalid API key was sent up
+      return false
+    }
+    throw e
+  }
+  return item
+}
+
+Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: MaintainerSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email }
+    Item: { sessionId, expires: Date.now() + weekExpiration, maintainerId }
   }).promise()
   return sessionId
 }
 
 Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: MaintainerSessionTableName,
     Key: { sessionId }
   }).promise()
 }
 
-Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (email) {
+Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (advertiserId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
     TableName: AdvertiserSessionTableName,
-    Item: { sessionId, expires: Date.now() + weekExpiration, email }
+    Item: { sessionId, expires: Date.now() + weekExpiration, advertiserId }
   }).promise()
   return sessionId
 }
 
 Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession (sessionId) {
+  if (!sessionId) return
   return docs.delete({
     TableName: AdvertiserSessionTableName,
     Key: { sessionId }
   }).promise()
 }
 
-module.exports = new Auth()
+exports.Auth = Auth
+
+exports.authPlugin = (auth) => fastifyPlugin(async (fastify) => {
+  fastify.decorate('auth', auth)
+})
