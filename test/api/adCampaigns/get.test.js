@@ -14,7 +14,9 @@ test.before(async (t) => {
       advertiserId: t.context.advertiserId1,
       ads: [{
         name: 'approved ad',
-        content: { body: 'def', title: 'DEF', url: 'https://def.com' }
+        body: 'def',
+        title: 'DEF',
+        url: 'https://def.com'
       }],
       maxSpend: 100,
       cpm: 100,
@@ -68,7 +70,9 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
       advertiserId: t.context.advertiserId1,
       ads: [{
         name: 'approved ad',
-        content: { body: 'def', title: 'DEF', url: 'https://def.com' }
+        body: 'def',
+        title: 'DEF',
+        url: 'https://def.com'
       }],
       maxSpend: 100,
       cpm: 100,

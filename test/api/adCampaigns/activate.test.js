@@ -12,12 +12,16 @@ test.before(async (t) => {
 
     t.context.ad1 = {
       name: 'unapproved ad',
-      content: { body: 'abc', title: 'ABC', url: 'https://abc.com' }
+      body: 'abc',
+      title: 'ABC',
+      url: 'https://abc.com'
     }
 
     t.context.ad2 = {
       name: 'approved ad',
-      content: { body: 'def', title: 'DEF', url: 'https://def.com' }
+      body: 'def',
+      title: 'DEF',
+      url: 'https://def.com'
     }
   })
 })

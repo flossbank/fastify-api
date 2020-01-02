@@ -14,8 +14,8 @@ test.before(async (t) => {
     const campaignId1 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       ads: [
-        { name: 'Teacher Fund #1', content: { title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }, approved: true },
-        { name: 'Teacher Fund #2', content: { title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }, approved: true }
+        { name: 'Teacher Fund #1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com', approved: true },
+        { name: 'Teacher Fund #2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com', approved: true }
       ],
       maxSpend: 100,
       cpm: 100,
@@ -23,14 +23,14 @@ test.before(async (t) => {
     })
     t.context.campaignId1 = campaignId1.toHexString()
     await db.activateAdCampaign(t.context.campaignId1)
-    t.context.ads = (await db.getAdCampaign(t.context.campaignId1)).ads
+    t.context.adCampaign1 = await db.getAdCampaign(t.context.campaignId1)
 
     // inactive campaign
     const campaignId2 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       ads: [
-        { name: 'Inbeeb #1', content: { title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com' }, approved: true },
-        { name: 'Inbeeb #2', content: { title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com' }, approved: true }
+        { name: 'Inbeeb #1', title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com', approved: true },
+        { name: 'Inbeeb #2', title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com', approved: true }
       ],
       maxSpend: 100,
       cpm: 100,
@@ -89,10 +89,10 @@ test('POST `/ad/get` 200 success', async (t) => {
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, await t.context.auth.createAdSession())
 
-  t.context.ads.forEach((ad) => {
+  t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
+      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
@@ -124,10 +124,10 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, 'existing-session-id')
-  t.context.ads.forEach((ad) => {
+  t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
+      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })

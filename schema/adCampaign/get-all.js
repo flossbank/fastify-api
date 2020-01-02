@@ -25,14 +25,9 @@ module.exports = {
                   type: 'object',
                   properties: {
                     name: { type: 'string' },
-                    content: {
-                      type: 'object',
-                      properties: {
-                        title: { type: 'string' },
-                        body: { type: 'string' },
-                        url: { type: 'string' }
-                      }
-                    }
+                    title: { type: 'string' },
+                    body: { type: 'string' },
+                    url: { type: 'string' }
                   }
                 }
               },
