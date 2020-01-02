@@ -13,18 +13,12 @@ module.exports = {
             type: 'array',
             items: {
               type: 'object',
-              required: ['name', 'content'],
+              required: ['name', 'title', 'body', 'url'],
               properties: {
                 name: { type: 'string', maxLength: 128 },
-                content: {
-                  type: 'object',
-                  required: ['title', 'body', 'url'],
-                  properties: {
-                    title: { type: 'string', maxLength: 128 },
-                    body: { type: 'string', maxLength: 256 },
-                    url: { type: 'string', maxLength: 128 }
-                  }
-                }
+                title: { type: 'string', maxLength: 128 },
+                body: { type: 'string', maxLength: 256 },
+                url: { type: 'string', maxLength: 128 }
               }
             }
           },

@@ -91,11 +91,15 @@ test('POST `/ad-campaign/create` 200 success with ads', async (t) => {
       advertiserId: t.context.advertiserId1,
       ads: [{
         name: 'unapproved ad',
-        content: { body: 'abc', title: 'ABC', url: 'https://abc.com' },
+        body: 'abc',
+        title: 'ABC',
+        url: 'https://abc.com',
         approved: false
       }, {
         name: 'approved ad',
-        content: { body: 'def', title: 'DEF', url: 'https://def.com' },
+        body: 'def',
+        title: 'DEF',
+        url: 'https://def.com',
         approved: true
       }],
       maxSpend: 1000,

@@ -38,7 +38,6 @@ Db.prototype.getAdBatch = async function getAdBatch () {
 
   return ads
     .reduce((acc, { ads }) => acc.concat(ads), [])
-    .map(({ id, content: { title, body, url } }) => ({ id, title, body, url }))
 }
 
 Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {

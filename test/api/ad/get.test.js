@@ -14,8 +14,8 @@ test.before(async (t) => {
     const campaignId1 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       ads: [
-        { name: 'Teacher Fund #1', content: { title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com' }, approved: true },
-        { name: 'Teacher Fund #2', content: { title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com' }, approved: true }
+        { name: 'Teacher Fund #1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com', approved: true },
+        { name: 'Teacher Fund #2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com', approved: true }
       ],
       maxSpend: 100,
       cpm: 100,
@@ -29,8 +29,8 @@ test.before(async (t) => {
     const campaignId2 = await db.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       ads: [
-        { name: 'Inbeeb #1', content: { title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com' }, approved: true },
-        { name: 'Inbeeb #2', content: { title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com' }, approved: true }
+        { name: 'Inbeeb #1', title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com', approved: true },
+        { name: 'Inbeeb #2', title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com', approved: true }
       ],
       maxSpend: 100,
       cpm: 100,
@@ -92,7 +92,7 @@ test('POST `/ad/get` 200 success', async (t) => {
   t.context.ads.forEach((ad) => {
     t.deepEqual(
       payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+      { id: ad.id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
@@ -127,7 +127,7 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   t.context.ads.forEach((ad) => {
     t.deepEqual(
       payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.content.title, body: ad.content.body, url: ad.content.url }
+      { id: ad.id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
