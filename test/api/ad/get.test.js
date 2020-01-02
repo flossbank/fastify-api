@@ -23,7 +23,7 @@ test.before(async (t) => {
     })
     t.context.campaignId1 = campaignId1.toHexString()
     await db.activateAdCampaign(t.context.campaignId1)
-    t.context.ads = (await db.getAdCampaign(t.context.campaignId1)).ads
+    t.context.adCampaign1 = await db.getAdCampaign(t.context.campaignId1)
 
     // inactive campaign
     const campaignId2 = await db.createAdCampaign({
@@ -89,10 +89,10 @@ test('POST `/ad/get` 200 success', async (t) => {
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, await t.context.auth.createAdSession())
 
-  t.context.ads.forEach((ad) => {
+  t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
+      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
@@ -124,10 +124,10 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, 'existing-session-id')
-  t.context.ads.forEach((ad) => {
+  t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === ad.id),
-      { id: ad.id, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
+      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
