@@ -4,7 +4,6 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
-const { MAX_ADS_PER_PERIOD } = require('../helpers/constants')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -208,7 +207,6 @@ Auth.prototype.createApiKey = async function createApiKey (email) {
     Item: {
       key,
       email,
-      totalAdsSeen: 0,
       adsSeenThisPeriod: 0,
       created: Date.now()
     }
@@ -220,22 +218,15 @@ Auth.prototype.createApiKey = async function createApiKey (email) {
 Auth.prototype.validateApiKey = async function validateApiKey (key) {
   if (!key) return false
 
-  let item
   try {
     const { Item } = await docs.get({
       TableName: ApiTableName,
       Key: { key }
     }).promise()
-    item = Item
+    return !!Item
   } catch (_) {
     return false
   }
-
-  if (item.adsSeenThisPeriod >= MAX_ADS_PER_PERIOD) {
-    return false
-  }
-
-  return true
 }
 
 Auth.prototype.createAdSession = async function createSession (req) {
@@ -267,7 +258,7 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
     const { Attributes } = await docs.update({
       TableName: ApiTableName,
       Key: { key: apiKey },
-      UpdateExpression: 'SET totalAdsSeen = totalAdsSeen + :seenLen, adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
+      UpdateExpression: 'SET adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
       ConditionExpression: '#key = :key',
       ExpressionAttributeNames: {
         '#key': 'key'

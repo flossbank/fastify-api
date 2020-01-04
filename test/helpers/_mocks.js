@@ -13,7 +13,6 @@ module.exports = {
     this.completeAdSession = sinon.stub().resolves({
       email: 'pjs@sjp.com',
       key: 'abc',
-      totalAdsSeen: 2,
       adsSeenThisPeriod: 2,
       timestamp: 1571253769601
     })
