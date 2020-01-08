@@ -4,6 +4,7 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
+const { apiKeyVerification } = require('../helpers/email')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -90,7 +91,6 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   if (!email) throw new Error('email is required')
   if (!this.authKinds[kind]) throw new Error('Invalid kind of token')
   const token = crypto.randomBytes(32).toString('hex')
-  const url = `https://flossbank.com/${kind}/authenticate?email=${email}&token=${token}`
 
   await docs.put({
     TableName: UserTableName,
@@ -98,26 +98,9 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   }).promise()
 
   return ses.sendEmail({
-    Destination: {
-      ToAddresses: [email]
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: 'UTF-8',
-          Data: `Please click <a href=${url}>here</a> to verify your identity.`
-        },
-        Text: {
-          Charset: 'UTF-8',
-          Data: `Please click the link to verify your identity: ${url}`
-        }
-      },
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Please verify your identity'
-      }
-    },
-    Source: 'stripedpajamas273@gmail.com' // TODO temporary
+    Destination: { ToAddresses: [email] },
+    Source: 'Flossbank <admin@flossbank.com>',
+    Message: apiKeyVerification(email, token, kind.toLowerCase())
   }).promise()
 }
 
