@@ -81,6 +81,16 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   return { id, ...rest }
 }
 
+Db.prototype.findAdvertiser = async function findAdvertiser (email) {
+  const advertiser = await this.db.collection('advertisers').findOne({ email })
+
+  if (!advertiser) return advertiser
+
+  const { _id: id, ...rest } = advertiser
+  delete rest.password
+  return { id, ...rest }
+}
+
 Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
   const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
   if (!foundAdvertiser) return { success: false, message: 'Login failed; Invalid user ID or password' }
@@ -285,6 +295,16 @@ Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
 Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   const maintainer = await this.db.collection('maintainers')
     .findOne({ _id: ObjectId(maintainerId) })
+
+  if (!maintainer) return maintainer
+
+  const { _id: id, ...rest } = maintainer
+  delete rest.password
+  return { id, ...rest }
+}
+
+Db.prototype.findMaintainer = async function findMaintainer (email) {
+  const maintainer = await this.db.collection('maintainers').findOne({ email })
 
   if (!maintainer) return maintainer
 
