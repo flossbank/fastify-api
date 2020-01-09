@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^6.10.2",
     "aws-sdk": "^2.543.0",
     "bcrypt": "^3.0.6",
     "dotenv": "^8.2.0",
