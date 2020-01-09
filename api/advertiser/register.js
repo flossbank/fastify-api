@@ -4,15 +4,19 @@ module.exports = async (req, res, ctx) => {
   // TODO: validate email and password against regex
   const { advertiser } = req.body
   try {
-    const existing = await ctx.db.advertiserExists(advertiser.email)
-    if (existing) {
-      res.status(400)
-      return res.send({
-        success: false,
-        message: alreadyExistsMessage
-      })
+    let id
+    try {
+      id = await ctx.db.createAdvertiser(advertiser)
+    } catch (e) {
+      if (e.code === 11000) { // Dupe key mongo error code is 11000
+        res.status(400)
+        return res.send({
+          success: false,
+          message: alreadyExistsMessage
+        })
+      }
+      throw e
     }
-    const id = await ctx.db.createAdvertiser(advertiser)
     await ctx.auth.sendUserToken(advertiser.email, ctx.auth.authKinds.ADVERTISER)
     res.send({ success: true, id })
   } catch (e) {

@@ -42,22 +42,12 @@ test('POST `/advertiser/create` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {
-  let res = await t.context.app.inject({
-    method: 'POST',
-    url: '/advertiser/register',
-    payload: {
-      advertiser: {
-        name: 'advertiser',
-        email: 'advertiser@ads.com',
-        password: 'Paps%df3$sd'
-      }
-    },
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 200)
-  let payload = JSON.parse(res.payload)
-
-  res = await t.context.app.inject({
+  t.context.db.createAdvertiser = () => { 
+    const error = new Error()
+    error.code = 11000 // Dupe key mongo error
+    throw error
+  }
+  const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',
     payload: {
@@ -71,7 +61,7 @@ test('POST `/advertiser/create` 400 duplicate email', async (t) => {
   })
 
   t.deepEqual(res.statusCode, 400)
-  payload = JSON.parse(res.payload)
+  const payload = JSON.parse(res.payload)
 
   t.deepEqual(payload.success, false)
   const { message } = payload
@@ -138,7 +128,7 @@ test('POST `/advertiser/register` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/create` 500 server error', async (t) => {
-  t.context.db.advertiserExists = () => { throw new Error() }
+  t.context.db.createAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',
