@@ -4,7 +4,7 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
-const { apiKeyVerification } = require('../helpers/email')
+const { activationEmails } = require('../helpers/email')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -97,10 +97,12 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
     Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
   }).promise()
 
+  if (!activationEmails[kind]) throw new Error('No email template for kind ' + kind)
+
   return ses.sendEmail({
     Destination: { ToAddresses: [email] },
     Source: 'Flossbank <admin@flossbank.com>',
-    Message: apiKeyVerification(email, token, kind.toLowerCase())
+    Message: activationEmails[kind](email, token)
   }).promise()
 }
 
