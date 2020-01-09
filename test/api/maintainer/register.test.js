@@ -24,7 +24,8 @@ test('POST `/maintainer/register` 200 success', async (t) => {
     url: '/maintainer/register',
     payload: {
       maintainer: {
-        name: 'maintainer',
+        firstName: 'maintainer',
+        lastName: 'captain',
         email: 'maintainer@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -39,7 +40,8 @@ test('POST `/maintainer/register` 200 success', async (t) => {
 
   const maintainer = await t.context.db.getMaintainer(id)
   t.deepEqual(maintainer.verified, false)
-  t.deepEqual(maintainer.name, 'maintainer')
+  t.deepEqual(maintainer.firstName, 'maintainer')
+  t.deepEqual(maintainer.lastName, 'captain')
 })
 
 test('POST `/maintainer/register` 400 duplicate email', async (t) => {
@@ -53,7 +55,8 @@ test('POST `/maintainer/register` 400 duplicate email', async (t) => {
     url: '/maintainer/register',
     payload: {
       maintainer: {
-        name: 'maintainer',
+        firstName: 'maintainer',
+        lastName: 'captain',
         email: 'maintainer@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -134,7 +137,8 @@ test('POST `/maintainer/register` 500 server error', async (t) => {
     url: '/maintainer/register',
     payload: {
       maintainer: {
-        name: 'maintainer',
+        firstName: 'maintainer',
+        lastName: 'captain',
         email: 'maintainer@ads.com',
         password: 'Paps%df3$sd'
       }

@@ -5,13 +5,15 @@ const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
 test.before(async (t) => {
   await before(t, async (t, db) => {
     await db.createMaintainer({
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Honor',
       email: 'honey@etsy.com',
       password: 'beekeeperbookkeeper'
     })
     await db.verifyMaintainer('honey@etsy.com')
     await db.createMaintainer({
-      name: 'Faith Ogler',
+      firstName: 'Faith',
+      lastName: 'Ogler',
       email: 'fogler@folgers.coffee',
       password: 'coffeesnobdoorknob'
     })

@@ -17,7 +17,8 @@ module.exports = {
           type: 'object',
           properties: {
             id: { type: 'string' },
-            name: { type: 'string' },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
             email: { type: 'string' },
             organization: { type: 'string' },
             adCampaigns: {

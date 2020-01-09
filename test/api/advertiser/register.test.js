@@ -24,7 +24,8 @@ test('POST `/advertiser/create` 200 success', async (t) => {
     url: '/advertiser/register',
     payload: {
       advertiser: {
-        name: 'advertiser',
+        firstName: 'advertiser',
+        lastName: 'captain',
         email: 'advertiser@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -38,7 +39,8 @@ test('POST `/advertiser/create` 200 success', async (t) => {
   const { id } = payload
 
   const ad = await t.context.db.getAdvertiser(id)
-  t.deepEqual(ad.name, 'advertiser')
+  t.deepEqual(ad.firstName, 'advertiser')
+  t.deepEqual(ad.lastName, 'captain')
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {
@@ -52,7 +54,8 @@ test('POST `/advertiser/create` 400 duplicate email', async (t) => {
     url: '/advertiser/register',
     payload: {
       advertiser: {
-        name: 'advertiser',
+        firstName: 'advertiser',
+        lastName: 'captain',
         email: 'advertiser@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -134,7 +137,8 @@ test('POST `/advertiser/create` 500 server error', async (t) => {
     url: '/advertiser/register',
     payload: {
       advertiser: {
-        name: 'advertiser',
+        firstName: 'advertiser',
+        lastName: 'captain',
         email: 'advertiser@ads.com',
         password: 'Paps%df3$sd'
       }
