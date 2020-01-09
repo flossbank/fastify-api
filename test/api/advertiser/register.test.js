@@ -42,7 +42,7 @@ test('POST `/advertiser/create` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {
-  t.context.db.createAdvertiser = () => { 
+  t.context.db.createAdvertiser = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
     throw error

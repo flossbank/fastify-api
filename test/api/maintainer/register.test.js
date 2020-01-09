@@ -43,7 +43,7 @@ test('POST `/maintainer/register` 200 success', async (t) => {
 })
 
 test('POST `/maintainer/register` 400 duplicate email', async (t) => {
-  t.context.db.createMaintainer = () => { 
+  t.context.db.createMaintainer = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
     throw error

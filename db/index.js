@@ -81,11 +81,6 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   return { id, ...rest }
 }
 
-Db.prototype.advertiserExists = async function advertiserExists (email) {
-  const advertiser = await this.db.collection('advertisers').findOne({ email })
-  return !!advertiser
-}
-
 Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
   const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
   if (!foundAdvertiser) return { success: false, message: 'Login failed; Invalid user ID or password' }
