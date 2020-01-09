@@ -232,39 +232,6 @@ Auth.prototype.createAdSession = async function createSession (req) {
   return sessionId
 }
 
-Auth.prototype.completeAdSession = async function completeAdSession (req) {
-  if (!req.headers || !req.headers.authorization) return false
-  const apiKey = req.headers.authorization.split(' ').pop()
-  if (!apiKey) return false
-  const { seen } = req.body
-
-  let item
-  try {
-    const { Attributes } = await docs.update({
-      TableName: ApiTableName,
-      Key: { key: apiKey },
-      UpdateExpression: 'SET adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
-      ConditionExpression: '#key = :key',
-      ExpressionAttributeNames: {
-        '#key': 'key'
-      },
-      ExpressionAttributeValues: {
-        ':seenLen': seen.length,
-        ':key': apiKey
-      },
-      ReturnValues: 'ALL_OLD'
-    }).promise()
-    item = Attributes
-  } catch (e) {
-    if (e.code === 'ConditionalCheckFailedException') {
-      // this means an invalid API key was sent up
-      return false
-    }
-    throw e
-  }
-  return item
-}
-
 Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
   await docs.put({
