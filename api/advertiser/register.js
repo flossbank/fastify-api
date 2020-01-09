@@ -1,7 +1,6 @@
 const { alreadyExistsMessage } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  // TODO: validate email and password against regex
   const { advertiser } = req.body
   try {
     let id
