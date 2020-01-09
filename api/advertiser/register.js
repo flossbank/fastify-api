@@ -4,11 +4,11 @@ module.exports = async (req, res, ctx) => {
   // TODO: validate email and password against regex
   const { advertiser } = req.body
   try {
-    const existing = await ctx.db.findAdvertiser(advertiser.email)
+    const existing = await ctx.db.advertiserExists(advertiser.email)
     if (existing) {
       res.status(400)
-      return res.send({ 
-        success: false, 
+      return res.send({
+        success: false,
         message: alreadyExistsMessage
       })
     }

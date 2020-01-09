@@ -42,7 +42,22 @@ test('POST `/advertiser/create` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {
-  const res = await t.context.app.inject({
+  let res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/register',
+    payload: {
+      advertiser: {
+        name: 'advertiser',
+        email: 'advertiser@ads.com',
+        password: 'Paps%df3$sd'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  let payload = JSON.parse(res.payload)
+
+  res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',
     payload: {
@@ -56,7 +71,7 @@ test('POST `/advertiser/create` 400 duplicate email', async (t) => {
   })
 
   t.deepEqual(res.statusCode, 400)
-  const payload = JSON.parse(res.payload)
+  payload = JSON.parse(res.payload)
 
   t.deepEqual(payload.success, false)
   const { message } = payload
@@ -123,7 +138,7 @@ test('POST `/advertiser/register` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/create` 500 server error', async (t) => {
-  t.context.db.findAdvertiser = () => { throw new Error() }
+  t.context.db.advertiserExists = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',

@@ -43,7 +43,22 @@ test('POST `/maintainer/register` 200 success', async (t) => {
 })
 
 test('POST `/maintainer/register` 400 duplicate email', async (t) => {
-  const res = await t.context.app.inject({
+  let res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/register',
+    payload: {
+      maintainer: {
+        name: 'maintainer',
+        email: 'maintainer@ads.com',
+        password: 'Paps%df3$sd'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  let payload = JSON.parse(res.payload)
+
+  res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/register',
     payload: {
@@ -56,7 +71,7 @@ test('POST `/maintainer/register` 400 duplicate email', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
-  const payload = JSON.parse(res.payload)
+  payload = JSON.parse(res.payload)
 
   t.deepEqual(payload.success, false)
   const { message } = payload
@@ -123,7 +138,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/register` 500 server error', async (t) => {
-  t.context.db.findMaintainer = () => { throw new Error() }
+  t.context.db.maintainerExists = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/register',

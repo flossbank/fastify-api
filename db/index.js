@@ -81,14 +81,9 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   return { id, ...rest }
 }
 
-Db.prototype.findAdvertiser = async function findAdvertiser (email) {
+Db.prototype.advertiserExists = async function advertiserExists (email) {
   const advertiser = await this.db.collection('advertisers').findOne({ email })
-
-  if (!advertiser) return advertiser
-
-  const { _id: id, ...rest } = advertiser
-  delete rest.password
-  return { id, ...rest }
+  return !!advertiser
 }
 
 Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
@@ -303,14 +298,9 @@ Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   return { id, ...rest }
 }
 
-Db.prototype.findMaintainer = async function findMaintainer (email) {
+Db.prototype.maintainerExists = async function maintainerExists (email) {
   const maintainer = await this.db.collection('maintainers').findOne({ email })
-
-  if (!maintainer) return maintainer
-
-  const { _id: id, ...rest } = maintainer
-  delete rest.password
-  return { id, ...rest }
+  return !!maintainer
 }
 
 Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
