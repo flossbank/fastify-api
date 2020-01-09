@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -116,6 +117,28 @@ test('POST `/ad-campaign/create` 200 success with ads', async (t) => {
 
   const campaign = await t.context.db.getAdCampaign(id)
   t.deepEqual(campaign.advertiserId, t.context.advertiserId1)
+})
+
+test('POST `/ad-campaign/create` 400 bad request | trash ads', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/create',
+    payload: {
+      advertiserId: t.context.advertiserId1,
+      ads: [{
+        name: 'trash ad',
+        body: 'a\n\nbc',
+        title: 'ABC',
+        url: 'https://abc.com'
+      }],
+      maxSpend: 1000,
+      cpm: 100,
+      name: 'camp pain'
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
 })
 
 test('POST `/ad-campaign/create` 400 bad request', async (t) => {

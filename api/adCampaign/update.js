@@ -1,3 +1,5 @@
+const { AD_NOT_CLEAN } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   try {
     const campaign = await ctx.db.getAdCampaign(req.body.adCampaignId)
@@ -9,7 +11,18 @@ module.exports = async (req, res, ctx) => {
 
     const { adCampaignId: id, adCampaign } = req.body
 
-    await ctx.db.updateAdCampaign(id, adCampaign)
+    try {
+      await ctx.db.updateAdCampaign(id, adCampaign)
+    } catch (e) {
+      if (e.code === AD_NOT_CLEAN) {
+        res.status(400)
+        return res.send({
+          success: false,
+          message: e.message
+        })
+      }
+      throw e
+    }
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

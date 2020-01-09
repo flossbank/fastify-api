@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -151,6 +152,38 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
     ads: [],
     maxSpend: 1000,
     cpm: 100,
+    name: 'camp paign'
+  })).toHexString()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/update',
+    payload: {
+      adCampaignId,
+      adCampaign: {
+        advertiserId: t.context.advertiserId1,
+        ads: [{
+          name: 'trash ad',
+          title: 'abc',
+          body: 'def',
+          url: 'gh\ni' // oh my
+        }],
+        maxSpend: 1000,
+        cpm: 100,
+        name: 'camp pain 3'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
+})
+
+test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    ads: [],
+    maxSpend: 1000,
+    cpm: 100,
     name: 'camp pain 3'
   })).toHexString()
   const res = await t.context.app.inject({
@@ -193,14 +226,22 @@ test('POST `/ad-campaign/update` 400 bad request', async (t) => {
 })
 
 test('POST `/ad-campaign/update` 500 server error', async (t) => {
+  const adCampaignId = (await t.context.db.createAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    ads: [],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 3'
+  })).toHexString()
+
   t.context.db.updateAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId: 'test-ad-campaign-0',
+      adCampaignId,
       adCampaign: {
-        advertiserId: 'test-advertiser-0',
+        advertiserId: t.context.advertiserId1,
         ads: [],
         maxSpend: 1000,
         cpm: 100,

@@ -32,6 +32,13 @@ module.exports = {
         success: { type: 'boolean' },
         id: { type: 'string' }
       }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
     }
   }
 }
