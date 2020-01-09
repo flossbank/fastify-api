@@ -4,7 +4,8 @@ const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
 test.before(async (t) => {
   await before(t, async (t, db) => {
     const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Empathy',
       email: 'honey@etsy.com',
       password: 'beekeeperbookkeeper'
     })
@@ -12,7 +13,8 @@ test.before(async (t) => {
     await db.verifyAdvertiser('honey@etsy.com')
 
     const unverifiedAdvertiserId = await db.createAdvertiser({
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Empathy',
       email: 'honey@etsy.com',
       password: 'beekeeperbookkeeper'
     })
@@ -81,7 +83,8 @@ test('GET `/advertiser/get` 200 success', async (t) => {
     success: true,
     advertiser: {
       id: t.context.advertiserId1,
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Empathy',
       email: 'honey@etsy.com',
       adCampaigns: [],
       verified: true,

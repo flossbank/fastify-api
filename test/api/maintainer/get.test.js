@@ -4,7 +4,8 @@ const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
 test.before(async (t) => {
   await before(t, async (t, db) => {
     const maintainerId1 = await db.createMaintainer({
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Honor',
       email: 'honey@etsy.com',
       password: 'beekeeperbookkeeper',
       payoutInfo: 'honey@booboo.com'
@@ -13,7 +14,8 @@ test.before(async (t) => {
     await db.verifyMaintainer('honey@etsy.com')
 
     const unverifiedMaintainerId = await db.createMaintainer({
-      name: 'Honesty2',
+      firstName: 'Honesty2',
+      lastName: 'Honor',
       email: 'honey2@etsy.com',
       password: 'beekeeperbookkeeper',
       payoutInfo: 'honey2@booboo.com'
@@ -84,7 +86,8 @@ test('GET `/maintainer/get` 200 success', async (t) => {
     success: true,
     maintainer: {
       id: t.context.maintainerId1,
-      name: 'Honesty',
+      firstName: 'Honesty',
+      lastName: 'Honor',
       email: 'honey@etsy.com',
       payoutInfo: 'honey@booboo.com'
     }
