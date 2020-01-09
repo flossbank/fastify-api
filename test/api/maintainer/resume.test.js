@@ -45,7 +45,6 @@ test('GET `/maintainer/resume` 401 unauthorized | no session', async (t) => {
 })
 
 test('GET `/maintainer/resume` 200 | success', async (t) => {
-  t.context.auth.createMaintainerSession.resolves('maintainer-session-2')
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/resume',
@@ -58,7 +57,6 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.maintainer, { ...maintainerRetrieved, id: maintainerRetrieved.id.toHexString() })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session-2`)
 })
 
 test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {

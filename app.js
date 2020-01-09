@@ -15,7 +15,7 @@ module.exports = async function buildFastify (deps) {
     useDefaults: true,
     coerceTypes: true,
     allErrors: true,
-    nullable: true,
+    nullable: true
   })
   fastify.setSchemaCompiler(function (schema) {
     return ajv.compile(schema)
