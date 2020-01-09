@@ -4,7 +4,7 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
-const { MAX_ADS_PER_PERIOD } = require('../helpers/constants')
+const { activationEmails } = require('../helpers/email')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -91,34 +91,18 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   if (!email) throw new Error('email is required')
   if (!this.authKinds[kind]) throw new Error('Invalid kind of token')
   const token = crypto.randomBytes(32).toString('hex')
-  const url = `https://flossbank.com/${kind}/authenticate?email=${email}&token=${token}`
 
   await docs.put({
     TableName: UserTableName,
     Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
   }).promise()
 
+  if (!activationEmails[kind]) throw new Error('No email template for kind ' + kind)
+
   return ses.sendEmail({
-    Destination: {
-      ToAddresses: [email]
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: 'UTF-8',
-          Data: `Please click <a href=${url}>here</a> to verify your identity.`
-        },
-        Text: {
-          Charset: 'UTF-8',
-          Data: `Please click the link to verify your identity: ${url}`
-        }
-      },
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Please verify your identity'
-      }
-    },
-    Source: 'stripedpajamas273@gmail.com' // TODO temporary
+    Destination: { ToAddresses: [email] },
+    Source: 'Flossbank <admin@flossbank.com>',
+    Message: activationEmails[kind](email, token)
   }).promise()
 }
 
@@ -208,7 +192,6 @@ Auth.prototype.createApiKey = async function createApiKey (email) {
     Item: {
       key,
       email,
-      totalAdsSeen: 0,
       adsSeenThisPeriod: 0,
       created: Date.now()
     }
@@ -220,22 +203,15 @@ Auth.prototype.createApiKey = async function createApiKey (email) {
 Auth.prototype.validateApiKey = async function validateApiKey (key) {
   if (!key) return false
 
-  let item
   try {
     const { Item } = await docs.get({
       TableName: ApiTableName,
       Key: { key }
     }).promise()
-    item = Item
+    return !!Item
   } catch (_) {
     return false
   }
-
-  if (item.adsSeenThisPeriod >= MAX_ADS_PER_PERIOD) {
-    return false
-  }
-
-  return true
 }
 
 Auth.prototype.createAdSession = async function createSession (req) {
@@ -267,7 +243,7 @@ Auth.prototype.completeAdSession = async function completeAdSession (req) {
     const { Attributes } = await docs.update({
       TableName: ApiTableName,
       Key: { key: apiKey },
-      UpdateExpression: 'SET totalAdsSeen = totalAdsSeen + :seenLen, adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
+      UpdateExpression: 'SET adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
       ConditionExpression: '#key = :key',
       ExpressionAttributeNames: {
         '#key': 'key'

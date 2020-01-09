@@ -1,16 +1,10 @@
-const { Auth } = require('../../auth')
-
 module.exports = {
   body: {
     type: 'object',
-    required: ['email', 'token', 'kind'],
+    required: ['email', 'token'],
     properties: {
       email: { type: 'string', maxLength: 128 },
-      token: { type: 'string', maxLength: 128 },
-      kind: {
-        type: 'string',
-        enum: Object.keys(Auth.prototype.authKinds)
-      }
+      token: { type: 'string', maxLength: 128 }
     }
   },
   response: {

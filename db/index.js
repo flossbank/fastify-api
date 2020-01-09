@@ -38,7 +38,7 @@ Db.prototype.getAdBatch = async function getAdBatch () {
 
   // return ids in the form campaignId_adId for easier processing later
   return ads
-    .reduce((acc, { ads: { id, content: { title, body, url } }, _id: campaignId }) => acc.concat({
+    .reduce((acc, { ads: { id, title, body, url }, _id: campaignId }) => acc.concat({
       id: campaignId + '_' + id, title, body, url
     }), [])
 }

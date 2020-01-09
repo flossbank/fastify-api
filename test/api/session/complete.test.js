@@ -52,7 +52,6 @@ test('POST `/session/complete` 200 success | extra long seen', async (t) => {
   t.context.auth.completeAdSession.resolves({
     email: 'pjs@sjp.com',
     key: 'abc',
-    totalAdsSeen: 2,
     adsSeenThisPeriod: MAX_ADS_PER_PERIOD - 4,
     timestamp: 1571253769601
   })
