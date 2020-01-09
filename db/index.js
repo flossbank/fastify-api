@@ -293,6 +293,11 @@ Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   return { id, ...rest }
 }
 
+Db.prototype.maintainerExists = async function maintainerExists (email) {
+  const maintainer = await this.db.collection('maintainers').findOne({ email })
+  return !!maintainer
+}
+
 Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
   const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
   if (!foundMaintainer) return { success: false, message: 'Login failed; Invalid user ID or password' }
