@@ -113,11 +113,10 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
     name: 'camp pain 2'
   })).toHexString()
 
-  await t.context.db.activateAdCampaign(adCampaignId)
-
   let campaign = await t.context.db.getAdCampaign(adCampaignId)
   const adId1 = campaign.ads.map(ad => ad.id).pop()
   await t.context.db.approveAd(adCampaignId, adId1)
+  await t.context.db.activateAdCampaign(adCampaignId)
   campaign = await t.context.db.getAdCampaign(adCampaignId)
 
   const newName = 'new camp pain 2'

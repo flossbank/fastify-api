@@ -18,7 +18,9 @@ module.exports = {
                 name: { type: 'string', maxLength: 128 },
                 title: { type: 'string', maxLength: 128 },
                 body: { type: 'string', maxLength: 256 },
-                url: { type: 'string', maxLength: 128 }
+                url: { type: 'string', maxLength: 128 },
+                id: { type: 'string', maxLength: 128 },
+                approved: { type: 'boolean' }
               }
             }
           },
