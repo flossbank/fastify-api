@@ -17,37 +17,37 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/auth/send` 400 bad request', async (t) => {
+test('POST `/user/register` 400 bad request', async (t) => {
   let res = await t.context.app.inject({
     method: 'POST',
-    url: '/auth/send',
+    url: '/user/register',
     payload: {}
   })
   t.deepEqual(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/auth/send',
+    url: '/user/register',
     payload: { email: 'not-valid-email' }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/auth/send` 200 success', async (t) => {
+test('POST `/user/register` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/auth/send',
+    url: '/user/register',
     payload: { email: 'peter@quo.cc' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
-test('POST `/auth/send` 500 server error', async (t) => {
+test('POST `/user/register` 500 server error', async (t) => {
   t.context.auth.sendUserToken.throws()
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/auth/send',
+    url: '/user/register',
     payload: { email: 'peter@quo.cc' }
   })
   t.deepEqual(res.statusCode, 500)

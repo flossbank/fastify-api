@@ -31,13 +31,13 @@ const verifyAdvertiser = require('../api/advertiser/verify')
 const verifyAdvertiserSchema = require('../schema/advertiser/verify')
 const resumeAdvertiserSession = require('../api/advertiser/resume')
 
-// Auth
-const sendAuth = require('../api/auth/send')
-const sendAuthSchema = require('../schema/auth/send')
-const validateCaptcha = require('../api/auth/validate-captcha')
-const validateCaptchaSchema = require('../schema/auth/validate-captcha')
-const validateEmail = require('../api/auth/validate-email')
-const validateEmailSchema = require('../schema/auth/validate-email')
+// User
+const registerUser = require('../api/user/register')
+const registerUserSchema = require('../schema/user/register')
+const validateCaptcha = require('../api/user/validate-captcha')
+const validateCaptchaSchema = require('../schema/user/validate-captcha')
+const verifyUser = require('../api/user/verify')
+const verifyUserSchema = require('../schema/user/verify')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -94,10 +94,10 @@ async function routes (fastify, opts, next) {
   fastify.post('/advertiser/verify', { schema: verifyAdvertiserSchema }, (req, res) => verifyAdvertiser(req, res, fastify))
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
-  // Auth
-  fastify.post('/auth/send', { schema: sendAuthSchema }, (req, res) => sendAuth(req, res, fastify))
-  fastify.post('/auth/validate-captcha', { schema: validateCaptchaSchema }, (req, res) => validateCaptcha(req, res, fastify))
-  fastify.post('/auth/validate-email', { schema: validateEmailSchema }, (req, res) => validateEmail(req, res, fastify))
+  // User
+  fastify.post('/user/register', { schema: registerUserSchema }, (req, res) => registerUser(req, res, fastify))
+  fastify.post('/user/validate-captcha', { schema: validateCaptchaSchema }, (req, res) => validateCaptcha(req, res, fastify))
+  fastify.post('/user/verify', { schema: verifyUserSchema }, (req, res) => verifyUser(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: getMaintainerSchema }, (req, res) => getMaintainer(req, res, fastify))
