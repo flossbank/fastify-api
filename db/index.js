@@ -4,6 +4,8 @@ const { ulid } = require('ulid')
 const { compare } = require('js-deep-equals')
 const bcrypt = require('bcrypt')
 const config = require('../config')
+const Cleaner = require('../helpers/clean')
+const { AD_NOT_CLEAN, AD_NOT_CLEAN_MSG } = require('../helpers/constants')
 
 function Db (url) {
   const _url = url || config.getMongoUri()
@@ -101,6 +103,11 @@ Db.prototype.createAdCampaign = async function createAdCampaign (adCampaign) {
   adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
     return Object.assign({}, ad, { id: ulid(), approved: false })
   })
+  if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
+    const e = new Error(AD_NOT_CLEAN_MSG)
+    e.code = AD_NOT_CLEAN
+    throw e
+  }
   const { insertedId } = await this.db.collection('adCampaigns').insertOne(adCampaignWithDefaults)
   return insertedId
 }
@@ -143,6 +150,12 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (id, adCampaign)
 
     return Object.assign({ id: ulid() }, ad, { approved: false })
   })
+
+  if (!updatedCampaign.ads.every(ad => Cleaner.isAdClean(ad))) {
+    const e = new Error(AD_NOT_CLEAN_MSG)
+    e.code = AD_NOT_CLEAN
+    throw e
+  }
 
   // All ad campaigns that are updated should immediately be set to inactive
   updatedCampaign.active = false
