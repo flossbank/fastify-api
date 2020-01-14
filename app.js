@@ -22,8 +22,21 @@ module.exports = async function buildFastify (deps) {
   })
   fastify.register(require('fastify-cookie'))
 
+  const allowedOrigins = [
+    'https://flossbank.com',
+    'https://advertiser.flossbank.com',
+    'https://maintainer.flossbank.com',
+    'https://verification.flossbank.com'
+  ]
+  if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:3000')
+  }
+
   fastify.register(require('fastify-cors'), {
-    // TODO stricter CORS settings when we have a frontend
+    origin: allowedOrigins,
+    methods: ['GET', 'OPTIONS', 'POST'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    credentials: true
   })
 
   fastify.register(routes)

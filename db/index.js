@@ -88,13 +88,13 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
 
 Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
   const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
-  if (!foundAdvertiser) return { success: false, message: 'Login failed; Invalid user ID or password' }
-  if (!foundAdvertiser.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!foundAdvertiser) return null
+  if (!foundAdvertiser.verified) return null
   const passMatch = await bcrypt.compare(password, foundAdvertiser.password)
-  if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!passMatch) return null
   const { _id: id, ...rest } = foundAdvertiser
   delete rest.password
-  return { success: true, advertiser: { id, ...rest } }
+  return { id, ...rest }
 }
 
 Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, adCampaign) {
@@ -322,13 +322,13 @@ Db.prototype.maintainerExists = async function maintainerExists (email) {
 
 Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
   const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
-  if (!foundMaintainer) return { success: false, message: 'Login failed; Invalid user ID or password' }
-  if (!foundMaintainer.verified) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!foundMaintainer) return null
+  if (!foundMaintainer.verified) return null
   const passMatch = await bcrypt.compare(password, foundMaintainer.password)
-  if (!passMatch) return { success: false, message: 'Login failed; Invalid user ID or password' }
+  if (!passMatch) return null
   const { _id: id, ...rest } = foundMaintainer
   delete rest.password
-  return { success: true, maintainer: { id, ...rest } }
+  return { id, ...rest }
 }
 
 Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
