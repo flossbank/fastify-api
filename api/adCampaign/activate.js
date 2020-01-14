@@ -1,7 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
     const { adCampaignId: id } = req.body
-    const campaign = await ctx.db.getAdCampaign(id)
+    const campaign = await ctx.db.getAdCampaign(req.session.advertiserId, id)
     if (req.session.advertiserId !== campaign.advertiserId) {
       res.status(401)
       return res.send({ success: false })

@@ -7,7 +7,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
     try {
-      res.send({ success: true, id: await ctx.db.createAdCampaign(req.body) })
+      res.send({ success: true, id: await ctx.db.createAdCampaign(req.body.advertiserId, req.body) })
     } catch (e) {
       if (e.code === AD_NOT_CLEAN) {
         res.status(400)
