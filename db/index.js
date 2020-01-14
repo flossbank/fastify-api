@@ -24,7 +24,7 @@ Db.prototype.connect = async function connect () {
 Db.prototype.approveAd = async function approveAd (advertiserId, adCampaignId, adId) {
   const advertiser = await this.db.collection('advertisers').findOne({
     _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId
-  })
+  }, { 'adCampaigns.$': 1 })
   const adToApprove = advertiser.adCampaigns[0].ads.find(ad => ad.id === adId)
   adToApprove.approved = true
   return this.updateAdvertiser(advertiserId, advertiser)
