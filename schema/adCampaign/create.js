@@ -1,9 +1,8 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['advertiserId', 'ads', 'maxSpend', 'cpm', 'name'],
+    required: ['ads', 'maxSpend', 'cpm', 'name'],
     properties: {
-      advertiserId: { type: 'string', maxLength: 128 },
       ads: {
         type: 'array',
         items: {
