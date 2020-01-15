@@ -33,11 +33,41 @@ Db.prototype.approveAd = async function approveAd (advertiserId, adCampaignId, a
 // TODO update this to new adcampaign schema
 Db.prototype.getAdBatch = async function getAdBatch () {
   // more complicated logic and/or caching can come later
-  const ads = (await this.db.collection('adCampaigns').aggregate([
-    { $match: { active: true } }, // find active campaigns
-    { $project: { _id: '$_id', ads: true } }, // pick just their ads fields
-    { $unwind: '$ads' }, // unwind ads into a single array
-    { $sample: { size: 12 } } // return a random sampling of size 12
+  const ads = (await this.db.collection('advertisers').aggregate([
+    // project advertiser documents as { _id: advertiserId, campaigns: <active campaigns> }
+    {
+      $project: {
+        _id: '$_id',
+        campaigns: {
+          $filter: {
+            input: '$adCampaigns',
+            as: 'campaign',
+            cond: {
+              $eq: ['$$campaign.active', true]
+            }
+          }
+        }
+      }
+    },
+    // for each active campaign, project { _id: advertiserId, campaigns: {<the campaign>} }
+    {
+      $unwind: '$campaigns'
+    },
+    // project each resulting active campaign as { _id: advertiserId, ads: [<campaign ads>] }
+    {
+      $project: {
+        _id: '$_id',
+        ads: '$campaigns.ads'
+      }
+    },
+    // for each ad in each active campaign, project { _id: advertiserId, ads: {<the ad>} }
+    {
+      $unwind: '$ads'
+    },
+    // randomly select 12 such documents
+    {
+      $sample: { size: 12 }
+    }
   ]).toArray())
 
   // return ids in the form campaignId_adId for easier processing later
@@ -105,39 +135,45 @@ Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, a
     active: false,
     spend: 0
   })
-  adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
-    return Object.assign({}, ad, { id: ulid(), approved: false })
-  })
+
+  if (adCampaign.ads) {
+    adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
+      return Object.assign({}, ad, { id: ulid(), approved: false })
+    })
+  }
   if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
     const e = new Error(AD_NOT_CLEAN_MSG)
     e.code = AD_NOT_CLEAN
     throw e
   }
-  const { adCampaigns } = await this.db.collection('advertisers').updateOne(
+
+  await this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId) },
     { $push: { adCampaigns: adCampaignWithDefaults } })
-  return adCampaigns.find((campaign) => campaign.id === adCampaignWithDefaults.id)
+
+  return adCampaignWithDefaults.id
 }
 
 Db.prototype.getAdCampaign = async function getAdCampaign (advertiserId, campaignId) {
-  const { adCampaigns } = await this.db.collection('advertisers').findOne({
+  const advertiser = await this.db.collection('advertisers').findOne({
     _id: ObjectId(advertiserId),
     'adCampaigns.id': campaignId
   }, { 'adCampaigns.$': 1 })
 
-  if (!adCampaigns.length) return undefined
+  if (!advertiser || !advertiser.adCampaigns.length) return undefined
 
-  return adCampaigns.reduce((_, campaign) => campaign, {})
+  return advertiser.adCampaigns.reduce((_, campaign) => campaign, {})
 }
 
 Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
-  const advertiser = await this.db.collection('advertisers').findOne({ advertiserId })
+  const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   return advertiser.adCampaigns
 }
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, adCampaignId, adCampaign) {
-  const advertiser = await this.db.collection('advertisers').findOne({ advertiserId })
-  const campaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
+  const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
+  const campaignIndex = advertiser.adCampaigns.findIndex((camp) => camp.id === adCampaignId)
+  const campaign = advertiser.adCampaigns[campaignIndex]
   // Set all modified as well as new ads approved key to "false"
   const previousAds = campaign.ads.reduce((map, ad) => {
     map.set(ad.id, ad)
@@ -167,6 +203,8 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, a
 
   // All ad campaigns that are updated should immediately be set to inactive
   updatedCampaign.active = false
+
+  advertiser.adCampaigns[campaignIndex] = updatedCampaign
 
   return this.db.collection('advertisers').updateOne({
     _id: ObjectId(advertiserId)

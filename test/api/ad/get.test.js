@@ -11,8 +11,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
 
     // active campaign
-    const campaignId1 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
+    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
       ads: [
         { name: 'Teacher Fund #1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com', approved: true },
         { name: 'Teacher Fund #2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com', approved: true }
@@ -21,13 +20,14 @@ test.before(async (t) => {
       cpm: 100,
       name: 'camp pain 1'
     })
-    t.context.campaignId1 = campaignId1.toHexString()
-    await db.activateAdCampaign(t.context.campaignId1)
-    t.context.adCampaign1 = await db.getAdCampaign(t.context.campaignId1)
+    const justCreatedCampaign = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, justCreatedCampaign.ads[0].id)
+    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, justCreatedCampaign.ads[1].id)
+    await db.activateAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+    t.context.adCampaign1 = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
 
     // inactive campaign
-    const campaignId2 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
+    t.context.campaignId2 = await db.createAdCampaign(t.context.advertiserId1, {
       ads: [
         { name: 'Inbeeb #1', title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com', approved: true },
         { name: 'Inbeeb #2', title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com', approved: true }
@@ -36,7 +36,6 @@ test.before(async (t) => {
       cpm: 100,
       name: 'camp pain 2'
     })
-    t.context.campaignId2 = campaignId2.toHexString()
   })
 })
 
@@ -79,7 +78,7 @@ test('POST `/ad/get` 400 bad request', async (t) => {
   })
 })
 
-test('POST `/ad/get` 200 success', async (t) => {
+test.only('POST `/ad/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/get',

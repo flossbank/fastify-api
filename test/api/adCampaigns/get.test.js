@@ -10,8 +10,7 @@ test.before(async (t) => {
     }))
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    const campaignId1 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
+    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
       ads: [{
         name: 'approved ad',
         body: 'def',
@@ -22,12 +21,14 @@ test.before(async (t) => {
       cpm: 100,
       name: 'camp pain'
     })
-    t.context.campaignId1 = campaignId1.toHexString()
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId1
+  })
 })
 
 test.afterEach(async (t) => {
@@ -61,23 +62,12 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
+
+  const shouldBeReceived = await t.context.db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+  delete shouldBeReceived.impressionValue
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    adCampaign: {
-      id: t.context.campaignId1,
-      active: false,
-      spend: 0,
-      advertiserId: t.context.advertiserId1,
-      ads: [{
-        name: 'approved ad',
-        body: 'def',
-        title: 'DEF',
-        url: 'https://def.com'
-      }],
-      maxSpend: 100,
-      cpm: 100,
-      name: 'camp pain'
-    }
+    adCampaign: shouldBeReceived
   })
 })
 

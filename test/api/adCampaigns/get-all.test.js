@@ -10,14 +10,11 @@ test.before(async (t) => {
     }))
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    const campaignId1 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
-      ads: [],
+    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain'
     })
-    t.context.campaignId1 = campaignId1.toHexString()
   })
 })
 
@@ -80,7 +77,6 @@ test('GET `/ad-campaign/get-all` 200 success', async (t) => {
     adCampaigns: [
       {
         id: t.context.campaignId1,
-        advertiserId: t.context.advertiserId1,
         ads: [],
         maxSpend: 100,
         cpm: 100,

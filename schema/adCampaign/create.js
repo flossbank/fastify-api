@@ -1,7 +1,7 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['ads', 'maxSpend', 'cpm', 'name'],
+    required: ['maxSpend', 'cpm', 'name'],
     properties: {
       ads: {
         type: 'array',

@@ -25,7 +25,8 @@ module.exports = {
                   name: { type: 'string' },
                   title: { type: 'string' },
                   body: { type: 'string' },
-                  url: { type: 'string' }
+                  url: { type: 'string' },
+                  approved: { type: 'boolean' }
                 }
               }
             },
