@@ -127,6 +127,19 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
   return { id, ...rest }
 }
 
+Db.prototype.createAd = async function createAd (advertiserId, ad) {
+  if (!Cleaner.isAdClean(ad)) {
+    const e = new Error(AD_NOT_CLEAN_MSG)
+    e.code = AD_NOT_CLEAN
+    throw e
+  }
+  const adWithDefaults = Object.assign({}, ad, { id: ulid() })
+  await this.db.collection('advertisers').updateOne(
+    { _id: ObjectId(advertiserId) },
+    { $push: { ads: adWithDefaults } })
+  return adWithDefaults.id
+}
+
 Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, adCampaign) {
   const adCampaignWithDefaults = Object.assign({}, adCampaign, {
     id: ulid(),
@@ -138,7 +151,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, a
 
   if (adCampaign.ads) {
     adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
-      return Object.assign({}, ad, { id: ulid(), approved: false })
+      return Object.assign({},{ id: ulid() }, ad, { approved: false })
     })
   }
   if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
