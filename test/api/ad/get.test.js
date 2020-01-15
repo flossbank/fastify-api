@@ -78,7 +78,7 @@ test('POST `/ad/get` 400 bad request', async (t) => {
   })
 })
 
-test.only('POST `/ad/get` 200 success', async (t) => {
+test('POST `/ad/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/get',
@@ -90,8 +90,8 @@ test.only('POST `/ad/get` 200 success', async (t) => {
 
   t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
-      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.advertiserId1}_${ad.id}`),
+      { id: `${t.context.advertiserId1}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
@@ -125,8 +125,8 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   t.deepEqual(payload.sessionId, 'existing-session-id')
   t.context.adCampaign1.ads.forEach((ad) => {
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
-      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === `${t.context.advertiserId1}_${ad.id}`),
+      { id: `${t.context.advertiserId1}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
