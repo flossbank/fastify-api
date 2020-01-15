@@ -17,17 +17,18 @@ module.exports = {
             type: 'object',
             properties: {
               id: { type: 'string' },
-              advertiserId: { type: 'string' },
               name: { type: 'string' },
               ads: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
+                    id: { type: 'string' },
                     name: { type: 'string' },
                     title: { type: 'string' },
                     body: { type: 'string' },
-                    url: { type: 'string' }
+                    url: { type: 'string' },
+                    approved: { type: 'boolean' }
                   }
                 }
               },

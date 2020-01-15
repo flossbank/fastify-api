@@ -23,10 +23,51 @@ module.exports = {
             organization: { type: 'string' },
             adCampaigns: {
               type: 'array',
-              items: { type: 'string' }
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  ads: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        title: { type: 'string' },
+                        body: { type: 'string' },
+                        url: { type: 'string' },
+                        approved: { type: 'boolean' }
+                      }
+                    }
+                  },
+                  maxSpend: { type: 'number' },
+                  createDate: { type: 'number' },
+                  startDate: { type: 'number' },
+                  endDate: { type: 'number' },
+                  approved: { type: 'boolean' },
+                  active: { type: 'boolean' },
+                  cpm: { type: 'number' },
+                  spend: { type: 'number' }
+                }
+              }
             },
             active: { type: 'boolean' },
-            verified: { type: 'boolean' }
+            verified: { type: 'boolean' },
+            ads: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  title: { type: 'string' },
+                  body: { type: 'string' },
+                  url: { type: 'string' }
+                }
+              }
+            }
           }
         }
       }

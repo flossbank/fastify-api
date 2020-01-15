@@ -6,9 +6,7 @@ module.exports = {
       adCampaignId: { type: 'string', maxLength: 128 },
       adCampaign: {
         type: 'object',
-        required: ['advertiserId'],
         properties: {
-          advertiserId: { type: 'string', maxLength: 128 },
           ads: {
             type: 'array',
             items: {
@@ -26,6 +24,7 @@ module.exports = {
           },
           name: { type: 'string', maxLength: 128 },
           maxSpend: { type: 'number' },
+          id: { type: 'string', maxLength: 128 },
           cpm: { type: 'number', minimum: 100 },
           startDate: { type: 'number' },
           endDate: { type: 'number' }

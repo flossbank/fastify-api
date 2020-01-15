@@ -21,14 +21,15 @@ module.exports = {
               items: {
                 type: 'object',
                 properties: {
+                  id: { type: 'string' },
                   name: { type: 'string' },
                   title: { type: 'string' },
                   body: { type: 'string' },
-                  url: { type: 'string' }
+                  url: { type: 'string' },
+                  approved: { type: 'boolean' }
                 }
               }
             },
-            advertiserId: { type: 'string' },
             maxSpend: { type: 'number' },
             createDate: { type: 'number' },
             startDate: { type: 'number' },
