@@ -143,7 +143,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, a
   const adsToFind = adCampaign.ads
   const adCampaignWithDefaults = Object.assign({}, { ads: [] }, adCampaign, {
     id: ulid(),
-    impressionValue: adCampaign.cpm / 1000,
+    impressionValue: adCampaign.cpm, // units are microcents for impression value
     active: false,
     spend: 0
   })
@@ -210,7 +210,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, a
   })
   // Create our updated campaign, assign it as inactive, and attach ads
   const updatedCampaign = Object.assign({}, previousCampaign, updatedAdCampaign, {
-    impressionValue: updatedAdCampaign.cpm / 1000
+    impressionValue: updatedAdCampaign.cpm // Units are microcents (1/1000) for impression value
   })
 
   updatedCampaign.ads = adsToAdd
