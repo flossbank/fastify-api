@@ -10,19 +10,18 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    t.context.ad1 = {
-      name: 'unapproved ad',
-      body: 'abc',
-      title: 'ABC',
-      url: 'https://abc.com'
-    }
-
-    t.context.ad2 = {
-      name: 'approved ad',
-      body: 'def',
-      title: 'DEF',
-      url: 'https://def.com'
-    }
+    t.context.adId1 = await db.createAd(advertiserId1, {
+      name: 'Teacher Fund #1',
+      title: 'Teacher Fund',
+      body: 'You donate, we donate.',
+      url: 'teacherfund.com'
+    })
+    t.context.adId2 = await db.createAd(advertiserId1, {
+      name: 'Teacher Fund #2',
+      title: 'Teacher Fund 2',
+      body: 'You donate, we donate. 2',
+      url: 'teacherfund.com 2'
+    })
   })
 })
 
@@ -44,7 +43,7 @@ test.after.always(async (t) => {
 test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2],
+    ads: [t.context.adId1],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 1'
@@ -61,14 +60,12 @@ test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
 
 test.only('POST `/ad-campaign/activate` 200 success', async (t) => {
   const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2],
+    ads: [t.context.adId2],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 2'
   }))
-  let campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
-  const adId2 = campaign.ads.map(ad => ad.id).pop()
-  await t.context.db.approveAd(t.context.advertiserId1, adCampaignId, adId2)
+  await t.context.db.approveAd(t.context.advertiserId1, adCampaignId, t.context.adId2)
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -79,7 +76,7 @@ test.only('POST `/ad-campaign/activate` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
   t.true(campaign.active)
 })
 

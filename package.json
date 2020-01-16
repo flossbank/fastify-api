@@ -31,7 +31,6 @@
     "form-data": "^2.5.1",
     "get-owned-packages": "^2.0.0",
     "got": "^9.6.0",
-    "js-deep-equals": "^2.1.1",
     "mongodb": "^3.3.2",
     "ulid": "^2.3.0"
   },

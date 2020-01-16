@@ -1,7 +1,6 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
-const { compare } = require('js-deep-equals')
 const bcrypt = require('bcrypt')
 const config = require('../config')
 const Cleaner = require('../helpers/clean')
@@ -22,10 +21,10 @@ Db.prototype.connect = async function connect () {
 }
 
 Db.prototype.approveAd = async function approveAd (advertiserId, adCampaignId, adId) {
-  const advertiser = await this.db.collection('advertisers').findOne({
-    _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId
-  }, { 'adCampaigns.$': 1 })
-  const adToApprove = advertiser.adCampaigns[0].ads.find(ad => ad.id === adId)
+  const advertiser = await this.db.collection('advertisers').findOne(
+    { _id: ObjectId(advertiserId) }
+  )
+  const adToApprove = advertiser.adCampaigns.find(campaign => campaign.id === adCampaignId).ads.find(ad => ad.id === adId)
   adToApprove.approved = true
   return this.updateAdvertiser(advertiserId, advertiser)
 }
@@ -141,23 +140,26 @@ Db.prototype.createAd = async function createAd (advertiserId, ad) {
 }
 
 Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, adCampaign) {
-  const adCampaignWithDefaults = Object.assign({}, adCampaign, {
+  const adsToFind = adCampaign.ads
+  const adCampaignWithDefaults = Object.assign({}, { ads: [] }, adCampaign, {
     id: ulid(),
     impressionValue: adCampaign.cpm / 1000,
-    ads: [],
     active: false,
     spend: 0
   })
 
-  if (adCampaign.ads) {
-    adCampaignWithDefaults.ads = adCampaign.ads.map(ad => {
-      return Object.assign({},{ id: ulid() }, ad, { approved: false })
+  if (adsToFind && adsToFind.length) {
+    // Find all ads with id's in the array given to us
+    const ads = await this.db.collection('advertisers').aggregate([
+      { $match: { _id: ObjectId(advertiserId) } },
+      { $unwind: '$ads' },
+      { $match: { 'ads.id': { $in: adsToFind } } },
+      { $project: { _id: 0, ads: 1 } }
+    ]).toArray()
+
+    adCampaignWithDefaults.ads = ads.map(adWrapper => {
+      return Object.assign({}, adWrapper.ads, { approved: false })
     })
-  }
-  if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
-    const e = new Error(AD_NOT_CLEAN_MSG)
-    e.code = AD_NOT_CLEAN
-    throw e
   }
 
   await this.db.collection('advertisers').updateOne(
@@ -183,40 +185,36 @@ Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdver
   return advertiser.adCampaigns
 }
 
-Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, adCampaignId, adCampaign) {
+Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, adCampaignId, updatedAdCampaign) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   const campaignIndex = advertiser.adCampaigns.findIndex((camp) => camp.id === adCampaignId)
-  const campaign = advertiser.adCampaigns[campaignIndex]
-  // Set all modified as well as new ads approved key to "false"
-  const previousAds = campaign.ads.reduce((map, ad) => {
+  const previousCampaign = advertiser.adCampaigns[campaignIndex]
+  // Grab the existing ads id's
+  const previousAdsMap = previousCampaign.ads.reduce((map, ad) => {
     map.set(ad.id, ad)
     return map
   }, new Map())
+  // // Get a set of ID's of all ads to be in the updated ad campaign
+  const newAdsMap = updatedAdCampaign.ads.reduce((map, id) => {
+    map.set(id, true)
+    return map
+  }, new Map())
 
-  const updatedCampaign = Object.assign({}, adCampaign, {
-    impressionValue: adCampaign.cpm / 1000
-  })
-
-  updatedCampaign.ads = adCampaign.ads.map((ad) => {
-    const isExistingAd = previousAds.has(ad.id)
-    const adWasApproved = isExistingAd && previousAds.get(ad.id).approved
-
-    if (adWasApproved && compare(ad, previousAds.get(ad.id))) {
-      return ad
+  // Grab the full Ads out of the advertisers ad bank
+  const adsToAdd = advertiser.ads.map((ad) => {
+    // If it's an existing ad, no need to set approved, otherwise set approved to false
+    if (newAdsMap.has(ad.id) && previousAdsMap.has(ad.id)) {
+      return previousAdsMap.get(ad.id)
     }
-
-    return Object.assign({ id: ulid() }, ad, { approved: false })
+    return Object.assign({}, ad, { approved: false })
+  })
+  // Create our updated campaign, assign it as inactive, and attach ads
+  const updatedCampaign = Object.assign({}, previousCampaign, updatedAdCampaign, {
+    impressionValue: updatedAdCampaign.cpm / 1000
   })
 
-  if (!updatedCampaign.ads.every(ad => Cleaner.isAdClean(ad))) {
-    const e = new Error(AD_NOT_CLEAN_MSG)
-    e.code = AD_NOT_CLEAN
-    throw e
-  }
-
-  // All ad campaigns that are updated should immediately be set to inactive
+  updatedCampaign.ads = adsToAdd
   updatedCampaign.active = false
-
   advertiser.adCampaigns[campaignIndex] = updatedCampaign
 
   return this.db.collection('advertisers').updateOne({
