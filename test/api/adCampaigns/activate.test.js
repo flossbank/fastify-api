@@ -48,7 +48,6 @@ test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
     cpm: 100,
     name: 'camp pain 1'
   }, [t.context.adId1], true)
-  t.log('adcampaignid from 401', adCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -93,7 +92,6 @@ test('POST `/ad-campaign/activate` 400 bad request | unapproved campaign', async
     cpm: 100,
     name: 'camp pain 3'
   })
-  t.log('adcampaignid from 400', newAdCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -122,7 +120,6 @@ test('POST `/ad-campaign/activate` 500 server error', async (t) => {
     cpm: 100,
     name: 'camp pain 2'
   }, [t.context.adId2], true)
-  t.log('adcampaignid from 500', adCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',
