@@ -20,13 +20,11 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.approveAd = async function approveAd (advertiserId, adCampaignId, adId) {
-  const advertiser = await this.db.collection('advertisers').findOne(
-    { _id: ObjectId(advertiserId) }
+Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
+  return this.db.collection('advertisers').updateOne(
+    { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+    { $set: { 'adCampaigns.$.approved': true } }
   )
-  const adToApprove = advertiser.adCampaigns.find(campaign => campaign.id === adCampaignId).ads.find(ad => ad.id === adId)
-  adToApprove.approved = true
-  return this.updateAdvertiser(advertiserId, advertiser)
 }
 
 // TODO update this to new adcampaign schema
@@ -81,7 +79,7 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
     adCampaigns: [],
     verified: false,
     active: true,
-    ads: [],
+    adDrafts: [],
     password: await bcrypt.hash(advertiser.password, 10)
   })
   const { insertedId } = await this.db.collection('advertisers').insertOne(advertiserWithDefaults)
@@ -126,58 +124,95 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
   return { id, ...rest }
 }
 
-Db.prototype.createAd = async function createAd (advertiserId, ad) {
-  if (!Cleaner.isAdClean(ad)) {
+Db.prototype.createAdDraft = async function createAdDraft (advertiserId, draft) {
+  if (!Cleaner.isAdClean(draft)) {
     const e = new Error(AD_NOT_CLEAN_MSG)
     e.code = AD_NOT_CLEAN
     throw e
   }
-  const adWithDefaults = Object.assign({}, ad, { id: ulid() })
+  const adDraftWithDefaults = Object.assign({}, draft, { id: ulid() })
   await this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId) },
-    { $push: { ads: adWithDefaults } })
-  return adWithDefaults.id
+    { $push: { adDrafts: adDraftWithDefaults } })
+  return adDraftWithDefaults.id
 }
 
-Db.prototype.createAdCampaign = async function createAdCampaign (advertiserId, adCampaign) {
-  const adsToFind = adCampaign.ads
+Db.prototype.createAdCampaign = async function createAdCampaign (
+  advertiserId,
+  adCampaign,
+  adIdsFromDrafts = [],
+  keepDrafts = false) {
+  const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
+
+  // Construct default campaign
   const adCampaignWithDefaults = Object.assign({}, { ads: [] }, adCampaign, {
     id: ulid(),
+<<<<<<< HEAD
     impressionValue: adCampaign.cpm, // units are microcents for impression value
+=======
+>>>>>>> f38535f7c6ecce93d3fcb32b9908cb576abfe328
     active: false,
+    approved: false,
     spend: 0
   })
 
-  if (adsToFind && adsToFind.length) {
-    // Find all ads with id's in the array given to us
-    const ads = await this.db.collection('advertisers').aggregate([
-      { $match: { _id: ObjectId(advertiserId) } },
-      { $unwind: '$ads' },
-      { $match: { 'ads.id': { $in: adsToFind } } },
-      { $project: { _id: 0, ads: 1 } }
-    ]).toArray()
-
-    adCampaignWithDefaults.ads = ads.map(adWrapper => {
-      return Object.assign({}, adWrapper.ads, { approved: false })
-    })
+  // Check if the ads passed in are clean
+  if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
+    const e = new Error(AD_NOT_CLEAN_MSG)
+    e.code = AD_NOT_CLEAN
+    throw e
   }
 
-  await this.db.collection('advertisers').updateOne(
-    { _id: ObjectId(advertiserId) },
-    { $push: { adCampaigns: adCampaignWithDefaults } })
+  // assign ad defaults
+  adCampaignWithDefaults.ads = adCampaignWithDefaults.ads.map((ad) => {
+    return Object.assign({}, ad, { impressions: [], id: ulid() })
+  })
+
+  // construct the list of ads from adDrafts (if any) and append them to the campaigns ads
+  if (adIdsFromDrafts.length) {
+    const adsFromDrafts = []
+    for (const draftId of adIdsFromDrafts) {
+      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
+      const draft = advertiser.adDrafts[idx]
+      if (!draft) {
+        continue
+      }
+      adsFromDrafts.push(Object.assign({}, draft, {
+        id: ulid(),
+        impressions: []
+      }))
+    }
+
+    adCampaignWithDefaults.ads = adCampaignWithDefaults.ads.concat(adsFromDrafts)
+  }
+
+  if (!keepDrafts && adIdsFromDrafts.length) {
+    await this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId) },
+      {
+        $push: { adCampaigns: adCampaignWithDefaults },
+        $pull: {
+          adDrafts: {
+            id: { $in: adIdsFromDrafts }
+          }
+        }
+      })
+  } else {
+    await this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId) },
+      { $push: { adCampaigns: adCampaignWithDefaults } })
+  }
 
   return adCampaignWithDefaults.id
 }
 
 Db.prototype.getAdCampaign = async function getAdCampaign (advertiserId, campaignId) {
   const advertiser = await this.db.collection('advertisers').findOne({
-    _id: ObjectId(advertiserId),
-    'adCampaigns.id': campaignId
-  }, { 'adCampaigns.$': 1 })
+    _id: ObjectId(advertiserId)
+  })
 
-  if (!advertiser || !advertiser.adCampaigns.length) return undefined
-
-  return advertiser.adCampaigns.reduce((_, campaign) => campaign, {})
+  if (!advertiser) return undefined
+  return advertiser.adCampaigns.find(c => c.id === campaignId)
 }
 
 Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
@@ -185,43 +220,80 @@ Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdver
   return advertiser.adCampaigns
 }
 
-Db.prototype.updateAdCampaign = async function updateAdCampaign (advertiserId, adCampaignId, updatedAdCampaign) {
+Db.prototype.updateAdCampaign = async function updateAdCampaign (
+  advertiserId,
+  adCampaignId,
+  updatedAdCampaign,
+  adIdsFromDrafts = [],
+  keepDrafts = false) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
-  const campaignIndex = advertiser.adCampaigns.findIndex((camp) => camp.id === adCampaignId)
-  const previousCampaign = advertiser.adCampaigns[campaignIndex]
+  const previousCampaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
   // Grab the existing ads id's
   const previousAdsMap = previousCampaign.ads.reduce((map, ad) => {
     map.set(ad.id, ad)
     return map
   }, new Map())
-  // // Get a set of ID's of all ads to be in the updated ad campaign
-  const newAdsMap = updatedAdCampaign.ads.reduce((map, id) => {
-    map.set(id, true)
-    return map
-  }, new Map())
 
-  // Grab the full Ads out of the advertisers ad bank
-  const adsToAdd = advertiser.ads.map((ad) => {
-    // If it's an existing ad, no need to set approved, otherwise set approved to false
-    if (newAdsMap.has(ad.id) && previousAdsMap.has(ad.id)) {
+  // Check if the ads passed in are clean
+  if (!updatedAdCampaign.ads.every(ad => Cleaner.isAdClean(ad))) {
+    const e = new Error(AD_NOT_CLEAN_MSG)
+    e.code = AD_NOT_CLEAN
+    throw e
+  }
+
+  // Go through all ads to be added and if they're new, add impressions field
+  const adsToAdd = updatedAdCampaign.ads.map((ad) => {
+    // If it's an existing ad, dont reset impressions
+    if (previousAdsMap.has(ad.id)) {
       return previousAdsMap.get(ad.id)
     }
-    return Object.assign({}, ad, { approved: false })
+    return Object.assign({}, ad, {
+      impressions: []
+    })
   })
-  // Create our updated campaign, assign it as inactive, and attach ads
+
+  // Create updated campaign and assign defaults to impression value and approved back to false
   const updatedCampaign = Object.assign({}, previousCampaign, updatedAdCampaign, {
+<<<<<<< HEAD
     impressionValue: updatedAdCampaign.cpm // Units are microcents (1/1000) for impression value
+=======
+    approved: false
+>>>>>>> f38535f7c6ecce93d3fcb32b9908cb576abfe328
   })
 
-  updatedCampaign.ads = adsToAdd
+  // construct the list of ads from adDrafts (if any) and append them to the campaigns ads
+  if (adIdsFromDrafts.length) {
+    const adsFromDrafts = []
+    for (const draftId of adIdsFromDrafts) {
+      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
+      const draft = advertiser.adDrafts[idx]
+      adsFromDrafts.push(Object.assign({}, draft, {
+        id: ulid(),
+        impressions: []
+      }))
+    }
+
+    updatedCampaign.ads = adsToAdd.concat(adsFromDrafts)
+  }
+
   updatedCampaign.active = false
-  advertiser.adCampaigns[campaignIndex] = updatedCampaign
 
-  return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(advertiserId)
-  }, {
-    $set: advertiser
-  })
+  if (!keepDrafts && adIdsFromDrafts.length) {
+    return this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+      {
+        $set: { 'adCampaigns.$': updatedCampaign },
+        $pull: {
+          adDrafts: {
+            id: { $in: adIdsFromDrafts }
+          }
+        }
+      })
+  } else {
+    return this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+      { $set: { 'adCampaigns.$': updatedCampaign } })
+  }
 }
 
 Db.prototype.activateAdCampaign = async function activateAdCampaign (advertiserId, campaignId) {

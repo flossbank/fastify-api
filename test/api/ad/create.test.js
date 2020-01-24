@@ -64,8 +64,8 @@ test('POST `/ad/create` 200 success', async (t) => {
   const { id } = payload
   const createdAd = Object.assign({}, adToCreate, { id })
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
-  t.deepEqual(advertiser.ads.length, 1)
-  t.deepEqual(advertiser.ads[0], createdAd)
+  t.deepEqual(advertiser.adDrafts.length, 1)
+  t.deepEqual(advertiser.adDrafts[0], createdAd)
 })
 
 test('POST `/ad/create` 400 bad request | trash ads', async (t) => {
@@ -141,7 +141,7 @@ test('POST `/ad/create` 400 bad request', async (t) => {
 })
 
 test('POST `/ad/create` 500 server error', async (t) => {
-  t.context.db.createAd = () => { throw new Error() }
+  t.context.db.createAdDraft = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/create',

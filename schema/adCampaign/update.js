@@ -9,7 +9,16 @@ module.exports = {
         properties: {
           ads: {
             type: 'array',
-            items: { type: 'string', maxLength: 128 }
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                title: { type: 'string' },
+                body: { type: 'string' },
+                url: { type: 'string' }
+              }
+            }
           },
           name: { type: 'string', maxLength: 128 },
           maxSpend: { type: 'number' },
@@ -18,7 +27,12 @@ module.exports = {
           startDate: { type: 'number' },
           endDate: { type: 'number' }
         }
-      }
+      },
+      adDrafts: {
+        type: 'array',
+        items: { type: 'string', maxLength: 128 }
+      },
+      keepDrafts: { type: 'boolean' }
     }
   },
   response: {
