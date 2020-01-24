@@ -28,7 +28,7 @@ module.exports = {
                     title: { type: 'string' },
                     body: { type: 'string' },
                     url: { type: 'string' },
-                    impressions: { 
+                    impressions: {
                       type: 'array',
                       items: {
                         type: 'object'

@@ -174,6 +174,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
         continue
       }
       adsFromDrafts.push(Object.assign({}, draft, {
+        id: ulid(),
         impressions: []
       }))
     }
@@ -259,6 +260,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
       const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
       const draft = advertiser.adDrafts[idx]
       adsFromDrafts.push(Object.assign({}, draft, {
+        id: ulid(),
         impressions: []
       }))
     }
