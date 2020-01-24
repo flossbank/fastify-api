@@ -163,6 +163,11 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
     throw e
   }
 
+  // assign ad defaults
+  adCampaignWithDefaults.ads = adCampaignWithDefaults.ads.map((ad) => {
+    return Object.assign({}, ad, { impressions: [], id: ulid() })
+  })
+
   // construct the list of ads from adDrafts (if any) and append them to the campaigns ads
   if (adDrafts.length) {
     const adsFromDrafts = []
@@ -183,9 +188,10 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
     adCampaignWithDefaults.ads = adCampaignWithDefaults.ads.concat(adsFromDrafts)
   }
 
+  console.error('pushing new campaign', adCampaignWithDefaults.id)
+
   advertiser.adCampaigns.push(adCampaignWithDefaults)
 
-  console.error('about to set advertiser:', advertiserId, JSON.stringify(advertiser))
   await this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId) },
     { $set: advertiser })
