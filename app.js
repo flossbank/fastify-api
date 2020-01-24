@@ -7,7 +7,7 @@ const { sqsPlugin } = require('./sqs')
 const { registryPlugin } = require('./registry')
 
 module.exports = async function buildFastify (deps) {
-  const { db, auth, sqs, registry, logger = true } = deps
+  const { db, auth, sqs, registry, logger = true, csrf = true } = deps
   const fastify = Fastify({ logger })
   // Create custom ajv schema declaration to remove _all_ additional fields by default
   const ajv = new Ajv({
@@ -20,6 +20,7 @@ module.exports = async function buildFastify (deps) {
   fastify.setSchemaCompiler(function (schema) {
     return ajv.compile(schema)
   })
+  fastify.register(require('fastify-helmet'))
   fastify.register(require('fastify-cookie'))
 
   const allowedOrigins = [
@@ -35,9 +36,22 @@ module.exports = async function buildFastify (deps) {
   fastify.register(require('fastify-cors'), {
     origin: allowedOrigins,
     methods: ['GET', 'OPTIONS', 'POST'],
-    allowedHeaders: ['Authorization', 'Content-Type'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
     credentials: true
   })
+
+  if (csrf) {
+    fastify.use((req, res, next) => {
+      if (req.method !== 'POST') {
+        return next()
+      }
+      if (req.headers['x-requested-with'] !== 'XmlHttpRequest') {
+        res.writeHead(403)
+        return res.end()
+      }
+      return next()
+    })
+  }
 
   fastify.register(routes)
 
