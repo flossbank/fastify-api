@@ -66,9 +66,6 @@ test('POST `/ad-campaign/activate` 200 success', async (t) => {
     cpm: 100,
     name: 'camp pain 2'
   }, [t.context.adId2], true)
-  t.log("adcampaignid1 from 200 thing", adCampaignId1)
-  const camp = await t.context.db.getAdvertiser(t.context.advertiserId1)
-  t.log('hooly fuck', JSON.stringify(camp))
   await t.context.db.approveAdCampaign(t.context.advertiserId1, adCampaignId1)
 
   const res = await t.context.app.inject({

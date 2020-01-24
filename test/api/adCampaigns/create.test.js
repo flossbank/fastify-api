@@ -87,8 +87,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
 
   const campaign = advertiser.adCampaigns.find(camp => camp.id === id)
   t.deepEqual(campaign.ads.length, 2)
-  // All ads in campaign create should NOT be approved
-  campaign.ads.forEach(ad => t.false(ad.approved))
+  t.deepEqual(campaign.approved, false)
   t.deepEqual(campaign.maxSpend, campaignToCreate.maxSpend)
   t.deepEqual(campaign.cpm, campaignToCreate.cpm)
   t.deepEqual(campaign.name, campaignToCreate.name)
@@ -152,7 +151,7 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
   t.deepEqual(campaign.ads.length, 1)
 })
 
-test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where draft is deleted', async (t) => {
+test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where draft is preserved', async (t) => {
   const adToCreate = {
     name: 'Teacher Fund #4',
     title: 'Teacher Fund 4',
@@ -170,7 +169,8 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
     url: '/ad-campaign/create',
     payload: {
       adCampaign: campaignToCreate,
-      adDrafts: [t.context.adId1]
+      adDrafts: [t.context.adId1],
+      keepDrafts: true
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -181,8 +181,8 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   const { id } = payload
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
-  // Should have deleted the draft that we passed in
-  t.deepEqual(advertiser.adDrafts.length, 1)
+  // should preserve ad drafts
+  t.deepEqual(advertiser.adDrafts.length, 2)
 
   const campaign = advertiser.adCampaigns.find(camp => camp.id === id)
   t.deepEqual(campaign.name, campaignToCreate.name)

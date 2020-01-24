@@ -29,7 +29,7 @@ exports.beforeEach = async function (t) {
     auth: t.context.auth,
     sqs: t.context.sqs,
     registry: t.context.registry,
-    logger: true
+    logger: false
   })
 }
 
