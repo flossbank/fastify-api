@@ -23,7 +23,7 @@ Db.prototype.connect = async function connect () {
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
   return this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
-    { $set: { 'adCampaigns.$.approved': true }}
+    { $set: { 'adCampaigns.$.approved': true } }
   )
 }
 
@@ -141,8 +141,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   advertiserId,
   adCampaign,
   adIdsFromDrafts = [],
-  keepDrafts = false) 
-{
+  keepDrafts = false) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
 
   // Construct default campaign
@@ -182,21 +181,22 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
     adCampaignWithDefaults.ads = adCampaignWithDefaults.ads.concat(adsFromDrafts)
   }
 
-  if (!keepDrafts) {
+  if (!keepDrafts && adIdsFromDrafts.length) {
     await this.db.collection('advertisers').updateOne(
       { _id: ObjectId(advertiserId) },
-      { 
+      {
         $push: { adCampaigns: adCampaignWithDefaults },
-        $pull: { adDrafts: { 
-          id: { $in: adIdsFromDrafts }
-        }} 
+        $pull: {
+          adDrafts: {
+            id: { $in: adIdsFromDrafts }
+          }
+        }
       })
   } else {
     await this.db.collection('advertisers').updateOne(
       { _id: ObjectId(advertiserId) },
-      { $push: { adCampaigns: adCampaignWithDefaults }})
+      { $push: { adCampaigns: adCampaignWithDefaults } })
   }
-  
 
   return adCampaignWithDefaults.id
 }
@@ -219,7 +219,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
   advertiserId,
   adCampaignId,
   updatedAdCampaign,
-  adDrafts = [],
+  adIdsFromDrafts = [],
   keepDrafts = false) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   const previousCampaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
@@ -253,17 +253,14 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
   })
 
   // construct the list of ads from adDrafts (if any) and append them to the campaigns ads
-  if (adDrafts.length) {
+  if (adIdsFromDrafts.length) {
     const adsFromDrafts = []
-    for (const draftId of adDrafts) {
+    for (const draftId of adIdsFromDrafts) {
       const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
       const draft = advertiser.adDrafts[idx]
       adsFromDrafts.push(Object.assign({}, draft, {
         impressions: []
       }))
-      if (!keepDrafts) { // If we aren't preserving the ad draft, delete it from the advertisers drafts
-        advertiser.adDrafts.splice(idx, 1)
-      }
     }
 
     updatedCampaign.ads = adsToAdd.concat(adsFromDrafts)
@@ -271,11 +268,22 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
 
   updatedCampaign.active = false
 
-  return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId
-  }, {
-    $set: { 'adCampaigns.$': updatedCampaign }
-  })
+  if (!keepDrafts && adIdsFromDrafts.length) {
+    return this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+      {
+        $set: { 'adCampaigns.$': updatedCampaign },
+        $pull: {
+          adDrafts: {
+            id: { $in: adIdsFromDrafts }
+          }
+        }
+      })
+  } else {
+    return this.db.collection('advertisers').updateOne(
+      { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+      { $set: { 'adCampaigns.$': updatedCampaign } })
+  }
 }
 
 Db.prototype.activateAdCampaign = async function activateAdCampaign (advertiserId, campaignId) {

@@ -10,14 +10,6 @@ test.before(async (t) => {
       password: 'beekeeperbookkeeper'
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-
-    const advertiserId2 = await db.createAdvertiser({
-      name: 'Faith Ogler',
-      email: 'fogler@folgers.coffee',
-      password: 'beekeeperbookkeeper'
-    })
-    t.context.advertiserId2 = advertiserId2.toHexString()
-
     t.context.adId1 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #1',
       title: 'Teacher Fund',
@@ -29,6 +21,19 @@ test.before(async (t) => {
       title: 'Teacher Fund 2',
       body: 'You donate, we donate. 2',
       url: 'teacherfund.com 2'
+    })
+
+    const advertiserId2 = await db.createAdvertiser({
+      name: 'Faith Ogler',
+      email: 'fogler@folgers.coffee',
+      password: 'beekeeperbookkeeper'
+    })
+    t.context.advertiserId2 = advertiserId2.toHexString()
+    t.context.adId3 = await db.createAdDraft(advertiserId2, {
+      name: 'Teacher Fund #3',
+      title: 'Teacher Fund 3',
+      body: 'You donate, we donate. 3',
+      url: 'teacherfund.com 3'
     })
   })
 })
@@ -118,16 +123,19 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
 })
 
 test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId2
+  })
+  const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId2, {
     ads: [],
     maxSpend: 1000,
     cpm: 100,
-    name: 'camp pain 2'
-  }, [t.context.adId1], true)
+    name: 'camp pain 2000'
+  }, [], true)
 
-  await t.context.db.approveAdCampaign(t.context.advertiserId1, adCampaignId)
-  await t.context.db.activateAdCampaign(t.context.advertiserId1, adCampaignId)
-  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+  await t.context.db.approveAdCampaign(t.context.advertiserId2, adCampaignId)
+  await t.context.db.activateAdCampaign(t.context.advertiserId2, adCampaignId)
+  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId2, adCampaignId)
 
   const newName = 'new camp pain 2'
   const updatedCampaign = Object.assign(campaign, {
@@ -140,7 +148,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
     payload: {
       adCampaignId,
       adCampaign: updatedCampaign,
-      adDrafts: [t.context.adId2],
+      adDrafts: [t.context.adId3],
       keepDrafts: false
     },
     headers: { authorization: 'valid-session-token' }
@@ -148,13 +156,14 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
   t.deepEqual(JSON.parse(res.payload), { success: true })
   t.deepEqual(res.statusCode, 200)
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
-  // Should not have deleted the draft so we should still have 2 that were created in setup
-  t.deepEqual(advertiser.adDrafts.length, 1)
+  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
+  // Should have deleted the draft so we should have 0
+  t.log(JSON.stringify(advertiser))
+  t.deepEqual(advertiser.adDrafts.length, 0)
 
   const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)
   // Campaign should have the initial ad plus the new ad from drafts we just added
-  t.deepEqual(campaignAfterUpdate.ads.length, 2)
+  t.deepEqual(campaignAfterUpdate.ads.length, 1)
   t.true(campaignAfterUpdate.ads.every(ad => !!ad.id))
   t.deepEqual(campaignAfterUpdate.name, newName)
   t.deepEqual(campaignAfterUpdate.active, false)

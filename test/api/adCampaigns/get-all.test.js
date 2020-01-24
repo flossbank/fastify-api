@@ -79,6 +79,7 @@ test('GET `/ad-campaign/get-all` 200 success', async (t) => {
         id: t.context.campaignId1,
         ads: [],
         maxSpend: 100,
+        approved: false,
         cpm: 100,
         name: 'camp pain',
         spend: 0,

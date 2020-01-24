@@ -10,7 +10,6 @@ test.before(async (t) => {
       password: 'beekeeperbookkeeper'
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-
     t.context.adId1 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #1',
       title: 'Teacher Fund',
@@ -22,6 +21,19 @@ test.before(async (t) => {
       title: 'Teacher Fund 2',
       body: 'You donate, we donate. 2',
       url: 'teacherfund.com 2'
+    })
+
+    const advertiserId2 = await db.createAdvertiser({
+      name: 'Faith Ogler',
+      email: 'fogler@folgers.coffee',
+      password: 'beekeeperbookkeeper'
+    })
+    t.context.advertiserId2 = advertiserId2.toHexString()
+    t.context.adId3 = await db.createAdDraft(advertiserId2, {
+      name: 'Teacher Fund #5',
+      title: 'Teacher Fund 5',
+      body: 'You donate, we donate. 5',
+      url: 'teacherfund.com 5'
     })
   })
 })
@@ -87,6 +99,42 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
 
   const campaign = advertiser.adCampaigns.find(camp => camp.id === id)
   t.deepEqual(campaign.ads.length, 2)
+  t.deepEqual(campaign.approved, false)
+  t.deepEqual(campaign.maxSpend, campaignToCreate.maxSpend)
+  t.deepEqual(campaign.cpm, campaignToCreate.cpm)
+  t.deepEqual(campaign.name, campaignToCreate.name)
+})
+
+test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts', async (t) => {
+  t.context.auth.getUISession.resolves({
+    advertiserId: t.context.advertiserId2
+  })
+  const campaignToCreate = {
+    maxSpend: 5000,
+    cpm: 10,
+    name: 'camp pain from drafts'
+  }
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/create',
+    payload: {
+      adCampaign: campaignToCreate,
+      adDrafts: [t.context.adId3]
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, true)
+  const { id } = payload
+
+  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
+  // Should have deleted advertiser draft
+  t.deepEqual(advertiser.adDrafts.length, 0)
+
+  const campaign = advertiser.adCampaigns.find(camp => camp.id === id)
+  t.deepEqual(campaign.ads.length, 1)
   t.deepEqual(campaign.approved, false)
   t.deepEqual(campaign.maxSpend, campaignToCreate.maxSpend)
   t.deepEqual(campaign.cpm, campaignToCreate.cpm)
