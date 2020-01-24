@@ -10,13 +10,6 @@ module.exports = {
       sessionId: { type: 'string' }
     }
   },
-  headers: {
-    type: 'object',
-    required: ['authorization'],
-    properties: {
-      authorization: { type: 'string' }
-    }
-  },
   response: {
     200: {
       type: 'object',

@@ -76,6 +76,7 @@ const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
+  fastify.post('/health', health)
 
   // Ad
   fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
