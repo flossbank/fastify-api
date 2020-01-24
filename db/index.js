@@ -147,10 +147,6 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   // Construct default campaign
   const adCampaignWithDefaults = Object.assign({}, { ads: [] }, adCampaign, {
     id: ulid(),
-<<<<<<< HEAD
-    impressionValue: adCampaign.cpm, // units are microcents for impression value
-=======
->>>>>>> f38535f7c6ecce93d3fcb32b9908cb576abfe328
     active: false,
     approved: false,
     spend: 0
@@ -254,11 +250,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
 
   // Create updated campaign and assign defaults to impression value and approved back to false
   const updatedCampaign = Object.assign({}, previousCampaign, updatedAdCampaign, {
-<<<<<<< HEAD
-    impressionValue: updatedAdCampaign.cpm // Units are microcents (1/1000) for impression value
-=======
     approved: false
->>>>>>> f38535f7c6ecce93d3fcb32b9908cb576abfe328
   })
 
   // construct the list of ads from adDrafts (if any) and append them to the campaigns ads
