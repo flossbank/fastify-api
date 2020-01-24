@@ -38,7 +38,15 @@ module.exports = {
                         title: { type: 'string' },
                         body: { type: 'string' },
                         url: { type: 'string' },
-                        approved: { type: 'boolean' }
+                        impressions: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              timestamp: { type: 'number' }
+                            }
+                          }
+                        }
                       }
                     }
                   },

@@ -29,7 +29,10 @@ module.exports = {
                   impressions: {
                     type: 'array',
                     items: {
-                      type: 'object'
+                      type: 'object',
+                      properties: {
+                        timestamp: { type: 'number' }
+                      }
                     }
                   }
                 }
