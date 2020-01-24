@@ -11,14 +11,12 @@ module.exports = {
             type: 'array',
             items: {
               type: 'object',
-              required: ['name', 'title', 'body', 'url'],
               properties: {
-                name: { type: 'string', maxLength: 128 },
-                title: { type: 'string', maxLength: 128 },
-                body: { type: 'string', maxLength: 256 },
-                url: { type: 'string', maxLength: 128 },
-                id: { type: 'string', maxLength: 128 },
-                approved: { type: 'boolean' }
+                id: { type: 'string' },
+                name: { type: 'string' },
+                title: { type: 'string' },
+                body: { type: 'string' },
+                url: { type: 'string' }
               }
             }
           },
@@ -29,7 +27,12 @@ module.exports = {
           startDate: { type: 'number' },
           endDate: { type: 'number' }
         }
-      }
+      },
+      adDrafts: {
+        type: 'array',
+        items: { type: 'string', maxLength: 128 }
+      },
+      keepDrafts: { type: 'boolean' }
     }
   },
   response: {

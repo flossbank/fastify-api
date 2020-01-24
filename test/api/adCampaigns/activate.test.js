@@ -10,19 +10,18 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    t.context.ad1 = {
-      name: 'unapproved ad',
-      body: 'abc',
-      title: 'ABC',
-      url: 'https://abc.com'
-    }
-
-    t.context.ad2 = {
-      name: 'approved ad',
-      body: 'def',
-      title: 'DEF',
-      url: 'https://def.com'
-    }
+    t.context.adId1 = await db.createAdDraft(t.context.advertiserId1, {
+      name: 'Teacher Fund #1',
+      title: 'Teacher Fund',
+      body: 'You donate, we donate.',
+      url: 'teacherfund.com'
+    })
+    t.context.adId2 = await db.createAdDraft(t.context.advertiserId1, {
+      name: 'Teacher Fund #2',
+      title: 'Teacher Fund 2',
+      body: 'You donate, we donate. 2',
+      url: 'teacherfund.com 2'
+    })
   })
 })
 
@@ -43,12 +42,13 @@ test.after.always(async (t) => {
 
 test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
-  const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2],
+  const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+    ads: [],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 1'
-  }))
+  }, [t.context.adId1], true)
+  t.log('adcampaignid from 401', adCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -59,42 +59,46 @@ test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test.only('POST `/ad-campaign/activate` 200 success', async (t) => {
-  const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2],
+test('POST `/ad-campaign/activate` 200 success', async (t) => {
+  const adCampaignId1 = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+    ads: [],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 2'
-  }))
-  let campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
-  const adId2 = campaign.ads.map(ad => ad.id).pop()
-  await t.context.db.approveAd(t.context.advertiserId1, adCampaignId, adId2)
+  }, [t.context.adId2], true)
+  await t.context.db.approveAdCampaign(t.context.advertiserId1, adCampaignId1)
 
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/activate',
-    payload: { adCampaignId },
+    payload: { adCampaignId: adCampaignId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId1)
   t.true(campaign.active)
 })
 
-test('POST `/ad-campaign/activate` 400 bad request | invalid ads', async (t) => {
-  const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2, t.context.ad1],
+test('POST `/ad-campaign/activate` 400 bad request | unapproved campaign', async (t) => {
+  const newAdCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+    ads: [{
+      name: 'blah',
+      title: 'arg',
+      body: 'ugh',
+      url: 'ugh.com'
+    }],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 3'
-  }))
+  })
+  t.log('adcampaignid from 400', newAdCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/activate',
-    payload: { adCampaignId },
+    payload: { adCampaignId: newAdCampaignId },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -111,13 +115,14 @@ test('POST `/ad-campaign/activate` 400 bad request', async (t) => {
 })
 
 test('POST `/ad-campaign/activate` 500 server error', async (t) => {
-  t.context.db.getAdCampaign = () => { throw new Error() }
-  const adCampaignId = (await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.ad2],
+  t.context.db.getAdCampaign = () => { throw new Error('poop') }
+  const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+    ads: [],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 2'
-  }))
+  }, [t.context.adId2], true)
+  t.log('adcampaignid from 500', adCampaignId)
 
   const res = await t.context.app.inject({
     method: 'POST',

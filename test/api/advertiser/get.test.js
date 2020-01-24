@@ -82,7 +82,7 @@ test('GET `/advertiser/get` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     advertiser: {
-      ads: [],
+      adDrafts: [],
       id: t.context.advertiserId1,
       firstName: 'Honesty',
       lastName: 'Empathy',

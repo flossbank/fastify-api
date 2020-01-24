@@ -10,32 +10,37 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
+    t.context.adId1 = await db.createAdDraft(advertiserId1, {
+      name: 'Teacher Fund #1',
+      title: 'Teacher Fund',
+      body: 'You donate, we donate.',
+      url: 'teacherfund.com'
+    })
+    t.context.adId2 = await db.createAdDraft(advertiserId1, {
+      name: 'Teacher Fund #2',
+      title: 'Teacher Fund 2',
+      body: 'You donate, we donate. 2',
+      url: 'teacherfund.com 2'
+    })
+
     // active campaign
     t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [
-        { name: 'Teacher Fund #1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com', approved: true },
-        { name: 'Teacher Fund #2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com', approved: true }
-      ],
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 1'
-    })
-    const justCreatedCampaign = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
-    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, justCreatedCampaign.ads[0].id)
-    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, justCreatedCampaign.ads[1].id)
+    }, [t.context.adId1, t.context.adId2], true)
+    await db.approveAdCampaign(t.context.advertiserId1, t.context.campaignId1)
     await db.activateAdCampaign(t.context.advertiserId1, t.context.campaignId1)
     t.context.adCampaign1 = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
 
     // inactive campaign
     t.context.campaignId2 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [
-        { name: 'Inbeeb #1', title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com', approved: true },
-        { name: 'Inbeeb #2', title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com', approved: true }
-      ],
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 2'
-    })
+    }, [t.context.adId1, t.context.adId2], true)
   })
 })
 
