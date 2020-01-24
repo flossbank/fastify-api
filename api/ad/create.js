@@ -3,7 +3,7 @@ const { AD_NOT_CLEAN } = require('../../helpers/constants')
 module.exports = async (req, res, ctx) => {
   try {
     try {
-      res.send({ success: true, id: await ctx.db.createAd(req.session.advertiserId, req.body) })
+      res.send({ success: true, id: await ctx.db.createAdDraft(req.session.advertiserId, req.body) })
     } catch (e) {
       if (e.code === AD_NOT_CLEAN) {
         res.status(400)

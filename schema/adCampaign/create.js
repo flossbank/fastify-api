@@ -1,18 +1,36 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['maxSpend', 'cpm', 'name'],
+    required: ['adCampaign'],
     properties: {
-      ads: {
+      adCampaign: {
+        type: 'object',
+        required: ['maxSpend', 'cpm', 'name'],
+        ads: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              title: { type: 'string' },
+              body: { type: 'string' },
+              url: { type: 'string' }
+            }
+          }
+        },
+        maxSpend: { type: 'number' },
+        cpm: {
+          type: 'number',
+          minimum: 100
+        },
+        name: { type: 'string' }
+      },
+      adDrafts: {
         type: 'array',
         items: { type: 'string', maxLength: 128 }
       },
-      maxSpend: { type: 'number' },
-      cpm: {
-        type: 'number',
-        minimum: 100
-      },
-      name: { type: 'string' }
+      keepDrafts: { type: 'boolean' }
     }
   },
   response: {

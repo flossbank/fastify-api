@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -17,13 +18,13 @@ test.before(async (t) => {
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
 
-    t.context.adId1 = await db.createAd(advertiserId1, {
+    t.context.adId1 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #1',
       title: 'Teacher Fund',
       body: 'You donate, we donate.',
       url: 'teacherfund.com'
     })
-    t.context.adId2 = await db.createAd(advertiserId1, {
+    t.context.adId2 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #2',
       title: 'Teacher Fund 2',
       body: 'You donate, we donate. 2',
@@ -61,33 +62,32 @@ test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
     payload: {
       adCampaignId: adCampaignIdBlah,
       adCampaign: {
-        ads: [t.context.adId1],
+        ads: [],
         maxSpend: 1000,
         cpm: 100,
         name: 'camp pain 1'
-      }
+      },
+      adDrafts: [t.context.adId1]
     },
     headers: { authorization: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/ad-campaign/update` 200 success', async (t) => {
+test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', async (t) => {
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    ads: [t.context.adId1],
+    ads: [],
     maxSpend: 1000,
     cpm: 100,
     name: 'camp pain 2'
-  })
+  }, [t.context.adId1], true)
 
-  let campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
-  await t.context.db.approveAd(t.context.advertiserId1, adCampaignId, t.context.adId1)
+  await t.context.db.approveAdCampaign(t.context.advertiserId1, adCampaignId)
   await t.context.db.activateAdCampaign(t.context.advertiserId1, adCampaignId)
-  campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
 
   const newName = 'new camp pain 2'
   const updatedCampaign = Object.assign(campaign, {
-    ads: [...campaign.ads.map((ad) => ad.id), t.context.adId2],
     name: newName
   })
 
@@ -96,17 +96,66 @@ test('POST `/ad-campaign/update` 200 success', async (t) => {
     url: '/ad-campaign/update',
     payload: {
       adCampaignId,
-      adCampaign: updatedCampaign
+      adCampaign: updatedCampaign,
+      adDrafts: [t.context.adId2],
+      keepDrafts: true
     },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(JSON.parse(res.payload), { success: true })
   t.deepEqual(res.statusCode, 200)
 
-  const campaignAfterUpdate = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  // Should not have deleted the draft so we should still have 2 that were created in setup
+  t.deepEqual(advertiser.adDrafts.length, 2)
+
+  const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)
+  // Campaign should have the initial ad plus the new ad from drafts we just added
   t.deepEqual(campaignAfterUpdate.ads.length, 2)
   t.true(campaignAfterUpdate.ads.every(ad => !!ad.id))
-  t.true(campaignAfterUpdate.ads.find(ad => ad.id === t.context.adId1).approved)
+  t.deepEqual(campaignAfterUpdate.name, newName)
+  t.deepEqual(campaignAfterUpdate.active, false)
+})
+
+test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', async (t) => {
+  const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
+    ads: [],
+    maxSpend: 1000,
+    cpm: 100,
+    name: 'camp pain 2'
+  }, [t.context.adId1], true)
+
+  await t.context.db.approveAdCampaign(t.context.advertiserId1, adCampaignId)
+  await t.context.db.activateAdCampaign(t.context.advertiserId1, adCampaignId)
+  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, adCampaignId)
+
+  const newName = 'new camp pain 2'
+  const updatedCampaign = Object.assign(campaign, {
+    name: newName
+  })
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/ad-campaign/update',
+    payload: {
+      adCampaignId,
+      adCampaign: updatedCampaign,
+      adDrafts: [t.context.adId2],
+      keepDrafts: false
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(res.statusCode, 200)
+
+  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  // Should not have deleted the draft so we should still have 2 that were created in setup
+  t.deepEqual(advertiser.adDrafts.length, 1)
+
+  const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)
+  // Campaign should have the initial ad plus the new ad from drafts we just added
+  t.deepEqual(campaignAfterUpdate.ads.length, 2)
+  t.true(campaignAfterUpdate.ads.every(ad => !!ad.id))
   t.deepEqual(campaignAfterUpdate.name, newName)
   t.deepEqual(campaignAfterUpdate.active, false)
 })
@@ -159,6 +208,7 @@ test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
 })
 
 test('POST `/ad-campaign/update` 400 bad request', async (t) => {

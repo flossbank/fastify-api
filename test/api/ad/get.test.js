@@ -10,13 +10,13 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    t.context.adId1 = await db.createAd(advertiserId1, {
+    t.context.adId1 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #1',
       title: 'Teacher Fund',
       body: 'You donate, we donate.',
       url: 'teacherfund.com'
     })
-    t.context.adId2 = await db.createAd(advertiserId1, {
+    t.context.adId2 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #2',
       title: 'Teacher Fund 2',
       body: 'You donate, we donate. 2',
@@ -25,23 +25,22 @@ test.before(async (t) => {
 
     // active campaign
     t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [t.context.adId1, t.context.adId2],
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 1'
-    })
-    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, t.context.adId1)
-    await db.approveAd(t.context.advertiserId1, t.context.campaignId1, t.context.adId2)
+    }, [t.context.adId1, t.context.adId2], true)
+    await db.approveAdCampaign(t.context.advertiserId1, t.context.campaignId1)
     await db.activateAdCampaign(t.context.advertiserId1, t.context.campaignId1)
     t.context.adCampaign1 = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
 
     // inactive campaign
     t.context.campaignId2 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [t.context.adId1, t.context.adId2],
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 2'
-    })
+    }, [t.context.adId1, t.context.adId2], true)
   })
 })
 

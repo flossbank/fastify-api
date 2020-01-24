@@ -64,7 +64,6 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
 
   const shouldBeReceived = await t.context.db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
-  delete shouldBeReceived.impressionValue
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     adCampaign: shouldBeReceived

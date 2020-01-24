@@ -53,7 +53,7 @@ module.exports = {
             },
             active: { type: 'boolean' },
             verified: { type: 'boolean' },
-            ads: {
+            adDrafts: {
               type: 'array',
               items: {
                 type: 'object',
