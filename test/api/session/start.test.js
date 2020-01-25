@@ -56,37 +56,37 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/ad/get` 401 unauthorized', async (t) => {
+test('POST `/session/start` 401 unauthorized', async (t) => {
   t.context.auth.isAdSessionAllowed.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/ad/get` 400 bad request', async (t) => {
+test('POST `/session/start` 400 bad request', async (t) => {
   let res
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: {}
   })
   t.deepEqual(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'invalid', packages: ['yttrium-server@latest'] }
   })
 })
 
-test('POST `/ad/get` 200 success', async (t) => {
+test('POST `/session/start` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 200)
@@ -94,18 +94,19 @@ test('POST `/ad/get` 200 success', async (t) => {
   t.deepEqual(payload.sessionId, await t.context.auth.createAdSession())
 
   t.context.adCampaign1.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.advertiserId1}_${ad.id}`),
-      { id: `${t.context.advertiserId1}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === id),
+      { id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
 
-test('POST `/ad/get` 200 success | no ads no session', async (t) => {
+test('POST `/session/start` 200 success | no ads no session', async (t) => {
   t.context.db.getAdBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 200)
@@ -115,10 +116,10 @@ test('POST `/ad/get` 200 success | no ads no session', async (t) => {
   })
 })
 
-test('POST `/ad/get` 200 success | existing session', async (t) => {
+test('POST `/session/start` 200 success | existing session', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: {
       registry: 'npm',
       packages: ['yttrium-server@latest'],
@@ -129,18 +130,19 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, 'existing-session-id')
   t.context.adCampaign1.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.advertiserId1}_${ad.id}`),
-      { id: `${t.context.advertiserId1}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === id),
+      { id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
 
-test('POST `/ad/get` 500 server error', async (t) => {
+test('POST `/session/start` 500 server error', async (t) => {
   t.context.db.getAdBatch = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 500)

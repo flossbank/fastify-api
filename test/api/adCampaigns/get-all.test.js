@@ -82,7 +82,6 @@ test('GET `/ad-campaign/get-all` 200 success', async (t) => {
         approved: false,
         cpm: 100,
         name: 'camp pain',
-        spend: 0,
         active: false
       }
     ]

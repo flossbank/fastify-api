@@ -27,7 +27,6 @@ Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId,
   )
 }
 
-// TODO update this to new adcampaign schema
 Db.prototype.getAdBatch = async function getAdBatch () {
   // more complicated logic and/or caching can come later
   const ads = (await this.db.collection('advertisers').aggregate([
@@ -54,6 +53,7 @@ Db.prototype.getAdBatch = async function getAdBatch () {
     {
       $project: {
         _id: '$_id',
+        campaignId: '$campaigns.id',
         ads: '$campaigns.ads'
       }
     },
@@ -69,8 +69,8 @@ Db.prototype.getAdBatch = async function getAdBatch () {
 
   // return ids in the form campaignId_adId for easier processing later
   return ads
-    .reduce((acc, { ads: { id, title, body, url }, _id: campaignId }) => acc.concat({
-      id: campaignId + '_' + id, title, body, url
+    .reduce((acc, { ads: { id, title, body, url }, _id: advertiserId, campaignId }) => acc.concat({
+      id: `${advertiserId}_${campaignId}_${id}`, title, body, url
     }), [])
 }
 
@@ -148,8 +148,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   const adCampaignWithDefaults = Object.assign({}, { ads: [] }, adCampaign, {
     id: ulid(),
     active: false,
-    approved: false,
-    spend: 0
+    approved: false
   })
 
   // Check if the ads passed in are clean
