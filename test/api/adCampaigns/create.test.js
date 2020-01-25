@@ -61,8 +61,8 @@ test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
     payload: {
       adCampaign: {
         ads: [],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain 1'
       }
     },
@@ -73,8 +73,8 @@ test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
 
 test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts', async (t) => {
   const campaignToCreate = {
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2'
   }
   const res = await t.context.app.inject({
@@ -110,8 +110,8 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
     advertiserId: t.context.advertiserId2
   })
   const campaignToCreate = {
-    maxSpend: 5000,
-    cpm: 10,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain from drafts'
   }
   const res = await t.context.app.inject({
@@ -144,8 +144,8 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
 test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
   const campaignToCreate = {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2'
   }
   const res = await t.context.app.inject({
@@ -175,8 +175,8 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
   }
   const campaignToCreate = {
     ads: [adToCreate],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2'
   }
   const res = await t.context.app.inject({
@@ -208,8 +208,8 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   }
   const campaignToCreate = {
     ads: [adToCreate],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2'
   }
   const res = await t.context.app.inject({
@@ -245,7 +245,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     url: '/ad-campaign/create',
     payload: {
       adCampaign: {
-        cpm: 100,
+        cpm: 500000,
         name: 'camp pain'
       }
     },
@@ -258,7 +258,7 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     url: '/ad-campaign/create',
     payload: {
       adCampaign: {
-        maxSpend: 1000,
+        maxSpend: 500000,
         name: 'camp pain'
       }
     },
@@ -271,8 +271,8 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     url: '/ad-campaign/create',
     payload: {
       adCampaign: {
-        maxSpend: 1000,
-        cpm: 100
+        maxSpend: 500000,
+        cpm: 500000
       }
     },
     headers: { authorization: 'valid-session-token' }
@@ -300,8 +300,8 @@ test('POST `/ad-campaign/create` 400 bad request | trash ads', async (t) => {
           title: 'ABC',
           url: 'https://abc.com'
         }],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain'
       }
     },
@@ -319,8 +319,8 @@ test('POST `/ad-campaign/create` 500 server error', async (t) => {
     payload: {
       adCampaign: {
         ads: [],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain'
       }
     },

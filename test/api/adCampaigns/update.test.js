@@ -56,8 +56,8 @@ test.after.always(async (t) => {
 test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const adCampaignIdBlah = await t.context.db.createAdCampaign(t.context.advertiserId1, {
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 1'
   })
 
@@ -68,8 +68,8 @@ test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
       adCampaignId: adCampaignIdBlah,
       adCampaign: {
         ads: [],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain 1'
       },
       adDrafts: [t.context.adId1]
@@ -82,8 +82,8 @@ test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
 test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', async (t) => {
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2'
   }, [t.context.adId1], true)
 
@@ -128,8 +128,8 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
   })
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId2, {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 2000'
   }, [], true)
 
@@ -172,8 +172,8 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
 test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp paign'
   })
   const res = await t.context.app.inject({
@@ -183,8 +183,8 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
       adCampaignId,
       adCampaign: {
         ads: { halp: 'me' },
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain 3'
       }
     },
@@ -196,8 +196,8 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
 test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 3'
   })
   const res = await t.context.app.inject({
@@ -209,8 +209,8 @@ test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
         ads: [{
           rent: 'is too damn high'
         }],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain 3'
       }
     },
@@ -242,8 +242,8 @@ test('POST `/ad-campaign/update` 400 bad request', async (t) => {
 test('POST `/ad-campaign/update` 500 server error', async (t) => {
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId1, {
     ads: [],
-    maxSpend: 1000,
-    cpm: 100,
+    maxSpend: 500000,
+    cpm: 500000,
     name: 'camp pain 3'
   })
 
@@ -255,8 +255,8 @@ test('POST `/ad-campaign/update` 500 server error', async (t) => {
       adCampaignId,
       adCampaign: {
         ads: [],
-        maxSpend: 1000,
-        cpm: 100,
+        maxSpend: 500000,
+        cpm: 500000,
         name: 'camp pain'
       }
     },

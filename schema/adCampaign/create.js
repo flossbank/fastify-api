@@ -19,7 +19,7 @@ module.exports = {
             }
           }
         },
-        maxSpend: { 
+        maxSpend: {
           type: 'number',
           minimum: 500000
         },
