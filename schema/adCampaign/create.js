@@ -22,7 +22,7 @@ module.exports = {
         maxSpend: { type: 'number' },
         cpm: {
           type: 'number',
-          minimum: 100
+          minimum: 500000
         },
         name: { type: 'string' }
       },

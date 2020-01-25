@@ -23,7 +23,7 @@ module.exports = {
           name: { type: 'string', maxLength: 128 },
           maxSpend: { type: 'number' },
           id: { type: 'string', maxLength: 128 },
-          cpm: { type: 'number', minimum: 100 },
+          cpm: { type: 'number', minimum: 500000 },
           startDate: { type: 'number' },
           endDate: { type: 'number' }
         }
