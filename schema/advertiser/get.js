@@ -54,8 +54,7 @@ module.exports = {
                   endDate: { type: 'number' },
                   approved: { type: 'boolean' },
                   active: { type: 'boolean' },
-                  cpm: { type: 'number' },
-                  spend: { type: 'number' }
+                  cpm: { type: 'number' }
                 }
               }
             },
