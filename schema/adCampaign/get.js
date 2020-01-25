@@ -21,22 +21,30 @@ module.exports = {
               items: {
                 type: 'object',
                 properties: {
+                  id: { type: 'string' },
                   name: { type: 'string' },
                   title: { type: 'string' },
                   body: { type: 'string' },
-                  url: { type: 'string' }
+                  url: { type: 'string' },
+                  impressions: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        timestamp: { type: 'number' }
+                      }
+                    }
+                  }
                 }
               }
             },
-            advertiserId: { type: 'string' },
             maxSpend: { type: 'number' },
             createDate: { type: 'number' },
             startDate: { type: 'number' },
             endDate: { type: 'number' },
             approved: { type: 'boolean' },
             active: { type: 'boolean' },
-            cpm: { type: 'number' },
-            spend: { type: 'number' }
+            cpm: { type: 'number' }
           }
         }
       }

@@ -6,29 +6,36 @@ module.exports = {
       adCampaignId: { type: 'string', maxLength: 128 },
       adCampaign: {
         type: 'object',
-        required: ['advertiserId'],
         properties: {
-          advertiserId: { type: 'string', maxLength: 128 },
           ads: {
             type: 'array',
             items: {
               type: 'object',
-              required: ['name', 'title', 'body', 'url'],
               properties: {
-                name: { type: 'string', maxLength: 128 },
-                title: { type: 'string', maxLength: 128 },
-                body: { type: 'string', maxLength: 256 },
-                url: { type: 'string', maxLength: 128 }
+                id: { type: 'string' },
+                name: { type: 'string' },
+                title: { type: 'string' },
+                body: { type: 'string' },
+                url: { type: 'string' }
               }
             }
           },
           name: { type: 'string', maxLength: 128 },
-          maxSpend: { type: 'number' },
-          cpm: { type: 'number', minimum: 100 },
+          maxSpend: {
+            type: 'number',
+            minimum: 500000
+          },
+          id: { type: 'string', maxLength: 128 },
+          cpm: { type: 'number', minimum: 500000 },
           startDate: { type: 'number' },
           endDate: { type: 'number' }
         }
-      }
+      },
+      adDrafts: {
+        type: 'array',
+        items: { type: 'string', maxLength: 128 }
+      },
+      keepDrafts: { type: 'boolean' }
     }
   },
   response: {

@@ -45,7 +45,6 @@ test('GET `/advertiser/resume` 401 unauthorized | no session', async (t) => {
 })
 
 test('GET `/advertiser/resume` 200 | success', async (t) => {
-  t.context.auth.createAdvertiserSession.resolves('advertiser-session-2')
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/resume',
@@ -58,7 +57,6 @@ test('GET `/advertiser/resume` 200 | success', async (t) => {
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${advertiserSessionKey}=advertiser-session-2`)
 })
 
 test('GET `/advertiser/resume` 400 | no advertiser', async (t) => {

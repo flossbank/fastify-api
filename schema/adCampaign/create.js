@@ -1,28 +1,39 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['advertiserId', 'ads', 'maxSpend', 'cpm', 'name'],
+    required: ['adCampaign'],
     properties: {
-      advertiserId: { type: 'string', maxLength: 128 },
-      ads: {
-        type: 'array',
-        items: {
-          type: 'object',
-          required: ['name', 'title', 'body', 'url'],
-          properties: {
-            name: { type: 'string', maxLength: 128 },
-            title: { type: 'string', maxLength: 128 },
-            body: { type: 'string', maxLength: 256 },
-            url: { type: 'string', maxLength: 128 }
+      adCampaign: {
+        type: 'object',
+        required: ['maxSpend', 'cpm', 'name'],
+        ads: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              title: { type: 'string' },
+              body: { type: 'string' },
+              url: { type: 'string' }
+            }
           }
-        }
+        },
+        maxSpend: {
+          type: 'number',
+          minimum: 500000
+        },
+        cpm: {
+          type: 'number',
+          minimum: 500000
+        },
+        name: { type: 'string' }
       },
-      maxSpend: { type: 'number' },
-      cpm: {
-        type: 'number',
-        minimum: 100
+      adDrafts: {
+        type: 'array',
+        items: { type: 'string', maxLength: 128 }
       },
-      name: { type: 'string' }
+      keepDrafts: { type: 'boolean' }
     }
   },
   response: {
@@ -31,6 +42,13 @@ module.exports = {
       properties: {
         success: { type: 'boolean' },
         id: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
       }
     }
   }

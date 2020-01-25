@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { alreadyExistsMessage } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, () => {})
@@ -23,7 +24,8 @@ test('POST `/advertiser/create` 200 success', async (t) => {
     url: '/advertiser/register',
     payload: {
       advertiser: {
-        name: 'advertiser',
+        firstName: 'advertiser',
+        lastName: 'captain',
         email: 'advertiser@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -37,7 +39,36 @@ test('POST `/advertiser/create` 200 success', async (t) => {
   const { id } = payload
 
   const ad = await t.context.db.getAdvertiser(id)
-  t.deepEqual(ad.name, 'advertiser')
+  t.deepEqual(ad.firstName, 'advertiser')
+  t.deepEqual(ad.lastName, 'captain')
+})
+
+test('POST `/advertiser/create` 400 duplicate email', async (t) => {
+  t.context.db.createAdvertiser = () => {
+    const error = new Error()
+    error.code = 11000 // Dupe key mongo error
+    throw error
+  }
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/register',
+    payload: {
+      advertiser: {
+        firstName: 'advertiser',
+        lastName: 'captain',
+        email: 'advertiser@ads.com',
+        password: 'Paps%df3$sd'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+
+  t.deepEqual(res.statusCode, 400)
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, false)
+  const { message } = payload
+  t.deepEqual(message, alreadyExistsMessage)
 })
 
 test('POST `/advertiser/register` 400 bad request', async (t) => {
@@ -106,7 +137,8 @@ test('POST `/advertiser/create` 500 server error', async (t) => {
     url: '/advertiser/register',
     payload: {
       advertiser: {
-        name: 'advertiser',
+        firstName: 'advertiser',
+        lastName: 'captain',
         email: 'advertiser@ads.com',
         password: 'Paps%df3$sd'
       }

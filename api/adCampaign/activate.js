@@ -1,21 +1,16 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const { adCampaignId: id } = req.body
-    const campaign = await ctx.db.getAdCampaign(id)
-    if (req.session.advertiserId !== campaign.advertiserId) {
-      res.status(401)
-      return res.send({ success: false })
-    }
-
-    if (!campaign.ads.every(ad => ad.approved)) {
+    const { adCampaignId } = req.body
+    const campaign = await ctx.db.getAdCampaign(req.session.advertiserId, adCampaignId)
+    if (!campaign.approved) {
       res.status(400)
       return res.send({
         success: false,
-        message: 'All ads in a campaign must be approved before activating'
+        message: 'Campaign must be approved before activating'
       })
     }
 
-    await ctx.db.activateAdCampaign(id)
+    await ctx.db.activateAdCampaign(req.session.advertiserId, adCampaignId)
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

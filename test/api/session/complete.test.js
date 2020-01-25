@@ -1,5 +1,4 @@
 const test = require('ava')
-const { MAX_ADS_PER_PERIOD } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
 
 test.before(async (t) => {
@@ -19,7 +18,7 @@ test.after(async (t) => {
 })
 
 test('POST `/session/complete` 401 unauthorized', async (t) => {
-  t.context.auth.completeAdSession.resolves({})
+  t.context.auth.isAdSessionAllowed.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',
@@ -46,24 +45,6 @@ test('POST `/session/complete` 400 bad request', async (t) => {
     headers: { authorization: 'valid-api-key' }
   })
   t.deepEqual(res.statusCode, 400)
-})
-
-test('POST `/session/complete` 200 success | extra long seen', async (t) => {
-  t.context.auth.completeAdSession.resolves({
-    email: 'pjs@sjp.com',
-    key: 'abc',
-    adsSeenThisPeriod: MAX_ADS_PER_PERIOD - 4,
-    timestamp: 1571253769601
-  })
-  const seen = new Array(6).fill(0).map(_ => 'test-ad-0')
-  const res = await t.context.app.inject({
-    method: 'POST',
-    url: '/session/complete',
-    payload: { seen: seen, sessionId: 'session-id' },
-    headers: { authorization: 'valid-api-key' }
-  })
-  t.deepEqual(res.statusCode, 200)
-  t.deepEqual(t.context.sqs.sendMessage.lastCall.args[0].seen.length, 4)
 })
 
 test('POST `/session/complete` 200 success', async (t) => {

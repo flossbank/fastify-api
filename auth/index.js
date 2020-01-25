@@ -4,6 +4,7 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const config = require('../config')
+const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
 const { activationEmails } = require('../helpers/email')
 
 AWS.config.update(config.getAwsConfig())
@@ -40,6 +41,22 @@ Auth.prototype.getAuthToken = function getAuthToken (req) {
   return req.headers.authorization.split(' ').pop()
 }
 
+Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
+  let cookieKey
+  switch (kind) {
+    case this.authKinds.ADVERTISER:
+      cookieKey = advertiserSessionKey
+      break
+    case this.authKinds.MAINTAINER:
+      cookieKey = maintainerSessionKey
+      break
+    default:
+      return false
+  }
+  if (!req.cookies || !req.cookies[cookieKey]) return false
+  return req.cookies[cookieKey]
+}
+
 Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
   const token = this.getAuthToken(req)
   if (!token) return false
@@ -49,7 +66,7 @@ Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
 
 // Returns a UI Session | null
 Auth.prototype.getUISession = async function getUISession (req, kind) {
-  const token = this.getAuthToken(req)
+  const token = this.getSessionToken(req, kind)
   if (!token) return null
 
   let item, Item
@@ -59,14 +76,14 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
       case (this.authKinds.MAINTAINER):
         ({ Item } = await docs.get({
           TableName: MaintainerSessionTableName,
-          Key: { token }
+          Key: { sessionId: token }
         }).promise())
         item = Item
         break
       case (this.authKinds.ADVERTISER):
         ({ Item } = await docs.get({
           TableName: AdvertiserSessionTableName,
-          Key: { token }
+          Key: { sessionId: token }
         }).promise())
         item = Item
         break
@@ -79,7 +96,7 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
     return null
   }
 
-  if (item.expires > Date.now()) {
+  if (item.expires < Date.now()) {
     return null
   }
 
@@ -230,39 +247,6 @@ Auth.prototype.createAdSession = async function createSession (req) {
     }
   }).promise()
   return sessionId
-}
-
-Auth.prototype.completeAdSession = async function completeAdSession (req) {
-  if (!req.headers || !req.headers.authorization) return false
-  const apiKey = req.headers.authorization.split(' ').pop()
-  if (!apiKey) return false
-  const { seen } = req.body
-
-  let item
-  try {
-    const { Attributes } = await docs.update({
-      TableName: ApiTableName,
-      Key: { key: apiKey },
-      UpdateExpression: 'SET adsSeenThisPeriod = adsSeenThisPeriod + :seenLen',
-      ConditionExpression: '#key = :key',
-      ExpressionAttributeNames: {
-        '#key': 'key'
-      },
-      ExpressionAttributeValues: {
-        ':seenLen': seen.length,
-        ':key': apiKey
-      },
-      ReturnValues: 'ALL_OLD'
-    }).promise()
-    item = Attributes
-  } catch (e) {
-    if (e.code === 'ConditionalCheckFailedException') {
-      // this means an invalid API key was sent up
-      return false
-    }
-    throw e
-  }
-  return item
 }
 
 Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {

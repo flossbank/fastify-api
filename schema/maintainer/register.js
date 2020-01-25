@@ -5,9 +5,10 @@ module.exports = {
     properties: {
       maintainer: {
         type: 'object',
-        required: ['name', 'email', 'password'],
+        required: ['firstName', 'lastName', 'email', 'password'],
         properties: {
-          name: { type: 'string', maxLength: 128 },
+          firstName: { type: 'string', maxLength: 128 },
+          lastName: { type: 'string', maxLength: 128 },
           email: {
             type:
             'string',

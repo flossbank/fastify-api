@@ -2,8 +2,8 @@
 const health = require('../api/health')
 
 // Ad
-const getAd = require('../api/ad/get')
-const getAdSchema = require('../schema/ad/get')
+const createAd = require('../api/ad/create')
+const createAdSchema = require('../schema/ad/create')
 
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
@@ -64,6 +64,8 @@ const updatePackages = require('../api/package/update')
 const updatePackagesSchema = require('../schema/package/update')
 
 // Session
+const startSession = require('../api/session/start')
+const startSessionSchema = require('../schema/session/start')
 const completeSession = require('../api/session/complete')
 const completeSessionSchema = require('../schema/session/complete')
 
@@ -74,9 +76,10 @@ const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
+  fastify.post('/health', health)
 
   // Ad
-  fastify.post('/ad/get', { schema: getAdSchema }, (req, res) => getAd(req, res, fastify))
+  fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
 
   // Ad Campaigns
   fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdCampaignSchema }, (req, res) => createAdCampaign(req, res, fastify))
@@ -115,6 +118,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/package/update', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: updatePackagesSchema }, (req, res) => updatePackages(req, res, fastify))
 
   // Session
+  fastify.post('/session/start', { schema: startSessionSchema }, (req, res) => startSession(req, res, fastify))
   fastify.post('/session/complete', { schema: completeSessionSchema }, (req, res) => completeSession(req, res, fastify))
 
   next()

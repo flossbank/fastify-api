@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { alreadyExistsMessage } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, () => {})
@@ -23,7 +24,8 @@ test('POST `/maintainer/register` 200 success', async (t) => {
     url: '/maintainer/register',
     payload: {
       maintainer: {
-        name: 'maintainer',
+        firstName: 'maintainer',
+        lastName: 'captain',
         email: 'maintainer@ads.com',
         password: 'Paps%df3$sd'
       }
@@ -38,7 +40,35 @@ test('POST `/maintainer/register` 200 success', async (t) => {
 
   const maintainer = await t.context.db.getMaintainer(id)
   t.deepEqual(maintainer.verified, false)
-  t.deepEqual(maintainer.name, 'maintainer')
+  t.deepEqual(maintainer.firstName, 'maintainer')
+  t.deepEqual(maintainer.lastName, 'captain')
+})
+
+test('POST `/maintainer/register` 400 duplicate email', async (t) => {
+  t.context.db.createMaintainer = () => {
+    const error = new Error()
+    error.code = 11000 // Dupe key mongo error
+    throw error
+  }
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/register',
+    payload: {
+      maintainer: {
+        firstName: 'maintainer',
+        lastName: 'captain',
+        email: 'maintainer@ads.com',
+        password: 'Paps%df3$sd'
+      }
+    },
+    headers: { authorization: 'valid-session-token' }
+  })
+  t.deepEqual(res.statusCode, 400)
+  const payload = JSON.parse(res.payload)
+
+  t.deepEqual(payload.success, false)
+  const { message } = payload
+  t.deepEqual(message, alreadyExistsMessage)
 })
 
 test('POST `/maintainer/register` 400 bad request', async (t) => {
@@ -107,7 +137,8 @@ test('POST `/maintainer/register` 500 server error', async (t) => {
     url: '/maintainer/register',
     payload: {
       maintainer: {
-        name: 'maintainer',
+        firstName: 'maintainer',
+        lastName: 'captain',
         email: 'maintainer@ads.com',
         password: 'Paps%df3$sd'
       }

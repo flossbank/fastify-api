@@ -1,8 +1,21 @@
+const { alreadyExistsMessage } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
-  // TODO: validate email and password against regex
   const { advertiser } = req.body
   try {
-    const id = await ctx.db.createAdvertiser(advertiser)
+    let id
+    try {
+      id = await ctx.db.createAdvertiser(advertiser)
+    } catch (e) {
+      if (e.code === 11000) { // Dupe key mongo error code is 11000
+        res.status(400)
+        return res.send({
+          success: false,
+          message: alreadyExistsMessage
+        })
+      }
+      throw e
+    }
     await ctx.auth.sendUserToken(advertiser.email, ctx.auth.authKinds.ADVERTISER)
     res.send({ success: true, id })
   } catch (e) {

@@ -10,12 +10,6 @@ module.exports = {
       advertiserId: 'valid-id'
     })
     this.createAdSession = sinon.stub().resolves('random-session-id')
-    this.completeAdSession = sinon.stub().resolves({
-      email: 'pjs@sjp.com',
-      key: 'abc',
-      adsSeenThisPeriod: 2,
-      timestamp: 1571253769601
-    })
     this.sendUserToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
     this.deleteAdvertiserSession = sinon.stub().resolves()

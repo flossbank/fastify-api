@@ -10,33 +10,37 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
+    t.context.adId1 = await db.createAdDraft(advertiserId1, {
+      name: 'Teacher Fund #1',
+      title: 'Teacher Fund',
+      body: 'You donate, we donate.',
+      url: 'teacherfund.com'
+    })
+    t.context.adId2 = await db.createAdDraft(advertiserId1, {
+      name: 'Teacher Fund #2',
+      title: 'Teacher Fund 2',
+      body: 'You donate, we donate. 2',
+      url: 'teacherfund.com 2'
+    })
+
     // active campaign
-    const campaignId1 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
-      ads: [
-        { name: 'Teacher Fund #1', title: 'Teacher Fund', body: 'You donate, we donate.', url: 'teacherfund.com', approved: true },
-        { name: 'Teacher Fund #2', title: 'Fund The Teachers', body: 'We, you, donate, donate.', url: 'teacherfund.com', approved: true }
-      ],
+    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 1'
-    })
-    t.context.campaignId1 = campaignId1.toHexString()
-    await db.activateAdCampaign(t.context.campaignId1)
-    t.context.adCampaign1 = await db.getAdCampaign(t.context.campaignId1)
+    }, [t.context.adId1, t.context.adId2], true)
+    await db.approveAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+    await db.activateAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+    t.context.adCampaign1 = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
 
     // inactive campaign
-    const campaignId2 = await db.createAdCampaign({
-      advertiserId: t.context.advertiserId1,
-      ads: [
-        { name: 'Inbeeb #1', title: 'Inbeeb', body: 'Higher hires.', url: 'inbeeb.com', approved: true },
-        { name: 'Inbeeb #2', title: 'Inbeeb', body: 'Not in Kansas.', url: 'vscodium.com', approved: true }
-      ],
+    t.context.campaignId2 = await db.createAdCampaign(t.context.advertiserId1, {
+      ads: [],
       maxSpend: 100,
       cpm: 100,
       name: 'camp pain 2'
-    })
-    t.context.campaignId2 = campaignId2.toHexString()
+    }, [t.context.adId1, t.context.adId2], true)
   })
 })
 
@@ -52,37 +56,37 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/ad/get` 401 unauthorized', async (t) => {
+test('POST `/session/start` 401 unauthorized', async (t) => {
   t.context.auth.isAdSessionAllowed.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/ad/get` 400 bad request', async (t) => {
+test('POST `/session/start` 400 bad request', async (t) => {
   let res
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: {}
   })
   t.deepEqual(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'invalid', packages: ['yttrium-server@latest'] }
   })
 })
 
-test('POST `/ad/get` 200 success', async (t) => {
+test('POST `/session/start` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 200)
@@ -90,18 +94,19 @@ test('POST `/ad/get` 200 success', async (t) => {
   t.deepEqual(payload.sessionId, await t.context.auth.createAdSession())
 
   t.context.adCampaign1.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
-      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === id),
+      { id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
 
-test('POST `/ad/get` 200 success | no ads no session', async (t) => {
+test('POST `/session/start` 200 success | no ads no session', async (t) => {
   t.context.db.getAdBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 200)
@@ -111,10 +116,10 @@ test('POST `/ad/get` 200 success | no ads no session', async (t) => {
   })
 })
 
-test('POST `/ad/get` 200 success | existing session', async (t) => {
+test('POST `/session/start` 200 success | existing session', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: {
       registry: 'npm',
       packages: ['yttrium-server@latest'],
@@ -125,18 +130,19 @@ test('POST `/ad/get` 200 success | existing session', async (t) => {
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.sessionId, 'existing-session-id')
   t.context.adCampaign1.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
     t.deepEqual(
-      payload.ads.find(payloadAd => payloadAd.id === `${t.context.adCampaign1.id}_${ad.id}`),
-      { id: `${t.context.adCampaign1.id}_${ad.id}`, title: ad.title, body: ad.body, url: ad.url }
+      payload.ads.find(payloadAd => payloadAd.id === id),
+      { id, title: ad.title, body: ad.body, url: ad.url }
     )
   })
 })
 
-test('POST `/ad/get` 500 server error', async (t) => {
+test('POST `/session/start` 500 server error', async (t) => {
   t.context.db.getAdBatch = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/ad/get',
+    url: '/session/start',
     payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
   })
   t.deepEqual(res.statusCode, 500)
