@@ -5,7 +5,11 @@ module.exports = async (req, res, ctx) => {
   try {
     const advertiser = await ctx.db.authenticateAdvertiser(email, password)
     if (advertiser) {
-      res.setCookie(advertiserSessionKey, await ctx.auth.createAdvertiserSession(advertiser.id.toString()))
+      res.setCookie(
+        advertiserSessionKey, 
+        await ctx.auth.createAdvertiserSession(advertiser.id.toString()),
+        { path: '/' }
+      )
       res.send({ success: true, advertiser })
     } else {
       res.status(401)
