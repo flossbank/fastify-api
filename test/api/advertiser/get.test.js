@@ -48,6 +48,17 @@ test('GET `/advertiser/get` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
+test('GET `/advertiser/get` 401 unauthorized middleware failure', async (t) => {
+  t.context.auth.getUISession.rejects(new Error())
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/advertiser/get',
+    query: { advertiserId: t.context.advertiserId1 },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
 test('GET `/advertiser/get` 401 unauthorized wrong advertiser', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',

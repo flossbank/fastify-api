@@ -50,6 +50,17 @@ test('GET `/maintainer/get` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
+test('GET `/maintainer/get` 401 unauthorized middleware failure', async (t) => {
+  t.context.auth.getUISession.rejects(new Error())
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/maintainer/get',
+    query: { maintainerId: t.context.maintainerId1 },
+    headers: { authorization: 'invalid token' }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
 test('GET `/maintainer/get` 401 unauthorized | wrong maintainer id', async (t) => {
   t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
