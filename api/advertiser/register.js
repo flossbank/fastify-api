@@ -3,7 +3,7 @@ const { alreadyExistsMessage } = require('../../helpers/constants')
 module.exports = async (req, res, ctx) => {
   const { advertiser } = req.body
   try {
-    ctx.log.info(advertiser, 'registering new advertiser')
+    ctx.log.info('registering new advertiser with email %s', advertiser.email)
     let id
     try {
       id = await ctx.db.createAdvertiser(advertiser)

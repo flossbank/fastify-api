@@ -3,7 +3,7 @@ const { alreadyExistsMessage } = require('../../helpers/constants')
 module.exports = async (req, res, ctx) => {
   const { maintainer } = req.body
   try {
-    ctx.log.info(maintainer, 'registering new maintainer')
+    ctx.log.info('registering new maintainer with email %s', maintainer.email)
     let id
     try {
       id = await ctx.db.createMaintainer(maintainer)
