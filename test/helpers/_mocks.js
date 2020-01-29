@@ -26,5 +26,9 @@ module.exports = {
     this.npm = {
       getOwnedPackages: sinon.stub().resolves()
     }
+  },
+  Url: function Url () {
+    this.createUrl = sinon.stub().resolves('https://api.flossbank.io/u/asdf')
+    this.getUrl = sinon.stub().resolves('http://localhost.com')
   }
 }

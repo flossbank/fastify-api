@@ -5,9 +5,10 @@ const { authPlugin } = require('./auth')
 const { dbPlugin } = require('./db')
 const { sqsPlugin } = require('./sqs')
 const { registryPlugin } = require('./registry')
+const { urlPlugin } = require('./url')
 
 module.exports = async function buildFastify (deps) {
-  const { db, auth, sqs, registry, logger = true, csrf = true } = deps
+  const { db, auth, sqs, registry, url, logger = true, csrf = true } = deps
   const fastify = Fastify({ logger })
   // Create custom ajv schema declaration to remove _all_ additional fields by default
   const ajv = new Ajv({
@@ -59,6 +60,7 @@ module.exports = async function buildFastify (deps) {
   fastify.register(authPlugin(auth))
   fastify.register(sqsPlugin(sqs))
   fastify.register(registryPlugin(registry))
+  fastify.register(urlPlugin(url))
 
   return fastify
 }
