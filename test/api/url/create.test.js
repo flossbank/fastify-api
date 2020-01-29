@@ -17,6 +17,16 @@ test.after(async (t) => {
   await after(t)
 })
 
+test('POST /url/create | 401', async (t) => {
+  t.context.auth.getUISession.resolves(null)
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/url/create',
+    body: { url: 'http://localhost.com' }
+  })
+  t.is(res.statusCode, 401)
+})
+
 test('POST /url/create | 200', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
