@@ -7,14 +7,18 @@
 module.exports = async (req, res, ctx) => {
   try {
     const { maintainerId, packageRegistry } = req.body
+    ctx.log.info('refreshing packages in %s for maintainer %s', packageRegistry, maintainerId)
+
     const maintainer = await ctx.db.getMaintainer(maintainerId)
 
     if (!maintainer || !maintainer.id) {
+      ctx.log.warn('attempt to refresh packages for non-existent maintainer')
       res.status(400)
       return res.send()
     }
 
     if (!maintainer.tokens || !maintainer.tokens[packageRegistry] || !ctx.registry[packageRegistry]) {
+      ctx.log.warn('attempt to refresh packages for maintainer that has no %s token', packageRegistry)
       res.status(400)
       return res.send()
     }

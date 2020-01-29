@@ -2,9 +2,10 @@
 // and supply the same return values that login does.
 module.exports = async (req, res, ctx) => {
   try {
+    ctx.log.info('resuming maintainer session for %s', req.session.maintainerId)
     const maintainer = await ctx.db.getMaintainer(req.session.maintainerId)
     if (!maintainer || !maintainer.active || !maintainer.verified) {
-      ctx.log.error(new Error('ERROR attempted to resume a session where the maintainer doesnt exist'))
+      ctx.log.warn('attempt to resume session of non-existent, non-verified, or non-active maintainer')
       res.status(400)
       return res.send({ success: false })
     }

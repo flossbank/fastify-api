@@ -1,5 +1,6 @@
 module.exports = async (req, res, ctx) => {
   try {
+    ctx.log.info('getting ad campaign %s for %s', req.query.adCampaignId, req.session.advertiserId)
     res.send({
       success: true,
       adCampaign: await ctx.db.getAdCampaign(req.session.advertiserId, req.query.adCampaignId)
