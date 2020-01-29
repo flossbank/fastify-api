@@ -73,6 +73,11 @@ const completeSessionSchema = require('../schema/session/complete')
 const advertiserUIAuthMiddleware = require('../middleware/advertiser')
 const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 
+// URL
+const createUrl = require('../api/url/create')
+const createUrlSchema = require('../schema/url/create')
+const getUrl = require('../api/url/get')
+
 async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', health)
@@ -120,6 +125,10 @@ async function routes (fastify, opts, next) {
   // Session
   fastify.post('/session/start', { schema: startSessionSchema }, (req, res) => startSession(req, res, fastify))
   fastify.post('/session/complete', { schema: completeSessionSchema }, (req, res) => completeSession(req, res, fastify))
+
+  // URL
+  fastify.post('/url/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createUrlSchema }, (req, res) => createUrl(req, res, fastify))
+  fastify.get('/u/:id', (req, res) => getUrl(req, res, fastify))
 
   next()
 }

@@ -20,4 +20,8 @@ Config.prototype.getQueueUrl = function getQueueUrl () {
   return process.env.queue_url
 }
 
+Config.prototype.getUrlHost = function getUrlHost () {
+  return process.env.url_host || 'api.flossbank.io'
+}
+
 module.exports = new Config()

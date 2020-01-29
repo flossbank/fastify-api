@@ -24,11 +24,13 @@ exports.beforeEach = async function (t) {
   t.context.auth = new mocks.Auth()
   t.context.sqs = new mocks.Sqs()
   t.context.registry = new mocks.Registry()
+  t.context.url = new mocks.Url()
   t.context.app = await App({
     db: t.context.db,
     auth: t.context.auth,
     sqs: t.context.sqs,
     registry: t.context.registry,
+    url: t.context.url,
     logger: false,
     csrf: false
   })

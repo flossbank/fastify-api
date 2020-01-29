@@ -8,8 +8,8 @@
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
     "coverage": "nyc npm run unit-tests",
-    "unit-tests": "recaptcha_secret=test mongo_uri=test ava",
-    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --watch",
+    "unit-tests": "recaptcha_secret=test ava",
+    "watch:unit-tests": "recaptcha_secret=test ava --watch",
     "test": "npm run lint && npm run coverage"
   },
   "husky": {
