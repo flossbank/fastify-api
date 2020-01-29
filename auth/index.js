@@ -3,7 +3,7 @@ const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
-const config = require('../config')
+const { config } = require('../config')
 const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
 const { activationEmails } = require('../helpers/email')
 

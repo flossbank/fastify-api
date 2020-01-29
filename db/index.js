@@ -2,7 +2,7 @@ const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
 const bcrypt = require('bcrypt')
-const config = require('../config')
+const { config } = require('../config')
 const Cleaner = require('../helpers/clean')
 const { AD_NOT_CLEAN, AD_NOT_CLEAN_MSG } = require('../helpers/constants')
 
