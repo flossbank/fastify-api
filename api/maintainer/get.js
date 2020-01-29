@@ -12,7 +12,10 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('getting maintainer info for %s', req.query.maintainerId)
     const maintainer = await ctx.db.getMaintainer(req.query.maintainerId)
     if (!maintainer || !maintainer.verified) {
-      ctx.log.warn('attempt to get maintainer info for non-existent or unverified maintainer, rejecting')
+      ctx.log.warn(
+        'attempt to get maintainer info for non-existent or unverified maintainer from %s',
+        req.query.maintainerId
+      )
       res.status(400)
       return res.send({ success: false })
     }

@@ -13,7 +13,7 @@ module.exports = async (req, res, ctx) => {
       )
       res.send({ success: true, advertiser })
     } else {
-      ctx.log.warn('attempt to login with invalid credentials')
+      ctx.log.warn('attempt to login with invalid credentials from email %s', email)
       res.status(401)
       res.send({ success: false, message: 'Login failed; Invalid user ID or password' })
     }

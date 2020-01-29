@@ -4,7 +4,7 @@ module.exports = async (req, res, ctx) => {
     const { adCampaignId } = req.body
     const campaign = await ctx.db.getAdCampaign(req.session.advertiserId, adCampaignId)
     if (!campaign.approved) {
-      ctx.log.warn('attempt to activate unapproved campaign, rejecting request')
+      ctx.log.warn('attempt to activate unapproved campaign, rejecting request from %s', req.session.advertiserId)
       res.status(400)
       return res.send({
         success: false,

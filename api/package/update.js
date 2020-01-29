@@ -8,7 +8,7 @@ module.exports = async (req, res, ctx) => {
 
     // TODO BEFORE MASTER if maintainer id from session isn't owner of pkg, bail
     if (!pkg || !pkg.id) {
-      ctx.log.warn('attempt to update package information for non-existent package')
+      ctx.log.warn('attempt to update package information for non-existent package id %s', id)
       res.status(400)
       return res.send()
     }

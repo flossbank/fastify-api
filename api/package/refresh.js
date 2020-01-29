@@ -12,13 +12,13 @@ module.exports = async (req, res, ctx) => {
     const maintainer = await ctx.db.getMaintainer(maintainerId)
 
     if (!maintainer || !maintainer.id) {
-      ctx.log.warn('attempt to refresh packages for non-existent maintainer')
+      ctx.log.warn('attempt to refresh packages for non-existent maintainer from id %s', maintainerId)
       res.status(400)
       return res.send()
     }
 
     if (!maintainer.tokens || !maintainer.tokens[packageRegistry] || !ctx.registry[packageRegistry]) {
-      ctx.log.warn('attempt to refresh packages for maintainer that has no %s token', packageRegistry)
+      ctx.log.warn('attempt to refresh packages for maintainer %s that has no %s token', maintainerId, packageRegistry)
       res.status(400)
       return res.send()
     }

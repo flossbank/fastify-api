@@ -20,7 +20,7 @@ module.exports = async (req, res, ctx) => {
       })
     } catch (e) {
       if (e.code === AD_NOT_CLEAN) {
-        ctx.log.warn('dirty ad provided, rejecting campaign')
+        ctx.log.warn('dirty ad provided, rejecting campaign from %s', req.session.advertiserId)
         res.status(400)
         return res.send({
           success: false,

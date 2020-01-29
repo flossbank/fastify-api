@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
       id = await ctx.db.createAdvertiser(advertiser)
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000
-        ctx.log.warn('attempt to create advertiser with existing email, rejecting')
+        ctx.log.warn('attempt to create advertiser with existing email, rejecting request from email %s', advertiser.email)
         res.status(400)
         return res.send({
           success: false,

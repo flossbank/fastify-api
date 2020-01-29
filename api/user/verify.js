@@ -4,7 +4,7 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('verifying user with email %s', email)
 
     if (!await ctx.auth.validateUserToken(email, token, ctx.auth.authKinds.USER)) {
-      ctx.log.warn('attempt to verify user with invalid email or token')
+      ctx.log.warn('attempt to verify user with invalid email or token from %s', email)
       res.status(401)
       return res.send()
     }
