@@ -1,5 +1,5 @@
 const test = require('ava')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { alreadyExistsMessage } = require('../../../helpers/constants')
 
 test.before(async (t) => {
