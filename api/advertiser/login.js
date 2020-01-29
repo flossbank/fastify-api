@@ -6,7 +6,7 @@ module.exports = async (req, res, ctx) => {
     const advertiser = await ctx.db.authenticateAdvertiser(email, password)
     if (advertiser) {
       res.setCookie(
-        advertiserSessionKey, 
+        advertiserSessionKey,
         await ctx.auth.createAdvertiserSession(advertiser.id.toString()),
         { path: '/' }
       )

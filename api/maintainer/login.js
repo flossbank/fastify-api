@@ -6,7 +6,7 @@ module.exports = async (req, res, ctx) => {
     const maintainer = await ctx.db.authenticateMaintainer(email, password)
     if (maintainer) {
       res.setCookie(
-        maintainerSessionKey, 
+        maintainerSessionKey,
         await ctx.auth.createMaintainerSession(maintainer.id),
         { path: '/' }
       )

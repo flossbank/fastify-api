@@ -66,7 +66,7 @@ test('POST `/maintainer/login` 200 success', async (t) => {
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session`)
+  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session; Path=/`)
 })
 
 test('POST `/maintainer/login` 400 bad request', async (t) => {
