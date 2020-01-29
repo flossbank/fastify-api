@@ -6,7 +6,11 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('logging in as advertiser %s', email)
     const advertiser = await ctx.db.authenticateAdvertiser(email, password)
     if (advertiser) {
-      res.setCookie(advertiserSessionKey, await ctx.auth.createAdvertiserSession(advertiser.id.toString()))
+      res.setCookie(
+        advertiserSessionKey,
+        await ctx.auth.createAdvertiserSession(advertiser.id.toString()),
+        { path: '/' }
+      )
       res.send({ success: true, advertiser })
     } else {
       ctx.log.warn('attempt to login with invalid credentials')
