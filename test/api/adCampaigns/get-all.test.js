@@ -38,37 +38,15 @@ test('GET `/ad-campaign/get-all` 401 unauthorized | no session', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get-all',
-    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/ad-campaign/get-all` 401 unauthorized | bad advertiser id', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/ad-campaign/get-all',
-    query: { advertiserId: 'the harbringer of death' },
-    headers: { authorization: 'not a valid token' }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/ad-campaign/get-all` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/ad-campaign/get-all',
-    query: {},
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
 })
 
 test('GET `/ad-campaign/get-all` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get-all',
-    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
