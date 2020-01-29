@@ -1,4 +1,5 @@
 module.exports = async (req, res, ctx) => {
+  ctx.log.info('getting all campaigns for %s', req.session.advertiserId)
   try {
     res.send({
       success: true,
