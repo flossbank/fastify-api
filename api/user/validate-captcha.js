@@ -2,7 +2,10 @@ module.exports = async (req, res, ctx) => {
   try {
     const { email, token, response } = req.body
 
+    ctx.log.info('validating captcha for %s', email)
+
     if (!await ctx.auth.validateCaptcha(email, token, response)) {
+      ctx.log.warn('attempt to validate captcha with invalid email, token, or response from %s', email)
       res.status(401)
       return res.send()
     }
