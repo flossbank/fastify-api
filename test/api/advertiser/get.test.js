@@ -42,7 +42,6 @@ test('GET `/advertiser/get` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'invalid token' }
   })
   t.deepEqual(res.statusCode, 401)
@@ -53,17 +52,6 @@ test('GET `/advertiser/get` 401 unauthorized middleware failure', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: t.context.advertiserId1 },
-    headers: { authorization: 'invalid token' }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/advertiser/get` 401 unauthorized wrong advertiser', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/advertiser/get',
-    query: { advertiserId: 'bogus-id' },
     headers: { authorization: 'invalid token' }
   })
   t.deepEqual(res.statusCode, 401)
@@ -76,7 +64,6 @@ test('GET `/advertiser/get` 400 | unverified', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: t.context.unverifiedAdvertiserId },
     headers: { authorization: 'invalid token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -86,7 +73,6 @@ test('GET `/advertiser/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -105,22 +91,11 @@ test('GET `/advertiser/get` 200 success', async (t) => {
   })
 })
 
-test('GET `/advertiser/get` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/advertiser/get',
-    query: {},
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-})
-
 test('GET `/advertiser/get` 500 server error', async (t) => {
   t.context.db.getAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    query: { advertiserId: t.context.advertiserId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)
