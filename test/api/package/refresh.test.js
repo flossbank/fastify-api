@@ -49,7 +49,7 @@ test.before(async (t) => {
       password: 'cheeze',
       tokens: {}
     })
-    t.context.maintainerId4 = maintainerId5.toHexString()
+    t.context.maintainerId5 = maintainerId5.toHexString()
 
     // a pkg that m4 owns that will not be changed
     await db.createPackage({
