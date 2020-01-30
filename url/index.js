@@ -2,7 +2,7 @@ const AWS = require('aws-sdk')
 const fastifyPlugin = require('fastify-plugin')
 const { base32 } = require('rfc4648')
 const { randomBytes } = require('crypto')
-const config = require('../config')
+const { config } = require('../config')
 
 AWS.config.update(config.getAwsConfig())
 

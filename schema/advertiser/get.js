@@ -1,11 +1,4 @@
 module.exports = {
-  querystring: {
-    type: 'object',
-    required: ['advertiserId'],
-    properties: {
-      advertiserId: { type: 'string', maxLength: 128 }
-    }
-  },
   response: {
     200: {
       type: 'object',

@@ -1,27 +1,31 @@
-function Config () {}
+function Config ({ env }) {
+  this.env = env
+}
 
 Config.prototype.getAwsConfig = function getAwsConfig () {
   return {
-    accessKeyId: process.env.access_key,
-    secretAccessKey: process.env.secret_key,
-    region: process.env.region
+    accessKeyId: this.env.access_key,
+    secretAccessKey: this.env.secret_key,
+    region: this.env.region
   }
 }
 
 Config.prototype.getMongoUri = function getMongoUri () {
-  return process.env.mongo_uri
+  return this.env.mongo_uri
 }
 
 Config.prototype.getRecaptchaSecret = function getRecaptchaSecret () {
-  return process.env.recaptcha_secret
+  return this.env.recaptcha_secret
 }
 
 Config.prototype.getQueueUrl = function getQueueUrl () {
-  return process.env.queue_url
+  return this.env.queue_url
 }
 
 Config.prototype.getUrlHost = function getUrlHost () {
-  return process.env.url_host || 'api.flossbank.io'
+  return this.env.url_host || 'api.flossbank.io'
 }
 
-module.exports = new Config()
+exports.Config = Config
+
+exports.config = new Config({ env: process.env })

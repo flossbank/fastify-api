@@ -17,7 +17,7 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
-    if (!maintainer.tokens || !maintainer.tokens[packageRegistry] || !ctx.registry[packageRegistry]) {
+    if (!maintainer.tokens || !maintainer.tokens[packageRegistry] || !ctx.registry.isSupported(packageRegistry)) {
       ctx.log.warn('attempt to refresh packages for maintainer %s that has no %s token', maintainerId, packageRegistry)
       res.status(400)
       return res.send()

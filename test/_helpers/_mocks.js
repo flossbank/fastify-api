@@ -26,6 +26,7 @@ module.exports = {
     this.npm = {
       getOwnedPackages: sinon.stub().resolves()
     }
+    this.isSupported = sinon.stub().resolves(true)
   },
   Url: function Url () {
     this.createUrl = sinon.stub().resolves('https://api.flossbank.io/u/asdf')

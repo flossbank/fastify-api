@@ -1,6 +1,6 @@
 const test = require('ava')
 const { maintainerSessionKey } = require('../../../helpers/constants')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {

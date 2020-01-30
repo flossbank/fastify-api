@@ -1,6 +1,6 @@
 const fastifyPlugin = require('fastify-plugin')
 const AWS = require('aws-sdk')
-const config = require('../config')
+const { config } = require('../config')
 
 AWS.config.update(config.getAwsConfig())
 
