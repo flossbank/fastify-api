@@ -23,9 +23,9 @@ const weekExpiration = (7 * 24 * 60 * 1000)
 function Auth () {
   this.docs = docs // to ease testing
   this.ses = ses
+  this.post = got.post
 
   this.recaptchaSecret = config.getRecaptchaSecret()
-  if (!this.recaptchaSecret) console.error('No reCAPTCHA secret found in env')
 }
 
 // Kind of auth tokens enum
@@ -74,14 +74,14 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
   try {
     switch (this.authKinds[kind]) {
       case (this.authKinds.MAINTAINER):
-        ({ Item } = await docs.get({
+        ({ Item } = await this.docs.get({
           TableName: MaintainerSessionTableName,
           Key: { sessionId: token }
         }).promise())
         item = Item
         break
       case (this.authKinds.ADVERTISER):
-        ({ Item } = await docs.get({
+        ({ Item } = await this.docs.get({
           TableName: AdvertiserSessionTableName,
           Key: { sessionId: token }
         }).promise())
@@ -92,11 +92,11 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
         return null
     }
   } catch (err) {
-    console.error(err.message)
+    console.error(err)
     return null
   }
 
-  if (item.expires < Date.now()) {
+  if (!item.sessionId || item.expires < Date.now()) {
     return null
   }
 
@@ -109,14 +109,12 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   if (!this.authKinds[kind]) throw new Error('Invalid kind of token')
   const token = crypto.randomBytes(32).toString('hex')
 
-  await docs.put({
+  await this.docs.put({
     TableName: UserTableName,
     Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
   }).promise()
 
-  if (!activationEmails[kind]) throw new Error('No email template for kind ' + kind)
-
-  return ses.sendEmail({
+  return this.ses.sendEmail({
     Destination: { ToAddresses: [email] },
     Source: 'Flossbank <admin@flossbank.com>',
     Message: activationEmails[kind](email, token)
@@ -125,7 +123,7 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
 
 Auth.prototype.deleteUserToken = async function deleteUserToken (email) {
   if (!email) return
-  return docs.delete({
+  return this.docs.delete({
     TableName: UserTableName,
     Key: { email }
   }).promise()
@@ -134,7 +132,7 @@ Auth.prototype.deleteUserToken = async function deleteUserToken (email) {
 Auth.prototype.validateUserToken = async function validateUserToken (email, hexUserToken, tokenKind) {
   if (!email || !hexUserToken || !tokenKind || !this.authKinds[tokenKind]) return false
 
-  const { Item: user } = await docs.get({
+  const { Item: user } = await this.docs.get({
     TableName: UserTableName,
     Key: { email }
   }).promise()
@@ -171,7 +169,7 @@ Auth.prototype.validateUserToken = async function validateUserToken (email, hexU
   }
 
   if (!valid) {
-    await docs.update({
+    await this.docs.update({
       TableName: UserTableName,
       Key: { email },
       UpdateExpression: 'SET valid = :true',
@@ -188,7 +186,7 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
   const form = new FormData()
   form.append('secret', this.recaptchaSecret)
   form.append('response', response)
-  const res = await got.post('https://www.google.com/recaptcha/api/siteverify', { body: form })
+  const res = await this.post('https://www.google.com/recaptcha/api/siteverify', { body: form })
   const body = JSON.parse(res.body)
 
   if (!body.success) {
@@ -204,12 +202,11 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
 Auth.prototype.createApiKey = async function createApiKey (email) {
   const key = crypto.randomBytes(32).toString('hex')
 
-  await docs.put({
+  await this.docs.put({
     TableName: ApiTableName,
     Item: {
       key,
       email,
-      adsSeenThisPeriod: 0,
       created: Date.now()
     }
   }).promise()
@@ -221,7 +218,7 @@ Auth.prototype.validateApiKey = async function validateApiKey (key) {
   if (!key) return false
 
   try {
-    const { Item } = await docs.get({
+    const { Item } = await this.docs.get({
       TableName: ApiTableName,
       Key: { key }
     }).promise()
@@ -236,7 +233,7 @@ Auth.prototype.createAdSession = async function createSession (req) {
   const apiKey = req.headers.authorization.split(' ').pop()
   const { packages, registry } = req.body
   const sessionId = crypto.randomBytes(16).toString('hex')
-  await docs.put({
+  await this.docs.put({
     TableName: AdSessionTableName,
     Item: {
       sessionId,
@@ -251,7 +248,7 @@ Auth.prototype.createAdSession = async function createSession (req) {
 
 Auth.prototype.createMaintainerSession = async function createMaintainerSession (maintainerId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
-  await docs.put({
+  await this.docs.put({
     TableName: MaintainerSessionTableName,
     Item: { sessionId, expires: Date.now() + weekExpiration, maintainerId }
   }).promise()
@@ -260,7 +257,7 @@ Auth.prototype.createMaintainerSession = async function createMaintainerSession 
 
 Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession (sessionId) {
   if (!sessionId) return
-  return docs.delete({
+  return this.docs.delete({
     TableName: MaintainerSessionTableName,
     Key: { sessionId }
   }).promise()
@@ -268,7 +265,7 @@ Auth.prototype.deleteMaintainerSession = async function deleteMaintainerSession 
 
 Auth.prototype.createAdvertiserSession = async function createAdvertiserSession (advertiserId) {
   const sessionId = crypto.randomBytes(32).toString('hex')
-  await docs.put({
+  await this.docs.put({
     TableName: AdvertiserSessionTableName,
     Item: { sessionId, expires: Date.now() + weekExpiration, advertiserId }
   }).promise()
@@ -277,7 +274,7 @@ Auth.prototype.createAdvertiserSession = async function createAdvertiserSession 
 
 Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession (sessionId) {
   if (!sessionId) return
-  return docs.delete({
+  return this.docs.delete({
     TableName: AdvertiserSessionTableName,
     Key: { sessionId }
   }).promise()
