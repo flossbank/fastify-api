@@ -10,7 +10,8 @@ test.beforeEach((t) => {
       mongo_uri: 'mongo_uri',
       recaptcha_secret: 'recaptcha_secret',
       queue_url: 'queue_url',
-      url_host: 'url_host'
+      url_host: 'url_host',
+      stripe_token: 'test_stripe_token'
     }
   })
 })
@@ -37,6 +38,10 @@ test('config | getQueueUrl', (t) => {
 
 test('config | getUrlHost', (t) => {
   t.deepEqual(t.context.config.getUrlHost(), 'url_host')
+})
+
+test('config | getStripeToken', (t) => {
+  t.deepEqual(t.context.config.getStripeToken(), 'test_stripe_token')
 })
 
 test('config | getUrlHost fallback', (t) => {

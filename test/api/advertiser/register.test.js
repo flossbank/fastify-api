@@ -1,4 +1,5 @@
 const test = require('ava')
+const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { alreadyExistsMessage } = require('../../../helpers/constants')
 

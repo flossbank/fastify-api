@@ -8,7 +8,7 @@ module.exports = {
         type: 'object',
         properties: {
           organization: { type: 'string', maxLength: 128 },
-          billingInfo: { type: 'string', maxLength: 128 }
+          billingToken: { type: 'string', maxLength: 128 }
         }
       }
     }

@@ -1,4 +1,5 @@
 const { alreadyExistsMessage } = require('../../helpers/constants')
+const { createStripeCustomer } = require('../../helpers/stripe')
 
 module.exports = async (req, res, ctx) => {
   const { advertiser } = req.body
@@ -6,6 +7,12 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('registering new advertiser with email %s', advertiser.email)
     let id
     try {
+      // Create stripe customer, and add the customer ID to mongo
+      const stripeCustomer = await createStripeCustomer(advertiser.email)
+      advertiser.billingInfo = {
+        customerId: stripeCustomer.id,
+        cardOnFile: false
+      }
       id = await ctx.db.createAdvertiser(advertiser)
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000
