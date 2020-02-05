@@ -26,6 +26,10 @@ Config.prototype.getUrlHost = function getUrlHost () {
   return this.env.url_host || 'api.flossbank.io'
 }
 
+Config.prototype.getStripeToken = function getStripeToken () {
+  return this.env.stripe_token
+}
+
 exports.Config = Config
 
 exports.config = new Config({ env: process.env })
