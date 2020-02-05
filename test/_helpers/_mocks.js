@@ -31,5 +31,9 @@ module.exports = {
   Url: function Url () {
     this.createUrl = sinon.stub().resolves('https://api.flossbank.io/u/asdf')
     this.getUrl = sinon.stub().resolves('http://localhost.com')
+  },
+  Stripe: function Stripe () {
+    this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
+    this.updateStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
   }
 }

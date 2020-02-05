@@ -1,5 +1,4 @@
 const { alreadyExistsMessage } = require('../../helpers/constants')
-const { createStripeCustomer } = require('../../helpers/stripe')
 
 module.exports = async (req, res, ctx) => {
   const { advertiser } = req.body
@@ -8,7 +7,7 @@ module.exports = async (req, res, ctx) => {
     let id
     try {
       // Create stripe customer, and add the customer ID to mongo
-      const stripeCustomer = await createStripeCustomer(advertiser.email)
+      const stripeCustomer = await ctx.stripe.createStripeCustomer(advertiser.email)
       advertiser.billingInfo = {
         customerId: stripeCustomer.id,
         cardOnFile: false
