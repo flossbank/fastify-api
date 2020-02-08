@@ -5,7 +5,7 @@ module.exports = async (req, res, ctx) => {
     const advertiser = await ctx.db.getAdvertiser(req.session.advertiserId)
     // Update the stripe advertiser with the new billing token (stripe CC card token) if it exists
     await ctx.stripe.updateStripeCustomer(advertiser.billingInfo.customerId, billingToken)
-    await ctx.db.updateAdvertiserHasCardInfo(req.session.advertiserId, advertiser)
+    await ctx.db.updateAdvertiserHasCardInfo(req.session.advertiserId, true)
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

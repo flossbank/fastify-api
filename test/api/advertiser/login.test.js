@@ -12,7 +12,7 @@ test.before(async (t) => {
       organization: 'elf-world'
     })
     t.context.advertiserId = advertiserId1.toHexString()
-    await db.updateAdvertiserVerified(advertiserId1.toHexString())
+    await db.verifyAdvertiser(advertiserId1.toHexString())
     await db.createAdvertiser({
       firstName: 'Faith',
       lastName: ' Ogler',

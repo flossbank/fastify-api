@@ -86,19 +86,11 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
-Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id) {
+Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard = true) {
   return this.db.collection('advertisers').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: { 'billingInfo.cardOnFile': true }
-  })
-}
-
-Db.prototype.updateAdvertiserVerified = async function updateAdvertiserVerified (id) {
-  return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(id)
-  }, {
-    $set: { verified: true }
+    $set: { 'billingInfo.cardOnFile': hasCard }
   })
 }
 
