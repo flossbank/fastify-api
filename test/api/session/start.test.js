@@ -61,7 +61,11 @@ test('POST `/session/start` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
-    payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
+    payload: {
+      language: 'javascript',
+      registry: 'https://registry.npmjs.org/',
+      packages: ['yttrium-server@latest']
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -79,15 +83,31 @@ test('POST `/session/start` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
-    payload: { registry: 'invalid', packages: ['yttrium-server@latest'] }
+    payload: {
+      registry: 'some url', packages: ['yttrium-server@latest']
+    }
   })
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/session/start',
+    payload: {
+      language: 'javascript',
+      packages: ['yttrium-server@latest']
+    }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/session/start` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
-    payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
+    payload: {
+      language: 'javascript',
+      registry: 'https://registry.npmjs.org/',
+      packages: ['yttrium-server@latest']
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -107,7 +127,11 @@ test('POST `/session/start` 200 success | no ads no session', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
-    payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
+    payload: {
+      language: 'javascript',
+      registry: 'https://registry.npmjs.org/',
+      packages: ['yttrium-server@latest']
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -121,7 +145,8 @@ test('POST `/session/start` 200 success | existing session', async (t) => {
     method: 'POST',
     url: '/session/start',
     payload: {
-      registry: 'npm',
+      language: 'javascript',
+      registry: 'https://registry.npmjs.org/',
       packages: ['yttrium-server@latest'],
       sessionId: 'existing-session-id'
     }
@@ -143,7 +168,11 @@ test('POST `/session/start` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
-    payload: { registry: 'npm', packages: ['yttrium-server@latest'] }
+    payload: {
+      language: 'javascript',
+      registry: 'https://registry.npmjs.org/',
+      packages: ['yttrium-server@latest']
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })
