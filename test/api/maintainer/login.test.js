@@ -1,6 +1,6 @@
 const test = require('ava')
 const { maintainerSessionKey } = require('../../../helpers/constants')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -66,7 +66,7 @@ test('POST `/maintainer/login` 200 success', async (t) => {
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session`)
+  t.deepEqual(res.headers['set-cookie'], `${maintainerSessionKey}=maintainer-session; Path=/`)
 })
 
 test('POST `/maintainer/login` 400 bad request', async (t) => {

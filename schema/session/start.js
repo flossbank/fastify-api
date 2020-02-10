@@ -1,19 +1,15 @@
 module.exports = {
   body: {
     type: 'object',
-    required: ['packages', 'registry'],
+    required: ['packages', 'language', 'registry'],
     properties: {
       packages: {
         type: 'array',
         items: { type: 'string' }
       },
-      registry: {
-        type: 'string',
-        enum: ['npm']
-      },
-      sessionId: {
-        type: 'string'
-      }
+      registry: { type: 'string' },
+      language: { type: 'string' },
+      sessionId: { type: 'string' }
     }
   },
   response: {

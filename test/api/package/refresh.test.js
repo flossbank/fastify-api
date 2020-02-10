@@ -1,5 +1,5 @@
 const test = require('ava')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -49,7 +49,7 @@ test.before(async (t) => {
       password: 'cheeze',
       tokens: {}
     })
-    t.context.maintainerId4 = maintainerId5.toHexString()
+    t.context.maintainerId5 = maintainerId5.toHexString()
 
     // a pkg that m4 owns that will not be changed
     await db.createPackage({

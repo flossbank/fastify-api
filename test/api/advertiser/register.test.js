@@ -1,5 +1,5 @@
 const test = require('ava')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { alreadyExistsMessage } = require('../../../helpers/constants')
 
 test.before(async (t) => {
@@ -41,6 +41,8 @@ test('POST `/advertiser/create` 200 success', async (t) => {
   const ad = await t.context.db.getAdvertiser(id)
   t.deepEqual(ad.firstName, 'advertiser')
   t.deepEqual(ad.lastName, 'captain')
+  t.deepEqual(ad.billingInfo.customerId, 'test-stripe-id')
+  t.deepEqual(ad.billingInfo.cardOnFile, false)
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {

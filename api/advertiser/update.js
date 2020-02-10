@@ -1,6 +1,8 @@
 module.exports = async (req, res, ctx) => {
   try {
     const { advertiserId: id, advertiser } = req.body
+    ctx.log.info(advertiser, 'updating advertiser for id %s', id)
+    // TODO: Update the stripe advertiser with the new billing info if it exists
     await ctx.db.updateAdvertiser(id, advertiser)
     res.send({ success: true })
   } catch (e) {

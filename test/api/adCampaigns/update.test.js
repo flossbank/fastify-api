@@ -1,5 +1,5 @@
 const test = require('ava')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {

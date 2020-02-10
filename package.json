@@ -8,8 +8,8 @@
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
     "coverage": "nyc npm run unit-tests",
-    "unit-tests": "recaptcha_secret=test mongo_uri=test ava",
-    "watch:unit-tests": "recaptcha_secret=test mongo_uri=test ava --watch",
+    "unit-tests": "recaptcha_secret=test ava",
+    "watch:unit-tests": "recaptcha_secret=test ava --watch",
     "test": "npm run lint && npm run coverage"
   },
   "husky": {
@@ -34,6 +34,8 @@
     "got": "^9.6.0",
     "js-deep-equals": "^2.1.1",
     "mongodb": "^3.3.2",
+    "rfc4648": "^1.3.0",
+    "stripe": "^8.14.0",
     "ulid": "^2.3.0"
   },
   "devDependencies": {

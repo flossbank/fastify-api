@@ -1,5 +1,5 @@
 const test = require('ava')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -44,18 +44,17 @@ test('GET `/maintainer/get` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'invalid token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
-test('GET `/maintainer/get` 401 unauthorized | wrong maintainer id', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+test('GET `/maintainer/get` 401 unauthorized middleware failure', async (t) => {
+  t.context.auth.getUISession.rejects(new Error())
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: 'bogus-maintainer' },
+    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'invalid token' }
   })
   t.deepEqual(res.statusCode, 401)
@@ -68,7 +67,6 @@ test('GET `/maintainer/get` 400 | unverified', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: t.context.unverifiedMaintainerId },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -78,7 +76,6 @@ test('GET `/maintainer/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -94,22 +91,11 @@ test('GET `/maintainer/get` 200 success', async (t) => {
   })
 })
 
-test('GET `/maintainer/get` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/maintainer/get',
-    query: {},
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-})
-
 test('GET `/maintainer/get` 500 server error', async (t) => {
   t.context.db.getMaintainer = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',
-    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)

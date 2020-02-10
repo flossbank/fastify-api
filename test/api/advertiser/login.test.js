@@ -1,6 +1,6 @@
 const test = require('ava')
 const { advertiserSessionKey } = require('../../../helpers/constants')
-const { before, beforeEach, afterEach, after } = require('../../helpers/_setup')
+const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
@@ -74,7 +74,7 @@ test('POST `/advertiser/login` 200 success', async (t) => {
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${advertiserSessionKey}=advertiser-session`)
+  t.deepEqual(res.headers['set-cookie'], `${advertiserSessionKey}=advertiser-session; Path=/`)
 })
 
 test('POST `/advertiser/login` 400 bad request', async (t) => {

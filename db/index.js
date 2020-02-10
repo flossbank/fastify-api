@@ -2,7 +2,7 @@ const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
 const bcrypt = require('bcrypt')
-const config = require('../config')
+const { config } = require('../config')
 const Cleaner = require('../helpers/clean')
 const { AD_NOT_CLEAN, AD_NOT_CLEAN_MSG } = require('../helpers/constants')
 
@@ -425,11 +425,6 @@ Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   const { _id: id, ...rest } = maintainer
   delete rest.password
   return { id, ...rest }
-}
-
-Db.prototype.maintainerExists = async function maintainerExists (email) {
-  const maintainer = await this.db.collection('maintainers').findOne({ email })
-  return !!maintainer
 }
 
 Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
