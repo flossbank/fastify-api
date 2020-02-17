@@ -9,6 +9,13 @@ module.exports = {
       },
       registry: { type: 'string' },
       language: { type: 'string' },
+      metadata: {
+        type: 'object',
+        properties: {
+          packageManagerVersion: { type: 'string' },
+          flossbankVersion: { type: 'string' }
+        }
+      },
       sessionId: { type: 'string' }
     }
   },

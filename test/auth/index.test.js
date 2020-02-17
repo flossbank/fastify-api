@@ -339,7 +339,8 @@ test('createAdSession | creates and persists session', async (t) => {
     body: {
       packages: ['abc'],
       registry: 'npm registry',
-      language: 'javascript'
+      language: 'javascript',
+      metadata: { packageManagerVersion: 'papi@1.1.1' }
     },
     headers: {
       authorization: 'bearer xyz'
@@ -353,6 +354,7 @@ test('createAdSession | creates and persists session', async (t) => {
       registry: 'npm registry',
       language: 'javascript',
       packages: ['abc'],
+      metadata: { packageManagerVersion: 'papi@1.1.1' },
       created: 1234
     }
   }])
