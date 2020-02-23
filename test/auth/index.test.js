@@ -336,12 +336,6 @@ test('createApiKey | success', async (t) => {
 
 test('createAdSession | creates and persists session', async (t) => {
   const sessionId = await t.context.auth.createAdSession({
-    body: {
-      packages: ['abc'],
-      registry: 'npm registry',
-      language: 'javascript',
-      metadata: { packageManagerVersion: 'papi@1.1.1' }
-    },
     headers: {
       authorization: 'bearer xyz'
     }
@@ -351,10 +345,6 @@ test('createAdSession | creates and persists session', async (t) => {
     Item: {
       sessionId: 'ff',
       apiKey: 'xyz',
-      registry: 'npm registry',
-      language: 'javascript',
-      packages: ['abc'],
-      metadata: { packageManagerVersion: 'papi@1.1.1' },
       created: 1234
     }
   }])

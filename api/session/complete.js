@@ -7,9 +7,14 @@ module.exports = async (req, res, ctx) => {
     }
 
     ctx.log.info(req.body, 'queueing session complete information')
+    const { seen, sessionId, packages, registry, language, metadata } = req.body
     await ctx.sqs.sendMessage({
-      seen: req.body.seen,
-      sessionId: req.body.sessionId,
+      seen,
+      sessionId,
+      packages,
+      registry,
+      language,
+      metadata,
       timestamp: Date.now()
     })
     res.status(200)
