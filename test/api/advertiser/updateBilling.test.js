@@ -38,7 +38,7 @@ test('POST `/advertiser/update` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
-    payload: { billingToken: 'new-stripe-token' },
+    payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: { authorization: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)
@@ -48,7 +48,7 @@ test('POST `/advertiser/update` 200 success updating billing token', async (t) =
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
-    payload: { billingToken: 'new-stripe-token' },
+    payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -57,6 +57,7 @@ test('POST `/advertiser/update` 200 success updating billing token', async (t) =
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
   t.deepEqual(advertiser.billingInfo.customerId, 'test-stripe-id')
   t.deepEqual(advertiser.billingInfo.cardOnFile, true)
+  t.deepEqual(advertiser.billingInfo.last4, '1234')
 })
 
 test('POST `/advertiser/update` 500 server error', async (t) => {
@@ -64,7 +65,7 @@ test('POST `/advertiser/update` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
-    payload: { billingToken: 'new-stripe-token' },
+    payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)
@@ -75,7 +76,7 @@ test('POST `/advertiser/update` 500 server error with stripe', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
-    payload: { billingToken: 'new-stripe-token' },
+    payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)
