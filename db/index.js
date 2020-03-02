@@ -86,7 +86,7 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
-Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard = false, last4 = '') {
+Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard, last4) {
   return this.db.collection('advertisers').updateOne({
     _id: ObjectId(id)
   }, {
