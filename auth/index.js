@@ -231,16 +231,12 @@ Auth.prototype.validateApiKey = async function validateApiKey (key) {
 Auth.prototype.createAdSession = async function createSession (req) {
   // standard authorization header is `{ authorization: 'Bearer token' }`
   const apiKey = req.headers.authorization.split(' ').pop()
-  const { packages, language, registry } = req.body
   const sessionId = crypto.randomBytes(16).toString('hex')
   await this.docs.put({
     TableName: AdSessionTableName,
     Item: {
       sessionId,
       apiKey,
-      registry,
-      language,
-      packages,
       created: Date.now()
     }
   }).promise()
