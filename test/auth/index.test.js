@@ -31,6 +31,46 @@ test.after(() => {
   crypto.randomBytes.restore()
 })
 
+test('hasUserAuthCheckedInPastOneMinute | yes', async (t) => {
+  t.context.auth.checkCache.set('email', 1233)
+  t.true(await t.context.auth.hasUserAuthCheckedInPastOneMinute('email'))
+})
+
+test('hasUserAuthCheckedInPastOneMinute | no', async (t) => {
+  t.false(await t.context.auth.hasUserAuthCheckedInPastOneMinute('email'))
+})
+
+test('recordUserAuthCheck | sets in cache', async (t) => {
+  await t.context.auth.recordUserAuthCheck('email')
+  t.is(t.context.auth.checkCache.get('email'), 1234)
+})
+
+test('checkApiKeyForUser | invalid params', async (t) => {
+  t.false(await t.context.auth.checkApiKeyForUser())
+  t.false(await t.context.auth.checkApiKeyForUser('email'))
+  t.false(await t.context.auth.checkApiKeyForUser(undefined, 'apiKey'))
+})
+
+test('checkApiKeyForUser | no record', async (t) => {
+  t.context.auth.docs.get().promise.resolves(null)
+  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
+})
+
+test('checkApiKeyForUser | key/email mismatch', async (t) => {
+  t.context.auth.docs.get().promise.resolves({ Item: { email: 'foo' } })
+  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
+})
+
+test('checkApiKeyForUser | dynamo throws', async (t) => {
+  t.context.auth.docs.get().promise.rejects()
+  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
+})
+
+test('checkApiKeyForUser | success', async (t) => {
+  t.context.auth.docs.get().promise.resolves({ Item: { email: 'bar' } })
+  t.true(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
+})
+
 test('getAuthToken | no token', (t) => {
   t.false(t.context.auth.getAuthToken({ headers: {} }))
 })
