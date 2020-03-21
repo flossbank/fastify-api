@@ -82,8 +82,8 @@ const getUrl = require('../api/url/get')
 
 async function routes (fastify, opts, next) {
   // Health
-  fastify.get('/health', health)
-  fastify.post('/health', health)
+  fastify.get('/health', { logLevel: 'error' }, health)
+  fastify.post('/health', { logLevel: 'error' }, health)
 
   // Ad
   fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))
