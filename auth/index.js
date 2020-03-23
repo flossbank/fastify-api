@@ -3,6 +3,7 @@ const AWS = require('aws-sdk')
 const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
+const Cache = require('quick-lru')
 const { config } = require('../config')
 const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
 const { activationEmails } = require('../helpers/email')
@@ -17,6 +18,7 @@ const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground fo
 const MaintainerSessionTableName = 'flossbank_maintainer_session' // holding ground for maintainer sessions
 const AdvertiserSessionTableName = 'flossbank_advertiser_session' // holding ground for advertiser sessions
 
+const oneMinute = (60 * 1000)
 const fifteenMinutesExpirationMS = (15 * 60 * 1000)
 const weekExpiration = (7 * 24 * 60 * 1000)
 
@@ -25,6 +27,7 @@ function Auth () {
   this.ses = ses
   this.post = got.post
 
+  this.checkCache = new Cache({ maxSize: 1000 }) // keep track of last 1000 auth checks on this host
   this.recaptchaSecret = config.getRecaptchaSecret()
 }
 
@@ -33,6 +36,30 @@ Auth.prototype.authKinds = {
   USER: 'USER',
   MAINTAINER: 'MAINTAINER',
   ADVERTISER: 'ADVERTISER'
+}
+
+Auth.prototype.hasUserAuthCheckedInPastOneMinute = function hasUserAuthCheckedInPastOneMinute (email) {
+  if (!this.checkCache.has(email)) return false
+  return Date.now() - this.checkCache.get(email) <= oneMinute
+}
+
+Auth.prototype.recordUserAuthCheck = function recordUserAuthCheck (email) {
+  this.checkCache.set(email, Date.now())
+}
+
+Auth.prototype.checkApiKeyForUser = async function checkApiKeyForUser (email, key) {
+  if (!email || !key) return false
+
+  try {
+    const { Item } = await this.docs.get({
+      TableName: ApiTableName,
+      Key: { key }
+    }).promise()
+    if (!Item) return false
+    return Item.email === email
+  } catch (_) {
+    return false
+  }
 }
 
 // Returns auth token or false

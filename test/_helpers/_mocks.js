@@ -4,6 +4,11 @@ const { Auth: originalAuth } = require('../../auth')
 module.exports = {
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
+    this.hasUserAuthCheckedInPastOneMinute = sinon.stub()
+      .onFirstCall().returns(false)
+      .onSecondCall().returns(true)
+    this.recordUserAuthCheck = sinon.stub()
+    this.checkApiKeyForUser = sinon.stub().resolves(true)
     this.isAdSessionAllowed = sinon.stub().resolves(true)
     this.getUISession = sinon.stub().resolves({
       maintainerId: 'valid-id',
