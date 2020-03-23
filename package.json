@@ -10,7 +10,8 @@
     "coverage": "nyc npm run unit-tests",
     "unit-tests": "recaptcha_secret=test ava",
     "watch:unit-tests": "recaptcha_secret=test ava --watch",
-    "test": "npm run lint && npm run coverage"
+    "test": "npm run lint && ava -v",
+    "ci-tests": "nyc --reporter=cobertura ava -t | tap-xunit > TEST_RESULTS.xml"
   },
   "husky": {
     "hooks": {
@@ -46,6 +47,7 @@
     "mongodb-memory-server": "^6.0.2",
     "nyc": "^14.1.1",
     "sinon": "^7.5.0",
-    "standard": "^14.3.1"
+    "standard": "^14.3.1",
+    "tap-xunit": "^2.4.1"
   }
 }

@@ -12,5 +12,17 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm it
+    npm install
+    npm run ci-tests
   displayName: 'npm install and test'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: JUnit
+    testResultsFiles: '**/TEST_RESULTS.xml'
+
+- task: PublishCodeCoverageResults@1
+  inputs: 
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/*coverage.xml'
