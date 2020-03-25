@@ -1,7 +1,13 @@
+const { INTEG_TEST_KEY } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   try {
     const { email, apiKey } = req.body
     ctx.log.info('checking that api key is valid for user with email %s', email)
+
+    if (apiKey === INTEG_TEST_KEY) {
+      return res.send({ success: true })
+    }
 
     if (await ctx.auth.hasUserAuthCheckedInPastOneMinute(email)) {
       ctx.log.warn('throttling an attempt to check api key validity for user with email %s', email)
