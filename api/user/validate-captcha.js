@@ -10,9 +10,11 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
+    const apiKey = await ctx.auth.getOrCreateApiKey(email)
+
     res.send({
       success: true,
-      apiKey: await ctx.auth.createApiKey(email)
+      apiKey
     })
   } catch (e) {
     ctx.log.error(e)

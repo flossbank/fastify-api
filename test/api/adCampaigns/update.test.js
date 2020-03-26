@@ -158,7 +158,6 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
   // Should have deleted the draft so we should have 0
-  t.log(JSON.stringify(advertiser))
   t.deepEqual(advertiser.adDrafts.length, 0)
 
   const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)

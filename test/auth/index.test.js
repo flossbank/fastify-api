@@ -16,7 +16,8 @@ test.beforeEach((t) => {
     get: sinon.stub().returns({ promise: sinon.stub() }),
     put: sinon.stub().returns({ promise: sinon.stub() }),
     update: sinon.stub().returns({ promise: sinon.stub() }),
-    delete: sinon.stub().returns({ promise: sinon.stub() })
+    delete: sinon.stub().returns({ promise: sinon.stub() }),
+    query: sinon.stub().returns({ promise: sinon.stub() })
   }
   t.context.auth.ses = {
     sendEmail: sinon.stub().returns({ promise: sinon.stub() })
@@ -362,16 +363,52 @@ test('validateApiKey | success', async (t) => {
   t.true(await t.context.auth.validateApiKey('ff'))
 })
 
-test('createApiKey | success', async (t) => {
-  t.context.auth.createApiKey('pete@dov.com')
-  t.deepEqual(t.context.auth.docs.put.lastCall.args, [{
-    TableName: 'flossbank_api_keys',
-    Item: {
-      key: 'ff',
-      email: 'pete@dov.com',
-      created: Date.now()
-    }
-  }])
+test('getOrCreateApiKey | first time', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] }) // no matches in DB
+
+  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'ff')
+
+  const updateCall = t.context.auth.docs.update.lastCall.args[0]
+
+  t.deepEqual(updateCall.Key, { key: 'ff' })
+  t.deepEqual(updateCall.ExpressionAttributeValues, {
+    ':email': 'pete@dov.com',
+    ':now': 1234,
+    ':one': 1
+  })
+})
+
+test('getOrCreateApiKey | second time', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [{ key: 'bb', email: 'pete@dov.com' }] })
+
+  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'bb')
+
+  const updateCall = t.context.auth.docs.update.lastCall.args[0]
+
+  t.deepEqual(updateCall.Key, { key: 'bb' })
+  t.deepEqual(updateCall.ExpressionAttributeValues, {
+    ':email': 'pete@dov.com',
+    ':now': 1234,
+    ':one': 1
+  })
+})
+
+test('getOrCreateApiKey | strips address tags', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] })
+
+  await t.context.auth.getOrCreateApiKey('pete+asdf@dov.com')
+  const queryCall = t.context.auth.docs.query.lastCall.args[0]
+
+  t.deepEqual(queryCall.ExpressionAttributeValues, { ':email': 'pete@dov.com' })
+})
+
+test('getOrCreateApiKey | wonky email', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] })
+
+  await t.throwsAsync(
+    () => t.context.auth.getOrCreateApiKey('pete+asdf'),
+    { message: 'invalid email provided to getOrCreateApiKey: pete+asdf' }
+  )
 })
 
 test('createAdSession | creates and persists session', async (t) => {
