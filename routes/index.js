@@ -1,6 +1,12 @@
 // Health
 const health = require('../api/health')
 
+// Subscribe
+const subscribe = require('../api/subscribe/subscribe')
+const subscribeSchema = require('../schema/subscribe/subscribe')
+const unSubscribe = require('../api/subscribe/unsubscribe')
+const unSubscribeSchema = require('../schema/subscribe/unsubscribe')
+
 // Ad
 const createAd = require('../api/ad/create')
 const createAdSchema = require('../schema/ad/create')
@@ -84,6 +90,10 @@ async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', { logLevel: 'error' }, health)
   fastify.post('/health', { logLevel: 'error' }, health)
+
+  // Blanket subscriptions
+  fastify.post('/subscribe', { schema: subscribeSchema }, (req, res) => subscribe(req, res, fastify))
+  fastify.get('/unsubscribe', { schema: unSubscribeSchema }, (req, res) => unSubscribe(req, res, fastify))
 
   // Ad
   fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))

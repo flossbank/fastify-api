@@ -6,7 +6,7 @@ const fastifyPlugin = require('fastify-plugin')
 const Cache = require('quick-lru')
 const { config } = require('../config')
 const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
-const { activationEmails } = require('../helpers/email')
+const { activationEmails } = require('../helpers/activationEmails')
 
 AWS.config.update(config.getAwsConfig())
 

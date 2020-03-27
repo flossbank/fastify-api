@@ -10,8 +10,7 @@ module.exports = {
           firstName: { type: 'string', maxLength: 128 },
           lastName: { type: 'string', maxLength: 128 },
           email: {
-            type:
-            'string',
+            type: 'string',
             maxLength: 128,
             format: 'email'
           },

@@ -27,6 +27,14 @@ Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId,
   )
 }
 
+Db.prototype.subscribe = async function subscribe (email) {
+  return this.db.collection('subscribers').insertOne({ email })
+}
+
+Db.prototype.unSubscribe = async function unSubscribe (email) {
+  return this.db.collection('subscribers').deleteOne({ email })
+}
+
 Db.prototype.getAdBatch = async function getAdBatch () {
   // more complicated logic and/or caching can come later
   const ads = (await this.db.collection('advertisers').aggregate([
