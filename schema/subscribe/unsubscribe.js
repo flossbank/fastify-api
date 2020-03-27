@@ -1,5 +1,5 @@
 module.exports = {
-  body: {
+  querystring: {
     type: 'object',
     required: ['email'],
     properties: {
@@ -12,10 +12,7 @@ module.exports = {
   },
   response: {
     200: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' }
-      }
+      type: 'string'
     }
   }
 }

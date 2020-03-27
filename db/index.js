@@ -35,6 +35,10 @@ Db.prototype.unSubscribe = async function unSubscribe (email) {
   return this.db.collection('subscribers').deleteOne({ email })
 }
 
+Db.prototype.getSubscribers = async function getSubscribers () {
+  return this.db.collection('subscribers').find().toArray()
+}
+
 Db.prototype.getAdBatch = async function getAdBatch () {
   // more complicated logic and/or caching can come later
   const ads = (await this.db.collection('advertisers').aggregate([
