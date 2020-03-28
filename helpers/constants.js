@@ -1,6 +1,7 @@
 module.exports = {
   AD_NOT_CLEAN: 273,
   AD_NOT_CLEAN_MSG: 'String must be plain ASCII text. No Unicode, emojis, or control characters allowed.',
+  INTEG_TEST_KEY: 'cf667c9381f7792bfa772025ff8ee93b89d9a757e6732e87611a0c34b48357d1',
   maintainerSessionKey: 'flossbank_m_sess_id',
   advertiserSessionKey: 'flossbank_a_sess_id',
   MAX_ADS_PER_PERIOD: 50,
