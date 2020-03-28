@@ -58,6 +58,28 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
     success: true,
     apiKey: await t.context.auth.getOrCreateApiKey()
   })
+
+  const user = await t.context.db.getUser('peter@quo.cc')
+  t.is(user.billingInfo.customerId, 'test-stripe-id')
+})
+
+test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
+  const existingUser = { email: 'papi@gmail.co', apiKey: 'ff', billingInfo: {} }
+  existingUser._id = await t.context.db.createUser(existingUser)
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/validate-captcha',
+    payload: { email: 'papi@gmail.co', token: 'token', response: 'response' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    apiKey: await t.context.auth.getOrCreateApiKey()
+  })
+
+  const user = await t.context.db.getUser('papi@gmail.co')
+  t.deepEqual(user, existingUser) // user wasn't touched
 })
 
 test('POST `/user/validate-captcha` 401 unauthorized', async (t) => {
