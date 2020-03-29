@@ -59,8 +59,7 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
     apiKey: await t.context.auth.getOrCreateApiKey()
   })
 
-  const user = await t.context.db.getUser('peter@quo.cc')
-  t.is(user.billingInfo.customerId, 'test-stripe-id')
+  t.is((await t.context.db.getUser('peter@quo.cc')).apiKey, 'api-key')
 })
 
 test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {

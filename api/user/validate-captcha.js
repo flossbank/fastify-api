@@ -11,16 +11,9 @@ module.exports = async (req, res, ctx) => {
     }
 
     const apiKey = await ctx.auth.getOrCreateApiKey(email)
-    const existingUser = await ctx.db.getUser(email)
 
-    if (!existingUser) {
-      ctx.log.info('registering a new user with email %s', email)
-      const stripeCustomer = await ctx.stripe.createStripeCustomer(email)
-      const billingInfo = {
-        customerId: stripeCustomer.id,
-        cardOnFile: false
-      }
-      await ctx.db.createUser({ email, apiKey, billingInfo })
+    if (!await ctx.db.getUser(email)) {
+      await ctx.db.createUser({ email, apiKey })
     }
 
     res.send({ success: true, apiKey })
