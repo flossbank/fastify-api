@@ -25,7 +25,7 @@ module.exports = {
     this.deleteMaintainerSession = sinon.stub().resolves()
   },
   Email: function Email () {
-    this.sendSubscribeEmail = sinon.stub().resolves()
+    this.sendBetaEmail = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()

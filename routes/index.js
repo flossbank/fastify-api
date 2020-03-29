@@ -2,10 +2,10 @@
 const health = require('../api/health')
 
 // Subscribe
-const subscribe = require('../api/subscribe/subscribe')
-const subscribeSchema = require('../schema/subscribe/subscribe')
-const unSubscribe = require('../api/subscribe/unsubscribe')
-const unSubscribeSchema = require('../schema/subscribe/unsubscribe')
+const betaSubscribe = require('../api/subscribe/betaSubscribe')
+const betaSubscribeSchema = require('../schema/subscribe/betaSubscribe')
+const betaUnSubscribe = require('../api/subscribe/betaUnsubscribe')
+const betaUnSubscribeSchema = require('../schema/subscribe/betaUnsubscribe')
 
 // Ad
 const createAd = require('../api/ad/create')
@@ -91,9 +91,9 @@ async function routes (fastify, opts, next) {
   fastify.get('/health', { logLevel: 'error' }, health)
   fastify.post('/health', { logLevel: 'error' }, health)
 
-  // Blanket subscriptions
-  fastify.post('/subscribe', { schema: subscribeSchema }, (req, res) => subscribe(req, res, fastify))
-  fastify.get('/unsubscribe', { schema: unSubscribeSchema }, (req, res) => unSubscribe(req, res, fastify))
+  // Beta tester email subscriptions
+  fastify.post('/beta/subscribe', { schema: betaSubscribeSchema }, (req, res) => betaSubscribe(req, res, fastify))
+  fastify.post('/beta/unsubscribe', { schema: betaUnSubscribeSchema }, (req, res) => betaUnSubscribe(req, res, fastify))
 
   // Ad
   fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: createAdSchema }, (req, res) => createAd(req, res, fastify))

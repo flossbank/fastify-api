@@ -1,6 +1,7 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
+const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const { config } = require('../config')
 const Cleaner = require('../helpers/clean')
@@ -27,16 +28,18 @@ Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId,
   )
 }
 
-Db.prototype.subscribe = async function subscribe (email) {
-  return this.db.collection('subscribers').insertOne({ email })
+Db.prototype.betaSubscribe = async function betaSubscribe (email) {
+  const token = crypto.randomBytes(32).toString('hex')
+  await this.db.collection('betaSubscribers').insertOne({ email, token })
+  return token
 }
 
-Db.prototype.unSubscribe = async function unSubscribe (email) {
-  return this.db.collection('subscribers').deleteOne({ email })
+Db.prototype.betaUnsubscribe = async function betaUnsubscribe (token) {
+  return this.db.collection('betaSubscribers').deleteOne({ token })
 }
 
-Db.prototype.getSubscribers = async function getSubscribers () {
-  return this.db.collection('subscribers').find().toArray()
+Db.prototype.getBetaSubscribers = async function getBetaSubscribers () {
+  return this.db.collection('betaSubscribers').find().toArray()
 }
 
 Db.prototype.getAdBatch = async function getAdBatch () {

@@ -1,7 +1,7 @@
 const fastifyPlugin = require('fastify-plugin')
 const AWS = require('aws-sdk')
 const { config } = require('../config')
-const { subscribeEmails } = require('../helpers/subscribeEmails')
+const { betaEmails } = require('../helpers/betaEmails')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -9,11 +9,11 @@ function Email () {
   this.ses = new AWS.SES()
 }
 
-Email.prototype.sendSubscribeEmail = async function sendSubscribeEmail (email) {
+Email.prototype.sendBetaEmail = async function sendBetaEmail (email, token) {
   return this.ses.sendEmail({
     Destination: { ToAddresses: [email] },
-    Source: 'Flossbank <admin@flossbank.com>',
-    Message: subscribeEmails.SUBSCRIBE(email)
+    Source: 'Flossbank <joel@flossbank.com>',
+    Message: betaEmails.SUBSCRIBE(token)
   }).promise()
 }
 
