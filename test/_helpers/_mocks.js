@@ -28,6 +28,9 @@ module.exports = {
     this.createUserSession = sinon.stub().resolves('user-session')
     this.deleteUserSession = sinon.stub().resolves()
   },
+  Email: function Email () {
+    this.sendBetaEmail = sinon.stub().resolves()
+  },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()
   },

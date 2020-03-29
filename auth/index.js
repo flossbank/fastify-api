@@ -7,7 +7,7 @@ const Cache = require('quick-lru')
 const niceware = require('niceware')
 const { config } = require('../config')
 const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../helpers/constants')
-const { activationEmails } = require('../helpers/email')
+const { activationEmails } = require('../helpers/activationEmails')
 const magicLinkEmails = require('../helpers/magicLinkEmails')
 
 AWS.config.update(config.getAwsConfig())

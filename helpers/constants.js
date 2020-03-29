@@ -6,5 +6,6 @@ module.exports = {
   ADVERTISER_SESSION_KEY: 'flossbank_a_sess_id',
   USER_SESSION_KEY: 'flossbank_u_sess_id',
   MAX_ADS_PER_PERIOD: 50,
-  alreadyExistsMessage: 'An account with this email already exists'
+  alreadyExistsMessage: 'An account with this email already exists',
+  emailAlreadySubscribed: 'This email is already subscribed to Flossbank news letters'
 }
