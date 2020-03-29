@@ -20,7 +20,7 @@ const ApiTableEmailIndex = 'email-index'
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
 const MaintainerSessionTableName = 'flossbank_maintainer_session'
 const AdvertiserSessionTableName = 'flossbank_advertiser_session'
-const UserSessionTableName = 'flossbank_advertiser_session'
+const UserSessionTableName = 'flossbank_user_session'
 
 const oneMinute = (60 * 1000)
 const fifteenMinutesExpirationMS = (15 * 60 * 1000)
