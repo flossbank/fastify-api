@@ -64,7 +64,7 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
 
 test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
   const existingUser = { email: 'papi@gmail.co', apiKey: 'ff', billingInfo: {} }
-  existingUser._id = await t.context.db.createUser(existingUser)
+  existingUser.id = await t.context.db.createUser(existingUser)
 
   const res = await t.context.app.inject({
     method: 'POST',

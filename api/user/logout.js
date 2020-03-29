@@ -1,12 +1,12 @@
-const { MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
+const { USER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[MAINTAINER_SESSION_KEY]
+  const sessionId = req.cookies[USER_SESSION_KEY]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
-    await ctx.auth.deleteMaintainerSession(sessionId)
+    await ctx.auth.deleteUserSession(sessionId)
     res.clearCookie(
-      MAINTAINER_SESSION_KEY,
+      USER_SESSION_KEY,
       { path: '/' }
     )
     res.send({ success: true })

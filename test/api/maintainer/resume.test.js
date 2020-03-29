@@ -1,5 +1,5 @@
 const test = require('ava')
-const { maintainerSessionKey } = require('../../../helpers/constants')
+const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
@@ -38,7 +38,7 @@ test('GET `/maintainer/resume` 401 unauthorized | no session', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 401)
@@ -49,7 +49,7 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   const maintainerRetrieved = await t.context.db.getMaintainer(t.context.maintainerId)
@@ -65,7 +65,7 @@ test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 400)
@@ -77,7 +77,7 @@ test('GET `/maintainer/resume` 500 | maintainer query error', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 500)

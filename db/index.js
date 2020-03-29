@@ -22,7 +22,12 @@ Db.prototype.connect = async function connect () {
 }
 
 Db.prototype.getUser = async function getUser (email) {
-  return this.db.collection('users').findOne({ email })
+  const user = await this.db.collection('users').findOne({ email })
+
+  if (!user) return user
+
+  const { _id: id, ...rest } = user
+  return { id, ...rest }
 }
 
 Db.prototype.createUser = async function createUser ({ email, apiKey, billingInfo }) {
