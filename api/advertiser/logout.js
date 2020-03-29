@@ -1,7 +1,7 @@
-const { advertiserSessionKey } = require('../../helpers/constants')
+const { ADVERTISER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[advertiserSessionKey]
+  const sessionId = req.cookies[ADVERTISER_SESSION_KEY]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
     await ctx.auth.deleteAdvertiserSession(sessionId)

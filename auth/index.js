@@ -6,7 +6,7 @@ const fastifyPlugin = require('fastify-plugin')
 const Cache = require('quick-lru')
 const niceware = require('niceware')
 const { config } = require('../config')
-const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
+const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../helpers/constants')
 const { activationEmails } = require('../helpers/email')
 const magicLinkEmails = require('../helpers/magicLinkEmails')
 
@@ -18,8 +18,9 @@ const UserTableName = 'flossbank_user_auth' // user tokens
 const ApiTableName = 'flossbank_api_keys' // api keys
 const ApiTableEmailIndex = 'email-index'
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
-const MaintainerSessionTableName = 'flossbank_maintainer_session' // holding ground for maintainer sessions
-const AdvertiserSessionTableName = 'flossbank_advertiser_session' // holding ground for advertiser sessions
+const MaintainerSessionTableName = 'flossbank_maintainer_session'
+const AdvertiserSessionTableName = 'flossbank_advertiser_session'
+const UserSessionTableName = 'flossbank_advertiser_session'
 
 const oneMinute = (60 * 1000)
 const fifteenMinutesExpirationMS = (15 * 60 * 1000)
@@ -76,10 +77,10 @@ Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
   let cookieKey
   switch (kind) {
     case this.authKinds.ADVERTISER:
-      cookieKey = advertiserSessionKey
+      cookieKey = ADVERTISER_SESSION_KEY
       break
     case this.authKinds.MAINTAINER:
-      cookieKey = maintainerSessionKey
+      cookieKey = MAINTAINER_SESSION_KEY
       break
     default:
       return false
@@ -143,6 +144,8 @@ Auth.prototype.generateToken = async function generateToken (email, kind) {
     TableName: UserTableName,
     Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
   }).promise()
+
+  return token
 }
 
 Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
@@ -371,6 +374,23 @@ Auth.prototype.deleteAdvertiserSession = async function deleteAdvertiserSession 
   if (!sessionId) return
   return this.docs.delete({
     TableName: AdvertiserSessionTableName,
+    Key: { sessionId }
+  }).promise()
+}
+
+Auth.prototype.createUserSession = async function createUserSession (userId) {
+  const sessionId = crypto.randomBytes(32).toString('hex')
+  await this.docs.put({
+    TableName: UserSessionTableName,
+    Item: { sessionId, expires: Date.now() + weekExpiration, userId }
+  }).promise()
+  return sessionId
+}
+
+Auth.prototype.deleteUserSession = async function deleteUserSession (sessionId) {
+  if (!sessionId) return
+  return this.docs.delete({
+    TableName: UserSessionTableName,
     Key: { sessionId }
   }).promise()
 }

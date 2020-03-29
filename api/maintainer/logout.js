@@ -1,7 +1,7 @@
-const { maintainerSessionKey } = require('../../helpers/constants')
+const { MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[maintainerSessionKey]
+  const sessionId = req.cookies[MAINTAINER_SESSION_KEY]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
     await ctx.auth.deleteMaintainerSession(sessionId)

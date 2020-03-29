@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const test = require('ava')
 const sinon = require('sinon')
 const { Auth } = require('../../auth')
-const { advertiserSessionKey, maintainerSessionKey } = require('../../helpers/constants')
+const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 test.before(() => {
   sinon.stub(console, 'error')
@@ -87,7 +87,7 @@ test('getAuthToken | success', (t) => {
 test('getSessionToken | advertiser', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [advertiserSessionKey]: 'adv_sess'
+      [ADVERTISER_SESSION_KEY]: 'adv_sess'
     }
   }, t.context.auth.authKinds.ADVERTISER)
   t.is(token, 'adv_sess')
@@ -96,7 +96,7 @@ test('getSessionToken | advertiser', (t) => {
 test('getSessionToken | maintainer', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(token, 'mnt_sess')
@@ -105,7 +105,7 @@ test('getSessionToken | maintainer', (t) => {
 test('getSessionToken | invalid kind', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.USER)
   t.is(token, false)
@@ -135,7 +135,7 @@ test('getUISession | advertiser success', async (t) => {
   })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [advertiserSessionKey]: 'adv_sess'
+      [ADVERTISER_SESSION_KEY]: 'adv_sess'
     }
   }, t.context.auth.authKinds.ADVERTISER)
   t.deepEqual(session, { sessionId: 'adv_sess', expires: 9999 })
@@ -151,7 +151,7 @@ test('getUISession | advertiser no token', async (t) => {
 test('getUISession | advertiser invalid token', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: {} })
   const session = await t.context.auth.getUISession({
-    cookies: { [advertiserSessionKey]: 'adv_sess' }
+    cookies: { [ADVERTISER_SESSION_KEY]: 'adv_sess' }
   }, t.context.auth.authKinds.ADVERTISER)
   t.is(session, null)
 })
@@ -172,7 +172,7 @@ test('getUISession | maintainer success', async (t) => {
   })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.deepEqual(session, { sessionId: 'mnt_sess', expires: 9999 })
@@ -189,7 +189,7 @@ test('getUISession | maintainer invalid token', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: {} })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(session, null)
@@ -209,7 +209,7 @@ test('getUISession | dynamo throws', async (t) => {
   t.context.auth.docs.get().promise.rejects(new Error())
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(session, null)

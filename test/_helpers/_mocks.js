@@ -22,8 +22,11 @@ module.exports = {
     this.validateCaptcha = sinon.stub().resolves(true)
     this.getOrCreateApiKey = sinon.stub().resolves('api-key')
     this.validateToken = sinon.stub().resolves(true)
+    this.deleteToken = sinon.stub().resolves()
     this.createMaintainerSession = sinon.stub().resolves('maintainer-session')
     this.deleteMaintainerSession = sinon.stub().resolves()
+    this.createUserSession = sinon.stub().resolves('user-session')
+    this.deleteUserSession = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()
