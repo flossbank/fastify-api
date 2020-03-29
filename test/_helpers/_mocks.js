@@ -4,6 +4,7 @@ const { Auth: originalAuth } = require('../../auth')
 module.exports = {
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
+    this.sendUserMagicLink = sinon.stub().resolves()
     this.hasUserAuthCheckedInPastOneMinute = sinon.stub()
       .onFirstCall().returns(false)
       .onSecondCall().returns(true)

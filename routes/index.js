@@ -40,6 +40,8 @@ const verifyUser = require('../api/user/verify')
 const verifyUserSchema = require('../schema/user/verify')
 const checkUser = require('../api/user/check')
 const checkUserSchema = require('../schema/user/check')
+const loginUser = require('../api/user/login')
+const loginUserSchema = require('../schema/user/login')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -109,6 +111,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/validate-captcha', { schema: validateCaptchaSchema }, (req, res) => validateCaptcha(req, res, fastify))
   fastify.post('/user/verify', { schema: verifyUserSchema }, (req, res) => verifyUser(req, res, fastify))
   fastify.post('/user/check', { schema: checkUserSchema }, (req, res) => checkUser(req, res, fastify))
+  fastify.post('/user/login', { schema: loginUserSchema }, (req, res) => loginUser(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: getMaintainerSchema }, (req, res) => getMaintainer(req, res, fastify))
