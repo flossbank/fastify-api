@@ -1,4 +1,8 @@
-const unsubscribeUrl = (token) => `https://api.flossbank.com/unsubscribe?token=${token}`
+const b36 = require('b36')
+
+const encode = (something) => b36.encode(Buffer.from(something))
+
+const unsubscribeUrl = (email, token) => `https://api.flossbank.com/unsubscribe?e=${email}&token=${token}`
 
 const baseData = (unsubscribeLink) => `
 Hi!
@@ -30,8 +34,8 @@ const baseBody = (Data) => ({
 })
 
 exports.betaEmails = {
-  SUBSCRIBE: (token) => {
-    const url = unsubscribeUrl(token)
+  SUBSCRIBE: (email, token) => {
+    const url = unsubscribeUrl(encode(email), token)
     const data = baseData(url)
     return baseBody(data)
   }

@@ -13,7 +13,7 @@ Email.prototype.sendBetaEmail = async function sendBetaEmail (email, token) {
   return this.ses.sendEmail({
     Destination: { ToAddresses: [email] },
     Source: 'Flossbank <joel@flossbank.com>',
-    Message: betaEmails.SUBSCRIBE(token)
+    Message: betaEmails.SUBSCRIBE(email, token)
   }).promise()
 }
 
