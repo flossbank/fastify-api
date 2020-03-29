@@ -21,6 +21,15 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
+Db.prototype.getUser = async function getUser (email) {
+  return this.db.collection('users').findOne({ email })
+}
+
+Db.prototype.createUser = async function createUser ({ email, apiKey, billingInfo }) {
+  const { insertedId } = await this.db.collection('users').insertOne({ email, apiKey, billingInfo })
+  return insertedId
+}
+
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
   return this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },

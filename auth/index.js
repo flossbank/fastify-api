@@ -275,7 +275,6 @@ Auth.prototype.getOrCreateApiKey = async function getOrCreateApiKey (email) {
 
   const foundEntry = Items.pop()
 
-  // not found so create one
   const key = foundEntry ? foundEntry.key : crypto.randomBytes(32).toString('hex')
 
   await this.docs.update({
