@@ -51,7 +51,7 @@ test('POST `/user/verify` 200 success', async (t) => {
 })
 
 test('POST `/user/verify` 401 unauthorized', async (t) => {
-  t.context.auth.validateUserToken.resolves(false)
+  t.context.auth.validateToken.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',
@@ -61,7 +61,7 @@ test('POST `/user/verify` 401 unauthorized', async (t) => {
 })
 
 test('POST `/user/verify` 500 server error', async (t) => {
-  t.context.auth.validateUserToken.throws()
+  t.context.auth.validateToken.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',

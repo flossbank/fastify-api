@@ -23,6 +23,7 @@ test.beforeEach((t) => {
     sendEmail: sinon.stub().returns({ promise: sinon.stub() })
   }
   t.context.auth.post = sinon.stub().resolves({ body: JSON.stringify({ success: true }) })
+  t.context.auth.niceware = { generatePassphrase: sinon.stub().returns(['snot', 'otter']) }
   t.context.auth.recaptchaSecret = 'abc'
 })
 
@@ -222,12 +223,12 @@ test('getUISession | invalid kind', async (t) => {
   t.is(session, null)
 })
 
-test('sendUserToken | missing params', async (t) => {
-  await t.throwsAsync(t.context.auth.sendUserToken())
+test('generateToken | missing params', async (t) => {
+  await t.throwsAsync(t.context.auth.generateToken())
 })
 
-test('sendUserToken | success', async (t) => {
-  await t.context.auth.sendUserToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
+test('generateToken | success', async (t) => {
+  await t.context.auth.generateToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
   t.deepEqual(t.context.auth.docs.put.lastCall.args, [
     {
       TableName: 'flossbank_user_auth',
@@ -239,73 +240,86 @@ test('sendUserToken | success', async (t) => {
       }
     }
   ])
+})
+
+test('generateToken | invalid kind', async (t) => {
+  await t.throwsAsync(t.context.auth.generateToken('pam@dundermifflin.com', 'chickpea'))
+})
+
+test('sendToken | success', async (t) => {
+  await t.context.auth.sendToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
   t.deepEqual(
     t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
     ['pam@dundermifflin.com']
   )
 })
 
-test('sendUserToken | invalid kind', async (t) => {
-  await t.throwsAsync(t.context.auth.sendUserToken('pam@dundermifflin.com', 'chickpea'))
+test('sendMagicLink | success', async (t) => {
+  const code = await t.context.auth.sendMagicLink('pam@dundermifflin.com', t.context.auth.authKinds.USER)
+  t.is(code, 'Snot Otter')
+  t.deepEqual(
+    t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
+    ['pam@dundermifflin.com']
+  )
 })
 
-test('deleteUserToken | missing params', async (t) => {
-  await t.context.auth.deleteUserToken()
+test('deleteToken | missing params', async (t) => {
+  await t.context.auth.deleteToken()
   t.true(t.context.auth.docs.delete.notCalled)
 })
 
-test('deleteUserToken | success', async (t) => {
-  await t.context.auth.deleteUserToken('email')
+test('deleteToken | success', async (t) => {
+  await t.context.auth.deleteToken('email')
   t.true(t.context.auth.docs.delete.calledWith({
     TableName: 'flossbank_user_auth',
     Key: { email: 'email' }
   }))
 })
 
-test('validateUserToken | missings params', async (t) => {
-  t.false(await t.context.auth.validateUserToken())
-  t.false(await t.context.auth.validateUserToken('email'))
-  t.false(await t.context.auth.validateUserToken(undefined, 'token'))
-  t.false(await t.context.auth.validateUserToken('email', 'token', undefined))
+test('validateToken | missings params', async (t) => {
+  t.false(await t.context.auth.validateToken())
+  t.false(await t.context.auth.validateToken('email'))
+  t.false(await t.context.auth.validateToken(undefined, 'token'))
+  t.false(await t.context.auth.validateToken('email', 'token', undefined))
 })
 
-test('validateUserToken | no user', async (t) => {
+test('validateToken | no user', async (t) => {
   t.context.auth.docs.get().promise.resolves({})
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | invalid kind', async (t) => {
+test('validateToken | invalid kind', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', token: 'token', kind: 'notUser' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | no hex token or no expires', async (t) => {
+test('validateToken | no hex token or no expires', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: 'aa' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledTwice)
 })
 
-test('validateUserToken | expired', async (t) => {
+test('validateToken | expired', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', token: 't', kind: t.context.auth.authKinds.USER, expires: 1 } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
-test('validateUserToken | not equal', async (t) => {
+test('validateToken | not equal', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '00', expires: 2345 } })
-  t.false(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
-test('validateUserToken | success', async (t) => {
+test('validateToken | success', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '01', expires: 2345 } })
-  t.true(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.true(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.update.calledOnce)
 })
 
-test('validateUserToken | wrong kind', async (t) => {
+test('validateToken | wrong kind', async (t) => {
   t.context.auth.docs.get().promise.resolves({
     Item: {
       email: 'email',
@@ -314,31 +328,31 @@ test('validateUserToken | wrong kind', async (t) => {
       expires: 2345
     }
   })
-  t.false(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | already valid', async (t) => {
+test('validateToken | already valid', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '01', expires: 2345, valid: true } })
-  t.true(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.true(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.update.notCalled)
 })
 
 test('validateCaptcha | calls validate user token', async (t) => {
-  sinon.stub(t.context.auth, 'validateUserToken')
+  sinon.stub(t.context.auth, 'validateToken')
   await t.context.auth.validateCaptcha('email', 'token', 'response')
-  t.true(t.context.auth.validateUserToken.calledWith('email', 'token', t.context.auth.authKinds.USER))
+  t.true(t.context.auth.validateToken.calledWith('email', 'token', t.context.auth.authKinds.USER))
 })
 
 test('validateCaptcha | failure', async (t) => {
   t.context.auth.post.returns({ body: JSON.stringify({ success: false }) })
-  sinon.stub(t.context.auth, 'validateUserToken').returns(true)
+  sinon.stub(t.context.auth, 'validateToken').returns(true)
   await t.context.auth.validateCaptcha('email', 'token', 'response')
   t.true(t.context.auth.post.calledWith('https://www.google.com/recaptcha/api/siteverify'))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
 test('validateCaptcha | success', async (t) => {
-  sinon.stub(t.context.auth, 'validateUserToken').returns(true)
+  sinon.stub(t.context.auth, 'validateToken').returns(true)
   await t.context.auth.validateCaptcha('email', 'token', 'response')
   t.true(t.context.auth.post.calledWith('https://www.google.com/recaptcha/api/siteverify'))
   t.true(t.context.auth.docs.delete.calledOnce)

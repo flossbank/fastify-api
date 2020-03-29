@@ -23,7 +23,7 @@ test('POST `/advertiser/verify` 401 unauthorized', async (t) => {
     email: 'honey1@etsy.com',
     password: 'beekeeperbookkeeper'
   })
-  t.context.auth.validateUserToken.resolves(false)
+  t.context.auth.validateToken.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/verify',

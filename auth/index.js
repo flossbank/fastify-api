@@ -4,9 +4,11 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const Cache = require('quick-lru')
+const niceware = require('niceware')
 const { config } = require('../config')
 const { advertiserSessionKey, maintainerSessionKey } = require('../helpers/constants')
 const { activationEmails } = require('../helpers/email')
+const magicLinkEmails = require('../helpers/magicLinkEmails')
 
 AWS.config.update(config.getAwsConfig())
 
@@ -27,6 +29,7 @@ function Auth () {
   this.docs = docs // to ease testing
   this.ses = ses
   this.post = got.post
+  this.niceware = niceware
 
   this.checkCache = new Cache({ maxSize: 1000 }) // keep track of last 1000 auth checks on this host
   this.recaptchaSecret = config.getRecaptchaSecret()
@@ -131,8 +134,7 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
   return item
 }
 
-/**  */
-Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
+Auth.prototype.generateToken = async function generateToken (email, kind) {
   if (!email) throw new Error('email is required')
   if (!this.authKinds[kind]) throw new Error('Invalid kind of token')
   const token = crypto.randomBytes(32).toString('hex')
@@ -141,7 +143,26 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
     TableName: UserTableName,
     Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
   }).promise()
+}
 
+Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
+  const token = this.generateToken(email, kind)
+
+  const code = this.niceware.generatePassphrase(4) // 2 words pls
+    .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
+    .join(' ') // as a string pls
+
+  await this.ses.sendEmail({
+    Destination: { ToAddresses: [email] },
+    Source: 'Flossbank <admin@flossbank.com>',
+    Message: magicLinkEmails[kind](email, token, code)
+  }).promise()
+
+  return code
+}
+
+Auth.prototype.sendToken = async function sendToken (email, kind) {
+  const token = this.generateToken(email, kind)
   return this.ses.sendEmail({
     Destination: { ToAddresses: [email] },
     Source: 'Flossbank <admin@flossbank.com>',
@@ -149,7 +170,7 @@ Auth.prototype.sendUserToken = async function sendUserToken (email, kind) {
   }).promise()
 }
 
-Auth.prototype.deleteUserToken = async function deleteUserToken (email) {
+Auth.prototype.deleteToken = async function deleteToken (email) {
   if (!email) return
   return this.docs.delete({
     TableName: UserTableName,
@@ -157,7 +178,7 @@ Auth.prototype.deleteUserToken = async function deleteUserToken (email) {
   }).promise()
 }
 
-Auth.prototype.validateUserToken = async function validateUserToken (email, hexUserToken, tokenKind) {
+Auth.prototype.validateToken = async function validateToken (email, hexUserToken, tokenKind) {
   if (!email || !hexUserToken || !tokenKind || !this.authKinds[tokenKind]) return false
 
   const { Item: user } = await this.docs.get({
@@ -172,7 +193,7 @@ Auth.prototype.validateUserToken = async function validateUserToken (email, hexU
   const { token: hexToken, expires, valid, kind } = user
   if (!hexToken || !expires || !kind) {
     console.error('Attempted to validate email %s but found no token or expiration or kind', email)
-    await this.deleteUserToken(email)
+    await this.deleteToken(email)
     return false
   }
 
@@ -186,13 +207,13 @@ Auth.prototype.validateUserToken = async function validateUserToken (email, hexU
   const userTokenValid = crypto.timingSafeEqual(token, userToken)
   if (!userTokenValid) {
     console.error('Attempt to validate invalid token for %s', email)
-    await this.deleteUserToken(email)
+    await this.deleteToken(email)
     return false
   }
 
   if (expires - Date.now() <= 0) {
     console.error('Attempt to validate expired token %s for %s', hexUserToken, email)
-    await this.deleteUserToken(email)
+    await this.deleteToken(email)
     return false
   }
 
@@ -209,7 +230,7 @@ Auth.prototype.validateUserToken = async function validateUserToken (email, hexU
 }
 
 Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserToken, response) {
-  if (!response || !this.validateUserToken(email, hexUserToken, this.authKinds.USER)) return
+  if (!response || !this.validateToken(email, hexUserToken, this.authKinds.USER)) return
 
   const form = new FormData()
   form.append('secret', this.recaptchaSecret)
@@ -218,11 +239,11 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
   const body = JSON.parse(res.body)
 
   if (!body.success) {
-    await this.deleteUserToken(email)
+    await this.deleteToken(email)
     return
   }
 
-  await this.deleteUserToken(email)
+  await this.deleteToken(email)
 
   return true
 }

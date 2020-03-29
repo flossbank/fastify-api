@@ -10,7 +10,8 @@ module.exports = {
     200: {
       type: 'object',
       properties: {
-        success: { type: 'boolean' }
+        success: { type: 'boolean' },
+        code: { type: 'string' }
       }
     }
   }
