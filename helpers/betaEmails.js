@@ -2,7 +2,7 @@ const b36 = require('b36')
 
 const encode = (something) => b36.encode(Buffer.from(something))
 
-const unsubscribeUrl = (email, token) => `https://api.flossbank.com/unsubscribe?e=${email}&token=${token}`
+const unsubscribeUrl = (email, token) => `https://flossbank.com/beta/unsubscribe?e=${email}&token=${token}`
 
 const baseData = (unsubscribeLink) => `
 Hi!
