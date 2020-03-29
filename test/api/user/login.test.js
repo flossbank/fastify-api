@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
-    const userId1 = await db.createUser('honey@etsy.com')
+    const userId1 = await db.createUser({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
   })
 })
@@ -34,6 +34,20 @@ test('POST `/user/login` 200 success', async (t) => {
   t.deepEqual(payload, { success: true, code: 'code' })
 })
 
+test('POST `/user/login` 404 not found', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/login',
+    body: { email: 'agave@etsy.com' }
+  })
+
+  t.true(t.context.auth.sendMagicLink.notCalled)
+
+  const payload = JSON.parse(res.payload)
+  t.deepEqual(res.statusCode, 404)
+  t.deepEqual(payload, { success: false })
+})
+
 test('POST `/user/login` 400 bad request', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
@@ -48,7 +62,7 @@ test('POST `/advertiser/login` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/login',
-    body: { email: 'email' }
+    body: { email: 'honey@etsy.com' }
   })
   t.deepEqual(res.statusCode, 500)
 })

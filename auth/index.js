@@ -146,7 +146,7 @@ Auth.prototype.generateToken = async function generateToken (email, kind) {
 }
 
 Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
-  const token = this.generateToken(email, kind)
+  const token = await this.generateToken(email, kind)
 
   const code = this.niceware.generatePassphrase(4) // 2 words pls
     .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
@@ -162,7 +162,7 @@ Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
 }
 
 Auth.prototype.sendToken = async function sendToken (email, kind) {
-  const token = this.generateToken(email, kind)
+  const token = await this.generateToken(email, kind)
   return this.ses.sendEmail({
     Destination: { ToAddresses: [email] },
     Source: 'Flossbank <admin@flossbank.com>',
