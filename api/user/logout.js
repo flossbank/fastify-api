@@ -5,6 +5,10 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('logging out for session id %s', sessionId)
     await ctx.auth.deleteUserSession(sessionId)
+    res.clearCookie(
+      USER_SESSION_KEY,
+      { path: '/' }
+    )
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)
