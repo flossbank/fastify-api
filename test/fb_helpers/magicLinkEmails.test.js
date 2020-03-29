@@ -5,7 +5,7 @@ test('magic link emails | activate user', (t) => {
   const res = mle.USER('foo', 'bar', 'code')
   t.is(res.Subject.Data, 'Flossbank Login Verification')
   t.true(res.Body.Text.Data.includes(
-    'https://login.flossbank.com/?email=3zvxr&token=bar&kind=user'
+    'https://login.flossbank.com/?e=3zvxr&token=bar&kind=user'
   ))
   t.true(res.Body.Text.Data.includes('code'))
 })

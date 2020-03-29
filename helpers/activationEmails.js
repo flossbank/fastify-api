@@ -2,7 +2,7 @@ const b36 = require('b36')
 
 const encode = (something) => b36.encode(Buffer.from(something))
 
-const baseUrl = (email, token, kind) => `https://verification.flossbank.com/?email=${email}&token=${token}&kind=${kind}`
+const baseUrl = (email, token, kind) => `https://verification.flossbank.com/?e=${email}&token=${token}&kind=${kind}`
 
 const baseData = (url, why) => `
 Hi!
