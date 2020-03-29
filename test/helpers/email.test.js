@@ -1,5 +1,5 @@
 const test = require('ava')
-const email = require('../../helpers/email')
+const email = require('../../helpers/activationEmails')
 
 test('email | activate user', (t) => {
   const res = email.activationEmails.USER('foo', 'bar')
