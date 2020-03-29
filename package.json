@@ -8,8 +8,8 @@
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
     "coverage": "nyc npm run unit-tests",
-    "unit-tests": "recaptcha_secret=test ava",
-    "watch:unit-tests": "recaptcha_secret=test ava --watch",
+    "unit-tests": "ava",
+    "watch:unit-tests": "ava --watch",
     "test": "npm run lint && ava -v",
     "ci-tests": "nyc --reporter=cobertura ava -t | tap-xunit > TEST_RESULTS.xml"
   },
