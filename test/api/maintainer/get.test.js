@@ -86,7 +86,9 @@ test('GET `/maintainer/get` 200 success', async (t) => {
       firstName: 'Honesty',
       lastName: 'Honor',
       email: 'honey@etsy.com',
-      payoutInfo: 'honey@booboo.com'
+      payoutInfo: 'honey@booboo.com',
+      active: true,
+      verified: true
     }
   })
 })

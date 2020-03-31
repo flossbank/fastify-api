@@ -78,7 +78,7 @@ test('POST `/advertiser/verify` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/verify',
-    body: { email: 'email', token: 'token' }
+    body: { email: 'email@asdf.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 500)
 })

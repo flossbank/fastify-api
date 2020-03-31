@@ -32,16 +32,10 @@ test('POST `/maintainer/register` 200 success', async (t) => {
     },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 200)
+  t.is(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
 
-  t.deepEqual(payload.success, true)
-  const { id } = payload
-
-  const maintainer = await t.context.db.getMaintainer(id)
-  t.deepEqual(maintainer.verified, false)
-  t.deepEqual(maintainer.firstName, 'maintainer')
-  t.deepEqual(maintainer.lastName, 'captain')
+  t.is(payload.success, true)
 })
 
 test('POST `/maintainer/register` 400 duplicate email', async (t) => {
@@ -63,12 +57,12 @@ test('POST `/maintainer/register` 400 duplicate email', async (t) => {
     },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
   const payload = JSON.parse(res.payload)
 
-  t.deepEqual(payload.success, false)
+  t.is(payload.success, false)
   const { message } = payload
-  t.deepEqual(message, alreadyExistsMessage)
+  t.is(message, alreadyExistsMessage)
 })
 
 test('POST `/maintainer/register` 400 bad request', async (t) => {
@@ -79,7 +73,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: {},
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -87,7 +81,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: {} },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -95,7 +89,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: { name: 'name' } },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -103,7 +97,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: { name: 'name', email: 'email@email.com' } },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -111,7 +105,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: { email: 'email@email.com', password: 'Paps%df3$sd' } },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -119,7 +113,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: { name: 'joel', email: 'invalid-email', password: 'Paps%df3$sd' } },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
@@ -127,7 +121,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
     payload: { maintainer: { name: 'joel', email: 'email@email.com', password: 'insecure-password' } },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 400)
+  t.is(res.statusCode, 400)
 })
 
 test('POST `/maintainer/register` 500 server error', async (t) => {
@@ -145,5 +139,5 @@ test('POST `/maintainer/register` 500 server error', async (t) => {
     },
     headers: { authorization: 'valid-session-token' }
   })
-  t.deepEqual(res.statusCode, 500)
+  t.is(res.statusCode, 500)
 })

@@ -45,10 +45,10 @@ test('GET `/package/get` 401 unauthorized', async (t) => {
 })
 
 test('GET `/package/get` 200 success', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',
-    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -65,16 +65,6 @@ test('GET `/package/get` 200 success', async (t) => {
       }
     ]
   })
-})
-
-test('GET `/package/get` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/package/get',
-    query: {},
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
 })
 
 test('GET `/package/get` 500 server error', async (t) => {
