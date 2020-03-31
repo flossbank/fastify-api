@@ -97,7 +97,7 @@ test('POST `/maintainer/login` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/login',
-    body: { email: 'email', password: 'pwd' }
+    body: { email: 'email@asdf.com', password: 'pwd' }
   })
   t.deepEqual(res.statusCode, 500)
 })

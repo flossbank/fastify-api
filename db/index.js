@@ -196,8 +196,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   if (adIdsFromDrafts.length) {
     const adsFromDrafts = []
     for (const draftId of adIdsFromDrafts) {
-      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
-      const draft = advertiser.adDrafts[idx]
+      const draft = advertiser.adDrafts.find(draft => draft.id === draftId)
       if (!draft) {
         continue
       }
@@ -246,10 +245,10 @@ Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdver
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (
   advertiserId,
-  adCampaignId,
   updatedAdCampaign,
   adIdsFromDrafts = [],
   keepDrafts = false) {
+  const { id: adCampaignId } = updatedAdCampaign
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   const previousCampaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
   // Grab the existing ads id's
@@ -265,13 +264,14 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
     throw e
   }
 
-  // Go through all ads to be added and if they're new, add impressions field
+  // Go through all ads to be added and if they're new, initialize them
   const adsToAdd = updatedAdCampaign.ads.map((ad) => {
-    // If it's an existing ad, dont reset impressions
+    // If it's an existing ad, don't give fresh ID + impressions
     if (previousAdsMap.has(ad.id)) {
       return previousAdsMap.get(ad.id)
     }
     return Object.assign({}, ad, {
+      id: ulid(),
       impressions: []
     })
   })
@@ -285,8 +285,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
   if (adIdsFromDrafts.length) {
     const adsFromDrafts = []
     for (const draftId of adIdsFromDrafts) {
-      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
-      const draft = advertiser.adDrafts[idx]
+      const draft = advertiser.adDrafts.find(draft => draft.id === draftId)
       adsFromDrafts.push(Object.assign({}, draft, {
         id: ulid(),
         impressions: []
@@ -360,11 +359,11 @@ Db.prototype.getPackageByName = async function getPackageByName (name, registry)
   return { id, ...rest }
 }
 
-Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
+Db.prototype.updatePackage = async function updatePackage (packageId, { maintainers, owner }) {
   return this.db.collection('packages').updateOne({
     _id: ObjectId(packageId)
   }, {
-    $set: pkg
+    $set: { maintainers, owner }
   })
 }
 
@@ -475,11 +474,11 @@ Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
   })
 }
 
-Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer) {
+Db.prototype.updateMaintainerPayoutInfo = async function updateMaintainerPayoutInfo (id, payoutInfo) {
   return this.db.collection('maintainers').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: maintainer
+    $set: { payoutInfo }
   })
 }
 

@@ -46,13 +46,11 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
     url: '/package/update',
     payload: {
       packageId: pkgId1,
-      package: {
-        maintainers: [
-          { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
-          { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
-        ],
-        owner: t.context.maintainerId1
-      }
+      maintainers: [
+        { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
+        { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
+      ],
+      owner: t.context.maintainerId1
     },
     headers: { authorization: 'not a valid token' }
   })
@@ -60,6 +58,7 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
 })
 
 test('POST `/package/update` 200 success', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
   const pkgId1 = (await t.context.db.createPackage({
     name: 'yttrium-server',
     registry: 'npm',
@@ -73,13 +72,11 @@ test('POST `/package/update` 200 success', async (t) => {
     url: '/package/update',
     payload: {
       packageId: pkgId1,
-      package: {
-        maintainers: [
-          { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
-          { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
-        ],
-        owner: t.context.maintainerId1
-      }
+      maintainers: [
+        { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
+        { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
+      ],
+      owner: t.context.maintainerId1
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -99,12 +96,10 @@ test('POST `/package/update` 400 bad request | not a pkg', async (t) => {
     url: '/package/update',
     payload: {
       packageId: '000000000000',
-      package: {
-        maintainers: [
-          { maintainerId: 'test-maintainer-0', revenuePercent: 100 }
-        ],
-        owner: 'test-maintainer-0'
-      }
+      maintainers: [
+        { maintainerId: 'test-maintainer-0', revenuePercent: 100 }
+      ],
+      owner: 'test-maintainer-0'
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -124,7 +119,7 @@ test('POST `/package/update` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/package/update',
-    payload: { packageId: 'test-package-0' },
+    payload: { packageId: '000000000000' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -133,10 +128,8 @@ test('POST `/package/update` 400 bad request', async (t) => {
     method: 'POST',
     url: '/package/update',
     payload: {
-      packageId: 'test-package-0',
-      package: {
-        maintainers: []
-      }
+      packageId: '000000000000',
+      maintainers: []
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -146,11 +139,9 @@ test('POST `/package/update` 400 bad request', async (t) => {
     method: 'POST',
     url: '/package/update',
     payload: {
-      packageId: 'test-package-0',
-      package: {
-        maintainers: [{}],
-        owner: 'test-maintainer-0'
-      }
+      packageId: '000000000000',
+      maintainers: [{}],
+      owner: 'test-maintainer-0'
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -160,11 +151,9 @@ test('POST `/package/update` 400 bad request', async (t) => {
     method: 'POST',
     url: '/package/update',
     payload: {
-      packageId: 'test-package-0',
-      package: {
-        maintainers: [{ maintainerId: 'test-maintainer-0', revenuePercent: 105 }],
-        owner: 'test-maintainer-0'
-      }
+      packageId: '000000000000',
+      maintainers: [{ maintainerId: 'test-maintainer-0', revenuePercent: 105 }],
+      owner: 'test-maintainer-0'
     },
     headers: { authorization: 'valid-session-token' }
   })
@@ -177,13 +166,11 @@ test('POST `/package/update` 500 server error', async (t) => {
     method: 'POST',
     url: '/package/update',
     payload: {
-      packageId: 'test-package-0',
-      package: {
-        maintainers: [
-          { maintainerId: 'test-maintainer-0', revenuePercent: 100 }
-        ],
-        owner: 'test-maintainer-0'
-      }
+      packageId: '000000000000',
+      maintainers: [
+        { maintainerId: 'test-maintainer-0', revenuePercent: 100 }
+      ],
+      owner: 'test-maintainer-0'
     },
     headers: { authorization: 'valid-session-token' }
   })

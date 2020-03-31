@@ -2,16 +2,15 @@ const { AD_NOT_CLEAN } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { adCampaignId, adCampaign, adDrafts, keepDrafts } = req.body
+    const { adCampaign, adDrafts, keepDrafts } = req.body
     ctx.log.info(
-      { adCampaignId, adCampaign, adDrafts, keepDrafts },
+      { adCampaign, adDrafts, keepDrafts },
       'updating ad campaign for %s',
       req.session.advertiserId
     )
     try {
       await ctx.db.updateAdCampaign(
         req.session.advertiserId,
-        adCampaignId,
         adCampaign,
         adDrafts,
         keepDrafts

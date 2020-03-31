@@ -28,7 +28,7 @@ test('POST `/user/verify` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',
-    payload: { email: 'email' }
+    payload: { email: 'email@asdf.com' }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -44,7 +44,7 @@ test('POST `/user/verify` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',
-    payload: { email: 'email', token: 'token' }
+    payload: { email: 'email@asdf.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
@@ -55,7 +55,7 @@ test('POST `/user/verify` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',
-    payload: { email: 'email', token: 'token' }
+    payload: { email: 'email@asdf.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -65,7 +65,7 @@ test('POST `/user/verify` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/verify',
-    payload: { email: 'email', token: 'token' }
+    payload: { email: 'email@asdf.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 500)
 })

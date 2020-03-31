@@ -11,9 +11,7 @@ test.before(async (t) => {
       organization: 'elf-world'
     })
     t.context.maintainerId = maintainerId1.toHexString()
-    await db.updateMaintainer(maintainerId1.toHexString(), {
-      verified: true
-    })
+    await db.verifyMaintainer('honey@etsy.com')
   })
 })
 
@@ -52,11 +50,11 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
       cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
-  const maintainerRetrieved = await t.context.db.getMaintainer(t.context.maintainerId)
+  t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
+  const maintainerRetrieved = await t.context.db.getMaintainer(t.context.maintainerId)
   t.deepEqual(payload.maintainer, { ...maintainerRetrieved, id: maintainerRetrieved.id.toHexString() })
-  t.deepEqual(res.statusCode, 200)
 })
 
 test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {

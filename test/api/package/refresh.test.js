@@ -126,16 +126,14 @@ test('POST `/package/refresh` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: {
-      maintainerId: t.context.maintainerId4,
-      packageRegistry: 'npm'
-    },
+    payload: { packageRegistry: 'npm' },
     headers: { authorization: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('POST `/package/refresh` 200 success', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.registry.npm.getOwnedPackages.resolves([
     'caesar', // a new pkg
     'yttrium-server', // remains the same
@@ -146,10 +144,7 @@ test('POST `/package/refresh` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: {
-      maintainerId: t.context.maintainerId1,
-      packageRegistry: 'npm'
-    },
+    payload: { packageRegistry: 'npm' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -187,26 +182,23 @@ test('POST `/package/refresh` 200 success', async (t) => {
 })
 
 test('POST `/package/refresh` 400 bad request | not a maintainer', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: {
-      maintainerId: '000000000000',
-      packageRegistry: 'npm'
-    },
+    payload: { packageRegistry: 'npm' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/package/refresh` 400 bad request | no tokens', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId5 })
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: {
-      maintainerId: t.context.maintainerId5,
-      packageRegistry: 'npm'
-    },
+    payload: { packageRegistry: 'npm' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -225,32 +217,19 @@ test('POST `/package/refresh` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: { maintainerId: 'test-maintainer-0' },
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-
-  res = await t.context.app.inject({
-    method: 'POST',
-    url: '/package/refresh',
-    payload: {
-      maintainerId: t.context.maintainerId4,
-      packageRegistry: 'github.com'
-    },
+    payload: { packageRegistry: 'github.com' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/package/refresh` 500 server error', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.db.refreshPackageOwnership = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
-    payload: {
-      maintainerId: t.context.maintainerId1,
-      packageRegistry: 'npm'
-    },
+    payload: { packageRegistry: 'npm' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)
