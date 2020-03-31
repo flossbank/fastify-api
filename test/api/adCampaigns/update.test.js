@@ -205,7 +205,7 @@ test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
         id: adCampaignId,
         ads: [{
           name: 'rent is too damn high',
-          title: 'asdf' + String.fromCharCode(190),
+          title: 'asdf' + String.fromCharCode(190), // ¾ -- a disallowed character; see helpers/clean.js
           body: 'fdas',
           url: 'fdas'
         }],
