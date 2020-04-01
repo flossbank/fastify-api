@@ -1,6 +1,7 @@
 const fastifyPlugin = require('fastify-plugin')
 const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
+const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const { config } = require('../config')
 const Cleaner = require('../helpers/clean')
@@ -20,11 +21,39 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
+Db.prototype.getUser = async function getUser (email) {
+  const user = await this.db.collection('users').findOne({ email })
+
+  if (!user) return user
+
+  const { _id: id, ...rest } = user
+  return { id, ...rest }
+}
+
+Db.prototype.createUser = async function createUser ({ email, apiKey, billingInfo }) {
+  const { insertedId } = await this.db.collection('users').insertOne({ email, apiKey, billingInfo })
+  return insertedId
+}
+
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
   return this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
     { $set: { 'adCampaigns.$.approved': true } }
   )
+}
+
+Db.prototype.betaSubscribe = async function betaSubscribe (email) {
+  const token = crypto.randomBytes(32).toString('hex')
+  await this.db.collection('betaSubscribers').insertOne({ email, token })
+  return token
+}
+
+Db.prototype.betaUnsubscribe = async function betaUnsubscribe (token) {
+  return this.db.collection('betaSubscribers').deleteOne({ token })
+}
+
+Db.prototype.getBetaSubscribers = async function getBetaSubscribers () {
+  return this.db.collection('betaSubscribers').find().toArray()
 }
 
 Db.prototype.getAdBatch = async function getAdBatch () {
@@ -167,8 +196,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   if (adIdsFromDrafts.length) {
     const adsFromDrafts = []
     for (const draftId of adIdsFromDrafts) {
-      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
-      const draft = advertiser.adDrafts[idx]
+      const draft = advertiser.adDrafts.find(draft => draft.id === draftId)
       if (!draft) {
         continue
       }
@@ -217,10 +245,10 @@ Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdver
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (
   advertiserId,
-  adCampaignId,
   updatedAdCampaign,
   adIdsFromDrafts = [],
   keepDrafts = false) {
+  const { id: adCampaignId } = updatedAdCampaign
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   const previousCampaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
   // Grab the existing ads id's
@@ -236,13 +264,14 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
     throw e
   }
 
-  // Go through all ads to be added and if they're new, add impressions field
+  // Go through all ads to be added and if they're new, initialize them
   const adsToAdd = updatedAdCampaign.ads.map((ad) => {
-    // If it's an existing ad, dont reset impressions
+    // If it's an existing ad, don't give fresh ID + impressions
     if (previousAdsMap.has(ad.id)) {
       return previousAdsMap.get(ad.id)
     }
     return Object.assign({}, ad, {
+      id: ulid(),
       impressions: []
     })
   })
@@ -256,8 +285,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
   if (adIdsFromDrafts.length) {
     const adsFromDrafts = []
     for (const draftId of adIdsFromDrafts) {
-      const idx = advertiser.adDrafts.findIndex(draft => draft.id === draftId)
-      const draft = advertiser.adDrafts[idx]
+      const draft = advertiser.adDrafts.find(draft => draft.id === draftId)
       adsFromDrafts.push(Object.assign({}, draft, {
         id: ulid(),
         impressions: []
@@ -331,11 +359,11 @@ Db.prototype.getPackageByName = async function getPackageByName (name, registry)
   return { id, ...rest }
 }
 
-Db.prototype.updatePackage = async function updatePackage (packageId, pkg) {
+Db.prototype.updatePackage = async function updatePackage (packageId, { maintainers, owner }) {
   return this.db.collection('packages').updateOne({
     _id: ObjectId(packageId)
   }, {
-    $set: pkg
+    $set: { maintainers, owner }
   })
 }
 
@@ -446,11 +474,11 @@ Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
   })
 }
 
-Db.prototype.updateMaintainer = async function updateMaintainer (id, maintainer) {
+Db.prototype.updateMaintainerPayoutInfo = async function updateMaintainerPayoutInfo (id, payoutInfo) {
   return this.db.collection('maintainers').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: maintainer
+    $set: { payoutInfo }
   })
 }
 

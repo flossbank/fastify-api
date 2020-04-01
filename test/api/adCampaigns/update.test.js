@@ -65,8 +65,8 @@ test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId: adCampaignIdBlah,
       adCampaign: {
+        id: adCampaignIdBlah,
         ads: [],
         maxSpend: 500000,
         cpm: 500000,
@@ -100,7 +100,6 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId,
       adCampaign: updatedCampaign,
       adDrafts: [t.context.adId2],
       keepDrafts: true
@@ -117,7 +116,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
   const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)
   // Campaign should have the initial ad plus the new ad from drafts we just added
   t.deepEqual(campaignAfterUpdate.ads.length, 2)
-  t.true(campaignAfterUpdate.ads.every(ad => !!ad.id))
+  t.true(campaignAfterUpdate.ads.every(ad => !!ad.id)) // every ad should have an id
   t.deepEqual(campaignAfterUpdate.name, newName)
   t.deepEqual(campaignAfterUpdate.active, false)
 })
@@ -146,7 +145,6 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId,
       adCampaign: updatedCampaign,
       adDrafts: [t.context.adId3],
       keepDrafts: false
@@ -158,7 +156,6 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
   // Should have deleted the draft so we should have 0
-  t.log(JSON.stringify(advertiser))
   t.deepEqual(advertiser.adDrafts.length, 0)
 
   const campaignAfterUpdate = advertiser.adCampaigns.find(camp => camp.id === adCampaignId)
@@ -180,8 +177,8 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId,
       adCampaign: {
+        id: adCampaignId,
         ads: { halp: 'me' },
         maxSpend: 500000,
         cpm: 500000,
@@ -204,10 +201,13 @@ test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId,
       adCampaign: {
+        id: adCampaignId,
         ads: [{
-          rent: 'is too damn high'
+          name: 'rent is too damn high',
+          title: 'asdf' + String.fromCharCode(190), // ¾ -- a disallowed character; see helpers/clean.js
+          body: 'fdas',
+          url: 'fdas'
         }],
         maxSpend: 500000,
         cpm: 500000,
@@ -225,7 +225,7 @@ test('POST `/ad-campaign/update` 400 bad request', async (t) => {
   res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/update',
-    payload: { adCampaignId: 'test-ad-campaign-0' },
+    payload: { },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 400)
@@ -252,8 +252,8 @@ test('POST `/ad-campaign/update` 500 server error', async (t) => {
     method: 'POST',
     url: '/ad-campaign/update',
     payload: {
-      adCampaignId,
       adCampaign: {
+        id: adCampaignId,
         ads: [],
         maxSpend: 500000,
         cpm: 500000,

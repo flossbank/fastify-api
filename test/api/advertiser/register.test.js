@@ -36,13 +36,6 @@ test('POST `/advertiser/create` 200 success', async (t) => {
   const payload = JSON.parse(res.payload)
 
   t.deepEqual(payload.success, true)
-  const { id } = payload
-
-  const ad = await t.context.db.getAdvertiser(id)
-  t.deepEqual(ad.firstName, 'advertiser')
-  t.deepEqual(ad.lastName, 'captain')
-  t.deepEqual(ad.billingInfo.customerId, 'test-stripe-id')
-  t.deepEqual(ad.billingInfo.cardOnFile, false)
 })
 
 test('POST `/advertiser/create` 400 duplicate email', async (t) => {

@@ -62,10 +62,10 @@ test('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    query: { maintainerId: t.context.maintainerId1 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -76,10 +76,10 @@ test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId2 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    query: { maintainerId: t.context.maintainerId2 },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -90,10 +90,10 @@ test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | nobody', async (t) => {
+  t.context.auth.getUISession.resolves({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    query: { maintainerId: '000000000000' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -103,22 +103,11 @@ test('GET `/maintainer/revenue` 200 success | nobody', async (t) => {
   })
 })
 
-test('GET `/maintainer/revenue` 400 bad request', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/maintainer/revenue',
-    query: {},
-    headers: { authorization: 'valid-session-token' }
-  })
-  t.deepEqual(res.statusCode, 400)
-})
-
 test('GET `/maintainer/revenue` 500 server error', async (t) => {
   t.context.db.getRevenue = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    query: { maintainerId: 'test-maintainer-0' },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 500)

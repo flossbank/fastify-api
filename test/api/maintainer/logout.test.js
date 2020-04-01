@@ -1,5 +1,5 @@
 const test = require('ava')
-const { maintainerSessionKey } = require('../../../helpers/constants')
+const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
@@ -23,7 +23,7 @@ test('POST `/maintainer/logout` 200 success', async (t) => {
     method: 'POST',
     url: '/maintainer/logout',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 200)

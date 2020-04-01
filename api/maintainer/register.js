@@ -19,7 +19,7 @@ module.exports = async (req, res, ctx) => {
       throw e
     }
     ctx.log.info('sending registration email for newly registered maintainer %s', id)
-    await ctx.auth.sendUserToken(maintainer.email, ctx.auth.authKinds.MAINTAINER)
+    await ctx.auth.sendToken(maintainer.email, ctx.auth.authKinds.MAINTAINER)
     res.send({ success: true, id })
   } catch (e) {
     ctx.log.error(e)

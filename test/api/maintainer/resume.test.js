@@ -1,5 +1,5 @@
 const test = require('ava')
-const { maintainerSessionKey } = require('../../../helpers/constants')
+const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
@@ -11,9 +11,7 @@ test.before(async (t) => {
       organization: 'elf-world'
     })
     t.context.maintainerId = maintainerId1.toHexString()
-    await db.updateMaintainer(maintainerId1.toHexString(), {
-      verified: true
-    })
+    await db.verifyMaintainer('honey@etsy.com')
   })
 })
 
@@ -38,7 +36,7 @@ test('GET `/maintainer/resume` 401 unauthorized | no session', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 401)
@@ -49,14 +47,14 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
-  const maintainerRetrieved = await t.context.db.getMaintainer(t.context.maintainerId)
+  t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
+  const maintainerRetrieved = await t.context.db.getMaintainer(t.context.maintainerId)
   t.deepEqual(payload.maintainer, { ...maintainerRetrieved, id: maintainerRetrieved.id.toHexString() })
-  t.deepEqual(res.statusCode, 200)
 })
 
 test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
@@ -65,7 +63,7 @@ test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 400)
@@ -77,7 +75,7 @@ test('GET `/maintainer/resume` 500 | maintainer query error', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${maintainerSessionKey}=maintainer-session`
+      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 500)

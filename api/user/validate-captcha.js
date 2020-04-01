@@ -10,10 +10,13 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
-    res.send({
-      success: true,
-      apiKey: await ctx.auth.createApiKey(email)
-    })
+    const apiKey = await ctx.auth.getOrCreateApiKey(email)
+
+    if (!await ctx.db.getUser(email)) {
+      await ctx.db.createUser({ email, apiKey, billingInfo: {} })
+    }
+
+    res.send({ success: true, apiKey })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

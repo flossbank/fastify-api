@@ -1,4 +1,8 @@
-const baseUrl = (email, token, kind) => `https://verification.flossbank.com/?email=${email}&token=${token}&kind=${kind}`
+const b36 = require('b36')
+
+const encode = (something) => b36.encode(Buffer.from(something))
+
+const baseUrl = (email, token, kind) => `https://verification.flossbank.com/?e=${email}&token=${token}&kind=${kind}`
 
 const baseData = (url, why) => `
 Hi!
@@ -31,19 +35,19 @@ const baseBody = (Data) => ({
 // the flow is a pain. want to rethink that enum / how it works / how to integrate
 exports.activationEmails = {
   USER: (email, token) => {
-    const url = baseUrl(email, token, 'user')
+    const url = baseUrl(encode(email), token, 'user')
     const why = 'supporting open source maintainers'
     const data = baseData(url, why)
     return baseBody(data)
   },
   ADVERTISER: (email, token) => {
-    const url = baseUrl(email, token, 'advertiser')
+    const url = baseUrl(encode(email), token, 'advertiser')
     const why = 'advertising to developers'
     const data = baseData(url, why)
     return baseBody(data)
   },
   MAINTAINER: (email, token) => {
-    const url = baseUrl(email, token, 'maintainer')
+    const url = baseUrl(encode(email), token, 'maintainer')
     const why = 'receiving compensation for your open source work'
     const data = baseData(url, why)
     return baseBody(data)

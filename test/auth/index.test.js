@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const test = require('ava')
 const sinon = require('sinon')
 const { Auth } = require('../../auth')
-const { advertiserSessionKey, maintainerSessionKey } = require('../../helpers/constants')
+const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 test.before(() => {
   sinon.stub(console, 'error')
@@ -16,12 +16,14 @@ test.beforeEach((t) => {
     get: sinon.stub().returns({ promise: sinon.stub() }),
     put: sinon.stub().returns({ promise: sinon.stub() }),
     update: sinon.stub().returns({ promise: sinon.stub() }),
-    delete: sinon.stub().returns({ promise: sinon.stub() })
+    delete: sinon.stub().returns({ promise: sinon.stub() }),
+    query: sinon.stub().returns({ promise: sinon.stub() })
   }
   t.context.auth.ses = {
     sendEmail: sinon.stub().returns({ promise: sinon.stub() })
   }
   t.context.auth.post = sinon.stub().resolves({ body: JSON.stringify({ success: true }) })
+  t.context.auth.niceware = { generatePassphrase: sinon.stub().returns(['snot', 'otter']) }
   t.context.auth.recaptchaSecret = 'abc'
 })
 
@@ -85,7 +87,7 @@ test('getAuthToken | success', (t) => {
 test('getSessionToken | advertiser', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [advertiserSessionKey]: 'adv_sess'
+      [ADVERTISER_SESSION_KEY]: 'adv_sess'
     }
   }, t.context.auth.authKinds.ADVERTISER)
   t.is(token, 'adv_sess')
@@ -94,7 +96,7 @@ test('getSessionToken | advertiser', (t) => {
 test('getSessionToken | maintainer', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(token, 'mnt_sess')
@@ -103,7 +105,7 @@ test('getSessionToken | maintainer', (t) => {
 test('getSessionToken | invalid kind', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.USER)
   t.is(token, false)
@@ -133,7 +135,7 @@ test('getUISession | advertiser success', async (t) => {
   })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [advertiserSessionKey]: 'adv_sess'
+      [ADVERTISER_SESSION_KEY]: 'adv_sess'
     }
   }, t.context.auth.authKinds.ADVERTISER)
   t.deepEqual(session, { sessionId: 'adv_sess', expires: 9999 })
@@ -149,7 +151,7 @@ test('getUISession | advertiser no token', async (t) => {
 test('getUISession | advertiser invalid token', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: {} })
   const session = await t.context.auth.getUISession({
-    cookies: { [advertiserSessionKey]: 'adv_sess' }
+    cookies: { [ADVERTISER_SESSION_KEY]: 'adv_sess' }
   }, t.context.auth.authKinds.ADVERTISER)
   t.is(session, null)
 })
@@ -170,7 +172,7 @@ test('getUISession | maintainer success', async (t) => {
   })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.deepEqual(session, { sessionId: 'mnt_sess', expires: 9999 })
@@ -187,7 +189,7 @@ test('getUISession | maintainer invalid token', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: {} })
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(session, null)
@@ -207,7 +209,7 @@ test('getUISession | dynamo throws', async (t) => {
   t.context.auth.docs.get().promise.rejects(new Error())
   const session = await t.context.auth.getUISession({
     cookies: {
-      [maintainerSessionKey]: 'mnt_sess'
+      [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
   }, t.context.auth.authKinds.MAINTAINER)
   t.is(session, null)
@@ -221,12 +223,12 @@ test('getUISession | invalid kind', async (t) => {
   t.is(session, null)
 })
 
-test('sendUserToken | missing params', async (t) => {
-  await t.throwsAsync(t.context.auth.sendUserToken())
+test('generateToken | missing params', async (t) => {
+  await t.throwsAsync(t.context.auth.generateToken())
 })
 
-test('sendUserToken | success', async (t) => {
-  await t.context.auth.sendUserToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
+test('generateToken | success', async (t) => {
+  await t.context.auth.generateToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
   t.deepEqual(t.context.auth.docs.put.lastCall.args, [
     {
       TableName: 'flossbank_user_auth',
@@ -238,73 +240,86 @@ test('sendUserToken | success', async (t) => {
       }
     }
   ])
+})
+
+test('generateToken | invalid kind', async (t) => {
+  await t.throwsAsync(t.context.auth.generateToken('pam@dundermifflin.com', 'chickpea'))
+})
+
+test('sendToken | success', async (t) => {
+  await t.context.auth.sendToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
   t.deepEqual(
     t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
     ['pam@dundermifflin.com']
   )
 })
 
-test('sendUserToken | invalid kind', async (t) => {
-  await t.throwsAsync(t.context.auth.sendUserToken('pam@dundermifflin.com', 'chickpea'))
+test('sendMagicLink | success', async (t) => {
+  const code = await t.context.auth.sendMagicLink('pam@dundermifflin.com', t.context.auth.authKinds.USER)
+  t.is(code, 'Snot Otter')
+  t.deepEqual(
+    t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
+    ['pam@dundermifflin.com']
+  )
 })
 
-test('deleteUserToken | missing params', async (t) => {
-  await t.context.auth.deleteUserToken()
+test('deleteToken | missing params', async (t) => {
+  await t.context.auth.deleteToken()
   t.true(t.context.auth.docs.delete.notCalled)
 })
 
-test('deleteUserToken | success', async (t) => {
-  await t.context.auth.deleteUserToken('email')
+test('deleteToken | success', async (t) => {
+  await t.context.auth.deleteToken('email')
   t.true(t.context.auth.docs.delete.calledWith({
     TableName: 'flossbank_user_auth',
     Key: { email: 'email' }
   }))
 })
 
-test('validateUserToken | missings params', async (t) => {
-  t.false(await t.context.auth.validateUserToken())
-  t.false(await t.context.auth.validateUserToken('email'))
-  t.false(await t.context.auth.validateUserToken(undefined, 'token'))
-  t.false(await t.context.auth.validateUserToken('email', 'token', undefined))
+test('validateToken | missings params', async (t) => {
+  t.false(await t.context.auth.validateToken())
+  t.false(await t.context.auth.validateToken('email'))
+  t.false(await t.context.auth.validateToken(undefined, 'token'))
+  t.false(await t.context.auth.validateToken('email', 'token', undefined))
 })
 
-test('validateUserToken | no user', async (t) => {
+test('validateToken | no user', async (t) => {
   t.context.auth.docs.get().promise.resolves({})
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | invalid kind', async (t) => {
+test('validateToken | invalid kind', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', token: 'token', kind: 'notUser' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | no hex token or no expires', async (t) => {
+test('validateToken | no hex token or no expires', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: 'aa' } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledTwice)
 })
 
-test('validateUserToken | expired', async (t) => {
+test('validateToken | expired', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', token: 't', kind: t.context.auth.authKinds.USER, expires: 1 } })
-  t.false(await t.context.auth.validateUserToken('email', 'token', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', 'token', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
-test('validateUserToken | not equal', async (t) => {
+test('validateToken | not equal', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '00', expires: 2345 } })
-  t.false(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
-test('validateUserToken | success', async (t) => {
+test('validateToken | success', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '01', expires: 2345 } })
-  t.true(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.true(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.update.calledOnce)
 })
 
-test('validateUserToken | wrong kind', async (t) => {
+test('validateToken | wrong kind', async (t) => {
   t.context.auth.docs.get().promise.resolves({
     Item: {
       email: 'email',
@@ -313,31 +328,31 @@ test('validateUserToken | wrong kind', async (t) => {
       expires: 2345
     }
   })
-  t.false(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.false(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
 })
 
-test('validateUserToken | already valid', async (t) => {
+test('validateToken | already valid', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: { email: 'email', kind: t.context.auth.authKinds.USER, token: '01', expires: 2345, valid: true } })
-  t.true(await t.context.auth.validateUserToken('email', '01', t.context.auth.authKinds.USER))
+  t.true(await t.context.auth.validateToken('email', '01', t.context.auth.authKinds.USER))
   t.true(t.context.auth.docs.update.notCalled)
 })
 
 test('validateCaptcha | calls validate user token', async (t) => {
-  sinon.stub(t.context.auth, 'validateUserToken')
+  sinon.stub(t.context.auth, 'validateToken')
   await t.context.auth.validateCaptcha('email', 'token', 'response')
-  t.true(t.context.auth.validateUserToken.calledWith('email', 'token', t.context.auth.authKinds.USER))
+  t.true(t.context.auth.validateToken.calledWith('email', 'token', t.context.auth.authKinds.USER))
 })
 
 test('validateCaptcha | failure', async (t) => {
   t.context.auth.post.returns({ body: JSON.stringify({ success: false }) })
-  sinon.stub(t.context.auth, 'validateUserToken').returns(true)
+  sinon.stub(t.context.auth, 'validateToken').returns(true)
   await t.context.auth.validateCaptcha('email', 'token', 'response')
   t.true(t.context.auth.post.calledWith('https://www.google.com/recaptcha/api/siteverify'))
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
 test('validateCaptcha | success', async (t) => {
-  sinon.stub(t.context.auth, 'validateUserToken').returns(true)
+  sinon.stub(t.context.auth, 'validateToken').returns(true)
   await t.context.auth.validateCaptcha('email', 'token', 'response')
   t.true(t.context.auth.post.calledWith('https://www.google.com/recaptcha/api/siteverify'))
   t.true(t.context.auth.docs.delete.calledOnce)
@@ -362,16 +377,52 @@ test('validateApiKey | success', async (t) => {
   t.true(await t.context.auth.validateApiKey('ff'))
 })
 
-test('createApiKey | success', async (t) => {
-  t.context.auth.createApiKey('pete@dov.com')
-  t.deepEqual(t.context.auth.docs.put.lastCall.args, [{
-    TableName: 'flossbank_api_keys',
-    Item: {
-      key: 'ff',
-      email: 'pete@dov.com',
-      created: Date.now()
-    }
-  }])
+test('getOrCreateApiKey | first time', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] }) // no matches in DB
+
+  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'ff')
+
+  const updateCall = t.context.auth.docs.update.lastCall.args[0]
+
+  t.deepEqual(updateCall.Key, { key: 'ff' })
+  t.deepEqual(updateCall.ExpressionAttributeValues, {
+    ':email': 'pete@dov.com',
+    ':now': 1234,
+    ':one': 1
+  })
+})
+
+test('getOrCreateApiKey | second time', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [{ key: 'bb', email: 'pete@dov.com' }] })
+
+  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'bb')
+
+  const updateCall = t.context.auth.docs.update.lastCall.args[0]
+
+  t.deepEqual(updateCall.Key, { key: 'bb' })
+  t.deepEqual(updateCall.ExpressionAttributeValues, {
+    ':email': 'pete@dov.com',
+    ':now': 1234,
+    ':one': 1
+  })
+})
+
+test('getOrCreateApiKey | strips address tags', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] })
+
+  await t.context.auth.getOrCreateApiKey('pete+asdf@dov.com')
+  const queryCall = t.context.auth.docs.query.lastCall.args[0]
+
+  t.deepEqual(queryCall.ExpressionAttributeValues, { ':email': 'pete@dov.com' })
+})
+
+test('getOrCreateApiKey | wonky email', async (t) => {
+  t.context.auth.docs.query().promise.resolves({ Items: [] })
+
+  await t.throwsAsync(
+    () => t.context.auth.getOrCreateApiKey('pete+asdf'),
+    { message: 'invalid email provided to getOrCreateApiKey: pete+asdf' }
+  )
 })
 
 test('createAdSession | creates and persists session', async (t) => {

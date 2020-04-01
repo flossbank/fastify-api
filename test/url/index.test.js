@@ -37,7 +37,7 @@ test('url | create collision', async (t) => {
 
   await t.throwsAsync(
     t.context.url.createUrl('http://localhost.com', 1234),
-    'unable to create unique url'
+    { message: 'unable to create unique url' }
   )
 })
 
@@ -46,7 +46,7 @@ test('url | create failure', async (t) => {
 
   await t.throwsAsync(
     t.context.url.createUrl('http://localhost.com', 1234),
-    'dynamo is borked'
+    { message: 'dynamo is borked' }
   )
 })
 
@@ -67,5 +67,5 @@ test('url | get not found', async (t) => {
 test('url | get failure', async (t) => {
   t.context.url.docs.update().promise.rejects(new Error('dynamo is borked'))
 
-  await t.throwsAsync(t.context.url.getUrl('asdf'), 'dynamo is borked')
+  await t.throwsAsync(t.context.url.getUrl('asdf'), { message: 'dynamo is borked' })
 })

@@ -23,7 +23,7 @@ test('POST `/maintainer/verify` 401 unauthorized', async (t) => {
     email: 'honey1@etsy.com',
     password: 'beekeeperbookkeeper'
   })
-  t.context.auth.validateUserToken.resolves(false)
+  t.context.auth.validateToken.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/verify',
@@ -78,7 +78,7 @@ test('POST `/maintainer/verify` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/verify',
-    body: { email: 'email', token: 'token' }
+    body: { email: 'email@asdf.com', token: 'token' }
   })
   t.deepEqual(res.statusCode, 500)
 })

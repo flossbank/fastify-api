@@ -7,7 +7,7 @@ module.exports = async (req, res, ctx) => {
     if (!maintainer || !maintainer.active || !maintainer.verified) {
       ctx.log.warn(
         'attempt to resume session of non-existent, non-verified, or non-active maintainer from %s',
-        req.query.maintainerId
+        req.session.maintainerId
       )
       res.status(400)
       return res.send({ success: false })

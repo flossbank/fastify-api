@@ -1,5 +1,5 @@
 const test = require('ava')
-const { advertiserSessionKey } = require('../../../helpers/constants')
+const { ADVERTISER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
@@ -23,7 +23,7 @@ test('POST `/advertiser/logout` 200 success', async (t) => {
     method: 'POST',
     url: '/advertiser/logout',
     headers: {
-      cookie: `${advertiserSessionKey}=advertiser-session`
+      cookie: `${ADVERTISER_SESSION_KEY}=advertiser-session`
     }
   })
   t.deepEqual(res.statusCode, 200)

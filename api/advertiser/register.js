@@ -25,7 +25,7 @@ module.exports = async (req, res, ctx) => {
       throw e
     }
     ctx.log.info('sending registration email for newly registered advertiser %s', id)
-    await ctx.auth.sendUserToken(advertiser.email, ctx.auth.authKinds.ADVERTISER)
+    await ctx.auth.sendToken(advertiser.email, ctx.auth.authKinds.ADVERTISER)
     res.send({ success: true, id })
   } catch (e) {
     ctx.log.error(e)
