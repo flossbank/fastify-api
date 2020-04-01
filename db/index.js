@@ -109,10 +109,19 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
     verified: false,
     active: true,
     adDrafts: [],
+    billingInfo: {},
     password: await bcrypt.hash(advertiser.password, 10)
   })
   const { insertedId } = await this.db.collection('advertisers').insertOne(advertiserWithDefaults)
   return insertedId
+}
+
+Db.prototype.updateAdvertiserCustomerId = async function updateAdvertiserCustomerId (id, customerId) {
+  return this.db.collection('advertisers').updateOne({
+    _id: ObjectId(id)
+  }, {
+    $set: { 'billingInfo.customerId': customerId }
+  })
 }
 
 Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard, last4) {
