@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const test = require('ava')
 const sinon = require('sinon')
 const { Auth } = require('../../auth')
-const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
+const { USER_SESSION_KEY, ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 test.before(() => {
   sinon.stub(console, 'error')
@@ -54,7 +54,7 @@ test('checkApiKeyForUser | invalid params', async (t) => {
 })
 
 test('checkApiKeyForUser | no record', async (t) => {
-  t.context.auth.docs.get().promise.resolves(null)
+  t.context.auth.docs.get().promise.resolves({})
   t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
 })
 
@@ -109,12 +109,21 @@ test('getSessionToken | maintainer', (t) => {
   t.is(token, 'mnt_sess')
 })
 
+test('getSessionToken | user', (t) => {
+  const token = t.context.auth.getSessionToken({
+    cookies: {
+      [USER_SESSION_KEY]: 'user_sess'
+    }
+  }, t.context.auth.authKinds.USER)
+  t.is(token, 'user_sess')
+})
+
 test('getSessionToken | invalid kind', (t) => {
   const token = t.context.auth.getSessionToken({
     cookies: {
       [MAINTAINER_SESSION_KEY]: 'mnt_sess'
     }
-  }, t.context.auth.authKinds.USER)
+  }, 'josh groban')
   t.is(token, false)
 })
 
@@ -209,6 +218,45 @@ test('getUISession | maintainer session expired', async (t) => {
   const session = await t.context.auth.getUISession({
     cookies: {}
   }, t.context.auth.authKinds.MAINTAINER)
+  t.is(session, null)
+})
+
+test('getUISession | user success', async (t) => {
+  t.context.auth.docs.get().promise.resolves({
+    Item: { sessionId: 'user_sess', expires: 9999 }
+  })
+  const session = await t.context.auth.getUISession({
+    cookies: {
+      [USER_SESSION_KEY]: 'user_sess'
+    }
+  }, t.context.auth.authKinds.USER)
+  t.deepEqual(session, { sessionId: 'user_sess', expires: 9999 })
+})
+
+test('getUISession | user no token', async (t) => {
+  const session = await t.context.auth.getUISession({
+    cookies: {}
+  }, t.context.auth.authKinds.USER)
+  t.is(session, null)
+})
+
+test('getUISession | user invalid token', async (t) => {
+  t.context.auth.docs.get().promise.resolves({ Item: {} })
+  const session = await t.context.auth.getUISession({
+    cookies: {
+      [USER_SESSION_KEY]: 'user_sess'
+    }
+  }, t.context.auth.authKinds.USER)
+  t.is(session, null)
+})
+
+test('getUISession | user session expired', async (t) => {
+  t.context.auth.docs.get().promise.resolves({
+    Item: { sessionId: 'user_sess', expires: 0 }
+  })
+  const session = await t.context.auth.getUISession({
+    cookies: {}
+  }, t.context.auth.authKinds.USER)
   t.is(session, null)
 })
 
@@ -494,5 +542,29 @@ test('deleteAdvertiserSession | deletes session token', async (t) => {
 
 test('deleteAdvertiserSession | no token', async (t) => {
   await t.context.auth.deleteAdvertiserSession()
+  t.true(t.context.auth.docs.delete.notCalled)
+})
+
+test('createUserSession | creates and persists session', async (t) => {
+  const sessionId = await t.context.auth.createUserSession('aabbcc')
+  const weekExpiration = (7 * 24 * 60 * 1000)
+  t.true(t.context.auth.docs.put.calledWith({
+    TableName: 'flossbank_user_session',
+    Item: { sessionId: 'ff', expires: 1234 + weekExpiration, userId: 'aabbcc' }
+  }))
+  t.deepEqual(sessionId, 'ff')
+})
+
+test('deleteUserSession | deletes session token', async (t) => {
+  const sessionId = await t.context.auth.createUserSession('aabbcc')
+  await t.context.auth.deleteUserSession(sessionId)
+  t.true(t.context.auth.docs.delete.calledWith({
+    TableName: 'flossbank_user_session',
+    Key: { sessionId }
+  }))
+})
+
+test('deleteUserSession | no token', async (t) => {
+  await t.context.auth.deleteUserSession()
   t.true(t.context.auth.docs.delete.notCalled)
 })
