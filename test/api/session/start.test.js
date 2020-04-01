@@ -57,7 +57,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/session/start` 401 unauthorized', async (t) => {
-  t.context.auth.isAdSessionAllowed.resolves(false)
+  t.context.auth.getAdSessionApiKey.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -85,7 +85,7 @@ test('POST `/session/start` 200 success', async (t) => {
   })
 })
 
-test('POST `/session/start` 200 success | no ads no session', async (t) => {
+test('POST `/session/start` 200 success | no ads still gets a session', async (t) => {
   t.context.db.getAdBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
@@ -95,7 +95,7 @@ test('POST `/session/start` 200 success | no ads no session', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     ads: [],
-    sessionId: ''
+    sessionId: await t.context.auth.createAdSession()
   })
 })
 
@@ -114,6 +114,20 @@ test('POST `/session/start` 200 success | existing session', async (t) => {
       payload.ads.find(payloadAd => payloadAd.id === id),
       { id, title: ad.title, body: ad.body, url: ad.url }
     )
+  })
+})
+
+test('POST `/session/start` 200 success | opted out of ads', async (t) => {
+  t.context.auth.getAdSessionApiKey.resolves({ optOutOfAds: true })
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/session/start',
+    payload: {}
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    ads: [],
+    sessionId: await t.context.auth.createAdSession()
   })
 })
 

@@ -21,8 +21,17 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.getUser = async function getUser (email) {
+Db.prototype.getUserByEmail = async function getUserByEmail (email) {
   const user = await this.db.collection('users').findOne({ email })
+
+  if (!user) return user
+
+  const { _id: id, ...rest } = user
+  return { id, ...rest }
+}
+
+Db.prototype.getUserById = async function getUserById (userId) {
+  const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
   if (!user) return user
 

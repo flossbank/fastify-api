@@ -73,6 +73,13 @@ test('checkApiKeyForUser | success', async (t) => {
   t.true(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
 })
 
+test('updateUserOptOutSetting', async (t) => {
+  await t.context.auth.updateUserOptOutSetting('api-key', true)
+  const putArgs = t.context.auth.docs.update.lastCall.args[0]
+  t.deepEqual(putArgs.Key, { key: 'api-key' })
+  t.deepEqual(putArgs.ExpressionAttributeValues, { ':setting': true })
+})
+
 test('getAuthToken | no token', (t) => {
   t.false(t.context.auth.getAuthToken({ headers: {} }))
 })
@@ -118,15 +125,15 @@ test('getSessionToken | no token in cookie', (t) => {
   t.is(token, false)
 })
 
-test('isAdSessionAllowed | missing headers', async (t) => {
-  t.false(await t.context.auth.isAdSessionAllowed({}))
-  t.false(await t.context.auth.isAdSessionAllowed({ headers: {} }))
+test('getAdSessionApiKey | missing headers', async (t) => {
+  t.is(await t.context.auth.getAdSessionApiKey({}), null)
+  t.is(await t.context.auth.getAdSessionApiKey({ headers: {} }), null)
 })
 
-test('isAdSessionAllowed | checks db', async (t) => {
-  sinon.stub(t.context.auth, 'validateApiKey').returns(true)
-  t.true(await t.context.auth.isAdSessionAllowed({ headers: { authorization: 'bearer abc' } }))
-  t.true(t.context.auth.validateApiKey.calledOnce)
+test('getAdSessionApiKey | checks db', async (t) => {
+  sinon.stub(t.context.auth, 'getApiKey').returns({})
+  t.deepEqual(await t.context.auth.getAdSessionApiKey({ headers: { authorization: 'bearer abc' } }), {})
+  t.true(t.context.auth.getApiKey.calledOnce)
 })
 
 test('getUISession | advertiser success', async (t) => {
@@ -358,23 +365,23 @@ test('validateCaptcha | success', async (t) => {
   t.true(t.context.auth.docs.delete.calledOnce)
 })
 
-test('validateApiKey | missing params', async (t) => {
-  t.false(await t.context.auth.validateApiKey())
+test('getApiKey | missing params', async (t) => {
+  t.is(await t.context.auth.getApiKey(), null)
 })
 
-test('validateApiKey | get failure', async (t) => {
+test('getApiKey | get failure', async (t) => {
   t.context.auth.docs.get().promise.rejects()
-  t.false(await t.context.auth.validateApiKey('ff'))
+  t.is(await t.context.auth.getApiKey('ff'), null)
 })
 
-test('validateApiKey | falsy item', async (t) => {
+test('getApiKey | falsy item', async (t) => {
   t.context.auth.docs.get().promise.resolves({ Item: null })
-  t.false(await t.context.auth.validateApiKey('ff'))
+  t.is(await t.context.auth.getApiKey('ff'), null)
 })
 
-test('validateApiKey | success', async (t) => {
-  t.context.auth.docs.get().promise.resolves({ Item: {} })
-  t.true(await t.context.auth.validateApiKey('ff'))
+test('getApiKey | success', async (t) => {
+  t.context.auth.docs.get().promise.resolves({ Item: { key: 'asdf' } })
+  t.deepEqual(await t.context.auth.getApiKey('ff'), { key: 'asdf' })
 })
 
 test('getOrCreateApiKey | first time', async (t) => {

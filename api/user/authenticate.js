@@ -11,7 +11,7 @@ module.exports = async (req, res, ctx) => {
     }
     await ctx.auth.deleteToken(email)
 
-    const user = await ctx.db.getUser(email)
+    const user = await ctx.db.getUserByEmail(email)
     if (!user) {
       throw new Error('illegal state; valid user token but invalid email')
     }

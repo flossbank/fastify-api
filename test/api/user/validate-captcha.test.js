@@ -59,7 +59,7 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
     apiKey: await t.context.auth.getOrCreateApiKey()
   })
 
-  t.is((await t.context.db.getUser('peter@quo.cc')).apiKey, 'api-key')
+  t.is((await t.context.db.getUserByEmail('peter@quo.cc')).apiKey, 'api-key')
 })
 
 test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
@@ -77,7 +77,7 @@ test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
     apiKey: await t.context.auth.getOrCreateApiKey()
   })
 
-  const user = await t.context.db.getUser('papi@gmail.co')
+  const user = await t.context.db.getUserByEmail('papi@gmail.co')
   t.deepEqual(user, existingUser) // user wasn't touched
 })
 

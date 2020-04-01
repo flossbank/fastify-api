@@ -34,6 +34,7 @@ const checkUser = require('../api/user/check')
 const loginUser = require('../api/user/login')
 const authUser = require('../api/user/authenticate')
 const logoutUser = require('../api/user/logout')
+const optOutUser = require('../api/user/opt-out')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -55,6 +56,7 @@ const startSession = require('../api/session/start')
 const completeSession = require('../api/session/complete')
 
 // Middleware
+const userUIAuthMiddleware = require('../middleware/user')
 const advertiserUIAuthMiddleware = require('../middleware/advertiser')
 const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 
@@ -98,6 +100,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/login', { schema: Schema.user.login }, (req, res) => loginUser(req, res, fastify))
   fastify.post('/user/authenticate', { schema: Schema.user.authenticate }, (req, res) => authUser(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
+  fastify.post('/user/opt-out', { preHandler: (req, res, done) => userUIAuthMiddleware(req, res, fastify, done), schema: Schema.user.optOut }, (req, res) => optOutUser(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))

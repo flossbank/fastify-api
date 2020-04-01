@@ -12,7 +12,7 @@ module.exports = async (req, res, ctx) => {
 
     const apiKey = await ctx.auth.getOrCreateApiKey(email)
 
-    if (!await ctx.db.getUser(email)) {
+    if (!await ctx.db.getUserByEmail(email)) {
       await ctx.db.createUser({ email, apiKey, billingInfo: {} })
     }
 
