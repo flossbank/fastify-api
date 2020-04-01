@@ -84,6 +84,7 @@ test('GET `/advertiser/get` 200 success', async (t) => {
       firstName: 'Honesty',
       lastName: 'Empathy',
       email: 'honey@etsy.com',
+      billingInfo: {},
       adCampaigns: [],
       verified: true,
       active: true
