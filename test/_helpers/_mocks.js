@@ -10,7 +10,8 @@ module.exports = {
       .onSecondCall().returns(true)
     this.recordUserAuthCheck = sinon.stub()
     this.checkApiKeyForUser = sinon.stub().resolves(true)
-    this.isAdSessionAllowed = sinon.stub().resolves(true)
+    this.updateUserOptOutSetting = sinon.stub().resolves()
+    this.getAdSessionApiKey = sinon.stub().resolves({})
     this.getUISession = sinon.stub().resolves({
       maintainerId: 'valid-id',
       advertiserId: 'valid-id'

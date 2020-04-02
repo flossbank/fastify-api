@@ -6,7 +6,11 @@ const fastifyPlugin = require('fastify-plugin')
 const Cache = require('quick-lru')
 const niceware = require('niceware')
 const { config } = require('../config')
-const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../helpers/constants')
+const {
+  ADVERTISER_SESSION_KEY,
+  MAINTAINER_SESSION_KEY,
+  USER_SESSION_KEY
+} = require('../helpers/constants')
 const { activationEmails } = require('../helpers/activationEmails')
 const magicLinkEmails = require('../helpers/magicLinkEmails')
 
@@ -67,6 +71,15 @@ Auth.prototype.checkApiKeyForUser = async function checkApiKeyForUser (email, ke
   }
 }
 
+Auth.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (key, optOut) {
+  return this.docs.update({
+    TableName: ApiTableName,
+    Key: { key },
+    UpdateExpression: 'SET optOutOfAds = :setting',
+    ExpressionAttributeValues: { ':setting': optOut }
+  }).promise()
+}
+
 // Returns auth token or false
 Auth.prototype.getAuthToken = function getAuthToken (req) {
   if (!req.headers || !req.headers.authorization) return false
@@ -82,6 +95,9 @@ Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
     case this.authKinds.MAINTAINER:
       cookieKey = MAINTAINER_SESSION_KEY
       break
+    case this.authKinds.USER:
+      cookieKey = USER_SESSION_KEY
+      break
     default:
       return false
   }
@@ -89,11 +105,11 @@ Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
   return req.cookies[cookieKey]
 }
 
-Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
+Auth.prototype.getAdSessionApiKey = async function getAdSessionApiKey (req) {
   const token = this.getAuthToken(req)
-  if (!token) return false
+  if (!token) return null
 
-  return this.validateApiKey(token)
+  return this.getApiKey(token)
 }
 
 // Returns a UI Session | null
@@ -115,6 +131,13 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
       case (this.authKinds.ADVERTISER):
         ({ Item } = await this.docs.get({
           TableName: AdvertiserSessionTableName,
+          Key: { sessionId: token }
+        }).promise())
+        item = Item
+        break
+      case (this.authKinds.USER):
+        ({ Item } = await this.docs.get({
+          TableName: UserSessionTableName,
           Key: { sessionId: token }
         }).promise())
         item = Item
@@ -315,21 +338,21 @@ Auth.prototype.getOrCreateApiKey = async function getOrCreateApiKey (email) {
   return key
 }
 
-Auth.prototype.validateApiKey = async function validateApiKey (key) {
-  if (!key) return false
+Auth.prototype.getApiKey = async function getApiKey (key) {
+  if (!key) return null
 
   try {
     const { Item } = await this.docs.get({
       TableName: ApiTableName,
       Key: { key }
     }).promise()
-    return !!Item
+    return Item
   } catch (_) {
-    return false
+    return null
   }
 }
 
-Auth.prototype.createAdSession = async function createSession (req) {
+Auth.prototype.createAdSession = async function createAdSession (req) {
   // standard authorization header is `{ authorization: 'Bearer token' }`
   const apiKey = req.headers.authorization.split(' ').pop()
   const sessionId = crypto.randomBytes(16).toString('hex')
