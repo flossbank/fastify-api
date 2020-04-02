@@ -26,19 +26,22 @@ test('POST `/maintainer/register` 200 success', async (t) => {
       maintainer: {
         firstName: 'maintainer',
         lastName: 'captain',
-        email: 'maintainer@ads.com',
+        email: 'MAINTAINER@ads.com',
         password: 'Paps%df3$sd'
       }
     },
     headers: { authorization: 'valid-session-token' }
   })
   t.is(res.statusCode, 200)
-  const payload = JSON.parse(res.payload)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  t.is(payload.success, true)
+  // email has been lowercased in db
+  const maintainer = await t.context.db.getMaintainerByEmail('maintainer@ads.com')
+  t.is(maintainer.firstName, 'maintainer')
+  t.is(maintainer.lastName, 'captain')
 })
 
-test('POST `/maintainer/register` 400 duplicate email', async (t) => {
+test('POST `/maintainer/register` 409 duplicate email', async (t) => {
   t.context.db.createMaintainer = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
@@ -57,7 +60,7 @@ test('POST `/maintainer/register` 400 duplicate email', async (t) => {
     },
     headers: { authorization: 'valid-session-token' }
   })
-  t.is(res.statusCode, 400)
+  t.is(res.statusCode, 409)
   const payload = JSON.parse(res.payload)
 
   t.is(payload.success, false)

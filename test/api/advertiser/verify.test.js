@@ -34,7 +34,8 @@ test('POST `/advertiser/verify` 401 unauthorized', async (t) => {
 
 test('POST `/advertiser/verify` 200 success', async (t) => {
   const advertiserId = (await t.context.db.createAdvertiser({
-    name: 'Honesty',
+    firstName: 'Honesty',
+    lastName: 'Jones',
     email: 'honey2@etsy.com',
     password: 'beekeeperbookkeeper'
   })).toHexString()
@@ -42,6 +43,25 @@ test('POST `/advertiser/verify` 200 success', async (t) => {
     method: 'POST',
     url: '/advertiser/verify',
     body: { email: 'honey2@etsy.com', token: 'token' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
+
+  const advertiser = await t.context.db.getAdvertiser(advertiserId)
+  t.true(advertiser.verified)
+})
+
+test('POST `/advertiser/verify` 200 success | email case does not matter', async (t) => {
+  const advertiserId = (await t.context.db.createAdvertiser({
+    firstName: 'Papa',
+    lastName: 'John',
+    email: 'papa@papajohns.com',
+    password: 'pizza4life'
+  })).toHexString()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/verify',
+    body: { email: 'Papa@PapaJohns.COM', token: 'token' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })

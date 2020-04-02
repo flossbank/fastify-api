@@ -1,6 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const { email, token, response } = req.body
+    const { email: rawEmail, token, response } = req.body
+    const email = rawEmail.toLowerCase()
 
     ctx.log.info('validating captcha for %s', email)
 

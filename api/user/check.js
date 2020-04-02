@@ -2,7 +2,8 @@ const { INTEG_TEST_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { email, apiKey } = req.body
+    const { email: rawEmail, apiKey } = req.body
+    const email = rawEmail.toLowerCase()
     ctx.log.info('checking that api key is valid for user with email %s', email)
 
     if (apiKey === INTEG_TEST_KEY) {

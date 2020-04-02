@@ -1,6 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const { email, token } = req.body
+    const { email: rawEmail, token } = req.body
+    const email = rawEmail.toLowerCase()
     ctx.log.info('verifying user with email %s', email)
 
     if (!await ctx.auth.validateToken(email, token, ctx.auth.authKinds.USER)) {

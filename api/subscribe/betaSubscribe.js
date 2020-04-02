@@ -1,7 +1,8 @@
 const { emailAlreadySubscribed } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { email } = req.body
+  const { email: rawEmail } = req.body
+  const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('subscribing to beta with email %s', email)
     try {

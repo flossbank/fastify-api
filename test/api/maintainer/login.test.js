@@ -69,6 +69,16 @@ test('POST `/maintainer/login` 200 success', async (t) => {
   t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
 })
 
+test('POST `/maintainer/login` 200 success | email case does not matter', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/maintainer/login',
+    body: { email: 'HOney@ETSY.coM', password: 'beekeeperbookkeeper' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
+})
+
 test('POST `/maintainer/login` 400 bad request', async (t) => {
   let res = await t.context.app.inject({
     method: 'POST',

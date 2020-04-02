@@ -23,7 +23,7 @@ test('POST `/beta/subscribe` success', async (t) => {
     method: 'POST',
     url: '/beta/subscribe',
     payload: {
-      email: 'poopyfeet@gmail.com'
+      email: 'POOPyfeet@gmail.com'
     }
   })
   const subscribers = await t.context.db.getBetaSubscribers()
