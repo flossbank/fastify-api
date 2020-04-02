@@ -75,6 +75,20 @@ test('POST `/advertiser/login` 200 success', async (t) => {
   t.deepEqual(res.headers['set-cookie'], `${ADVERTISER_SESSION_KEY}=advertiser-session; Path=/`)
 })
 
+test('POST `/advertiser/login` 200 success | email case does not matter', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/advertiser/login',
+    body: { email: 'HONEY@ETSY.cOm', password: 'beekeeperbookkeeper' }
+  })
+  const advertiserRetrieved = await t.context.db.getAdvertiser(t.context.advertiserId)
+  const payload = JSON.parse(res.payload)
+  t.deepEqual(payload.success, true)
+  t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(res.headers['set-cookie'], `${ADVERTISER_SESSION_KEY}=advertiser-session; Path=/`)
+})
+
 test('POST `/advertiser/login` 400 bad request', async (t) => {
   let res = await t.context.app.inject({
     method: 'POST',

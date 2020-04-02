@@ -1,7 +1,8 @@
 const { USER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { email, token } = req.body
+  const { email: rawEmail, token } = req.body
+  const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('authenticating with email %s', email)
     if (!await ctx.auth.validateToken(email, token, ctx.auth.authKinds.USER)) {

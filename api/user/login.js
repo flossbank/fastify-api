@@ -1,6 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const { email } = req.body
+    const { email: rawEmail } = req.body
+    const email = rawEmail.toLowerCase()
     ctx.log.info('login requested for user %s', email)
 
     if (!await ctx.db.getUserByEmail(email)) {

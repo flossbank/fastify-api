@@ -18,7 +18,7 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/advertiser/create` 200 success', async (t) => {
+test('POST `/advertiser/register` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',
@@ -26,19 +26,22 @@ test('POST `/advertiser/create` 200 success', async (t) => {
       advertiser: {
         firstName: 'advertiser',
         lastName: 'captain',
-        email: 'advertiser@ads.com',
+        email: 'ADVERTISER@ads.com',
         password: 'Paps%df3$sd'
       }
     },
     headers: { authorization: 'valid-session-token' }
   })
   t.deepEqual(res.statusCode, 200)
-  const payload = JSON.parse(res.payload)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  t.deepEqual(payload.success, true)
+  // email has been lowercased in db
+  const advertiser = await t.context.db.getAdvertiserByEmail('advertiser@ads.com')
+  t.is(advertiser.firstName, 'advertiser')
+  t.is(advertiser.lastName, 'captain')
 })
 
-test('POST `/advertiser/create` 400 duplicate email', async (t) => {
+test('POST `/advertiser/register` 409 duplicate email', async (t) => {
   t.context.db.createAdvertiser = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
@@ -58,7 +61,7 @@ test('POST `/advertiser/create` 400 duplicate email', async (t) => {
     headers: { authorization: 'valid-session-token' }
   })
 
-  t.deepEqual(res.statusCode, 400)
+  t.deepEqual(res.statusCode, 409)
   const payload = JSON.parse(res.payload)
 
   t.deepEqual(payload.success, false)
@@ -125,7 +128,7 @@ test('POST `/advertiser/register` 400 bad request', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/advertiser/create` 500 server error', async (t) => {
+test('POST `/advertiser/register` 500 server error', async (t) => {
   t.context.db.createAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',

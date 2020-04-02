@@ -51,7 +51,7 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/validate-captcha',
-    payload: { email: 'peter@quo.cc', token: 'token', response: 'response' }
+    payload: { email: 'PETER@quo.cc', token: 'token', response: 'response' }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
