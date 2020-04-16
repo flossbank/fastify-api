@@ -20,7 +20,6 @@ const docs = new AWS.DynamoDB.DocumentClient()
 const ses = new AWS.SES()
 const UserTableName = 'flossbank_user_auth' // user tokens
 const ApiTableName = 'flossbank_api_keys' // api keys
-const ApiTableEmailIndex = 'email-index'
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
 const MaintainerSessionTableName = 'flossbank_maintainer_session'
 const AdvertiserSessionTableName = 'flossbank_advertiser_session'
@@ -274,68 +273,15 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
   return true
 }
 
-Auth.prototype.getOrCreateApiKey = async function getOrCreateApiKey (email) {
-  // there might be a fancy way to do this with 1 API call (condition expression ?)
-  // but i don't know how and this isn't a time-super-sensitive api
-
-  // we want unique emails only in this table, but unfortunately spammers can just add +something (a tag)
-  // to their email prefix and the query will not find them in the table. we want to honor the +something
-  // in all user-facing communication (not supporting address tags is really bad UX),
-  // but we need to strip it off to maintain the email uniqueness constraint in this table.
-  // the reason we actually care about email uniqueness here (and maybe not in an advertiser registration)
-  // is that if it's "too easy" for users to generate many API keys, it's much easier for them to abuse our platform.
-
-  /* --- explanation of regex: ---
-    ^         beginning of string
-    (         match group #1 (prefix)
-      [^+]+   one or more chars that aren't "+"
-    )
-    (         match group #2 (tag)
-      \+.*    a "+' char followed by 0 or more of any char
-    )*        0 or more of match group #2
-    @         @ sign
-    (         match group #3 (suffix)
-      .+      1 or more of any char
-    )
-    $         end of string
-  */
-  const emailParts = /^([^+]+)(\+.*)*@(.+)$/.exec(email)
-  if (!emailParts) {
-    // if the regex doesn't match anything, there's 0% chance this is a valid email address
-    // which should be impossible because of fastify schema validations, but throwing a check in here
-    // regardless
-    throw new Error(`invalid email provided to getOrCreateApiKey: ${email}`)
-  }
-
-  // /regex/.exec returns an array-like list of [full string, match 1, match 2, ..., match n]
-  // in our case [full email, local part, address tag, domain part] -- we only care abt local-part@domain-part
-  const [, prefix,, suffix] = emailParts
-  const taglessEmail = `${prefix}@${suffix}`
-
-  // try to get first
-  const { Items } = (await this.docs.query({
+Auth.prototype.cacheApiKey = async function cacheApiKey (apiKey, userId) {
+  return this.docs.put({
     TableName: ApiTableName,
-    IndexName: ApiTableEmailIndex,
-    KeyConditionExpression: 'email = :email',
-    ExpressionAttributeValues: { ':email': taglessEmail }
-  }).promise())
-
-  const foundEntry = Items.pop()
-
-  const key = foundEntry ? foundEntry.key : crypto.randomBytes(32).toString('hex')
-
-  await this.docs.update({
-    TableName: ApiTableName,
-    Key: { key },
-    UpdateExpression: 'SET email = if_not_exists (email, :email), created = if_not_exists (created, :now) ADD keysRequested :one',
-    ExpressionAttributeValues: {
-      ':email': taglessEmail,
-      ':now': Date.now(),
-      ':one': 1
+    Item: {
+      key: apiKey,
+      created: Date.now(),
+      id: userId
     }
   }).promise()
-
-  return key
 }
 
 Auth.prototype.getApiKey = async function getApiKey (key) {

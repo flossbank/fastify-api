@@ -39,9 +39,23 @@ Db.prototype.getUserById = async function getUserById (userId) {
   return { id, ...rest }
 }
 
-Db.prototype.createUser = async function createUser ({ email, apiKey, billingInfo }) {
-  const { insertedId } = await this.db.collection('users').insertOne({ email, apiKey, billingInfo })
-  return insertedId
+Db.prototype.createUser = async function createUser ({ email, billingInfo }) {
+  const apiKey = crypto.randomBytes(32).toString('hex')
+  const { insertedId } = await this.db.collection('users').insertOne({
+    email,
+    apiKey,
+    billingInfo,
+    apiKeysRequested: [
+      { timestamp: Date.now() }
+    ]
+  })
+  return { insertedId, apiKey }
+}
+
+Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysRequested (email) {
+  return this.db.collection('users').updateOne(
+    { email },
+    { $push: { apiKeysRequested: { timestamp: Date.now() } } })
 }
 
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {

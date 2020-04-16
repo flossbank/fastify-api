@@ -432,52 +432,17 @@ test('getApiKey | success', async (t) => {
   t.deepEqual(await t.context.auth.getApiKey('ff'), { key: 'asdf' })
 })
 
-test('getOrCreateApiKey | first time', async (t) => {
-  t.context.auth.docs.query().promise.resolves({ Items: [] }) // no matches in DB
+test('cacheApiKey | first time', async (t) => {
+  await t.context.auth.cacheApiKey('test-key', 'test-user-id')
 
-  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'ff')
-
-  const updateCall = t.context.auth.docs.update.lastCall.args[0]
-
-  t.deepEqual(updateCall.Key, { key: 'ff' })
-  t.deepEqual(updateCall.ExpressionAttributeValues, {
-    ':email': 'pete@dov.com',
-    ':now': 1234,
-    ':one': 1
-  })
-})
-
-test('getOrCreateApiKey | second time', async (t) => {
-  t.context.auth.docs.query().promise.resolves({ Items: [{ key: 'bb', email: 'pete@dov.com' }] })
-
-  t.is(await t.context.auth.getOrCreateApiKey('pete@dov.com'), 'bb')
-
-  const updateCall = t.context.auth.docs.update.lastCall.args[0]
-
-  t.deepEqual(updateCall.Key, { key: 'bb' })
-  t.deepEqual(updateCall.ExpressionAttributeValues, {
-    ':email': 'pete@dov.com',
-    ':now': 1234,
-    ':one': 1
-  })
-})
-
-test('getOrCreateApiKey | strips address tags', async (t) => {
-  t.context.auth.docs.query().promise.resolves({ Items: [] })
-
-  await t.context.auth.getOrCreateApiKey('pete+asdf@dov.com')
-  const queryCall = t.context.auth.docs.query.lastCall.args[0]
-
-  t.deepEqual(queryCall.ExpressionAttributeValues, { ':email': 'pete@dov.com' })
-})
-
-test('getOrCreateApiKey | wonky email', async (t) => {
-  t.context.auth.docs.query().promise.resolves({ Items: [] })
-
-  await t.throwsAsync(
-    () => t.context.auth.getOrCreateApiKey('pete+asdf'),
-    { message: 'invalid email provided to getOrCreateApiKey: pete+asdf' }
-  )
+  t.deepEqual(t.context.auth.docs.put.lastCall.args, [{
+    TableName: 'flossbank_api_keys',
+    Item: {
+      id: 'test-user-id',
+      key: 'test-key',
+      created: 1234
+    }
+  }])
 })
 
 test('createAdSession | creates and persists session', async (t) => {

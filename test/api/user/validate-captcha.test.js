@@ -1,8 +1,10 @@
 const test = require('ava')
+const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, () => {})
+  sinon.stub(Date, 'now').returns(1234)
 })
 
 test.beforeEach(async (t) => {
@@ -15,6 +17,7 @@ test.afterEach(async (t) => {
 
 test.after(async (t) => {
   await after(t)
+  Date.now.restore()
 })
 
 test('POST `/user/validate-captcha` 400 bad request', async (t) => {
@@ -54,17 +57,22 @@ test('POST `/user/validate-captcha` 200 success', async (t) => {
     payload: { email: 'PETER@quo.cc', token: 'token', response: 'response' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), {
-    success: true,
-    apiKey: await t.context.auth.getOrCreateApiKey()
-  })
+  t.deepEqual(JSON.parse(res.payload).success, true)
+  t.truthy(!!JSON.parse(res.payload).apiKey)
 
-  t.is((await t.context.db.getUserByEmail('peter@quo.cc')).apiKey, 'api-key')
+  // Just see if a user was created with api key
+  t.truthy(!!(await t.context.db.getUserByEmail('peter@quo.cc')).apiKey)
 })
 
 test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
-  const existingUser = { email: 'papi@gmail.co', apiKey: 'ff', billingInfo: {} }
-  existingUser.id = await t.context.db.createUser(existingUser)
+  const existingUser = { email: 'papi@gmail.co', billingInfo: {} }
+  const { apiKey, insertedId } = await t.context.db.createUser(existingUser)
+  existingUser.id = insertedId
+  existingUser.apiKeysRequested = [{ timestamp: 1234 }]
+  existingUser.apiKey = apiKey
+
+  // When validating captha another apiKeysRequested will be appended
+  existingUser.apiKeysRequested.push({ timestamp: 1234 })
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -74,11 +82,11 @@ test('POST `/user/validate-captcha` 200 success | existing user', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    apiKey: await t.context.auth.getOrCreateApiKey()
+    apiKey: existingUser.apiKey
   })
 
   const user = await t.context.db.getUserByEmail('papi@gmail.co')
-  t.deepEqual(user, existingUser) // user wasn't touched
+  t.deepEqual(user, existingUser) // user wasn't touched except for the apiKeysRequested
 })
 
 test('POST `/user/validate-captcha` 401 unauthorized', async (t) => {
