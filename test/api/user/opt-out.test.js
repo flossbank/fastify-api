@@ -3,10 +3,11 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async (t, db) => {
-    const userId1 = await db.createUser({
+    const { insertedId: userId1, apiKey } = await db.createUser({
       email: 'honey@etsy.com',
-      apiKey: 'honey-api-key'
+      billingInfo: {}
     })
+    t.context.apiKey = apiKey
     t.context.userId1 = userId1.toHexString()
   })
 })
@@ -48,7 +49,7 @@ test('POST `/user/opt-out` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  t.deepEqual(t.context.auth.updateUserOptOutSetting.lastCall.args, ['honey-api-key', true])
+  t.deepEqual(t.context.auth.updateUserOptOutSetting.lastCall.args, [t.context.apiKey, true])
 })
 
 test('POST `/user/opt-out` 500 server error', async (t) => {
