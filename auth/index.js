@@ -277,7 +277,7 @@ Auth.prototype.cacheApiKey = async function cacheApiKey (apiKey, userId) {
   return this.docs.put({
     TableName: ApiTableName,
     Item: {
-      apiKey,
+      key: apiKey,
       created: Date.now(),
       id: userId
     }

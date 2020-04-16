@@ -439,7 +439,7 @@ test('cacheApiKey | first time', async (t) => {
     TableName: 'flossbank_api_keys',
     Item: {
       id: 'test-user-id',
-      apiKey: 'test-key',
+      key: 'test-key',
       created: 1234
     }
   }])
