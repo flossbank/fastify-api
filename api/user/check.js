@@ -18,7 +18,9 @@ module.exports = async (req, res, ctx) => {
 
     await ctx.auth.recordUserAuthCheck(email)
 
-    if (!await ctx.auth.checkApiKeyForUser(email, apiKey)) {
+    const user = await ctx.db.getUserByEmail(email)
+
+    if (!user || user.apiKey !== apiKey) {
       ctx.log.warn('attempt to check invalid api key from user with email %s', email)
       res.status(401)
       return res.send()

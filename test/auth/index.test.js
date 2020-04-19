@@ -47,32 +47,6 @@ test('recordUserAuthCheck | sets in cache', async (t) => {
   t.is(t.context.auth.checkCache.get('email'), 1234)
 })
 
-test('checkApiKeyForUser | invalid params', async (t) => {
-  t.false(await t.context.auth.checkApiKeyForUser())
-  t.false(await t.context.auth.checkApiKeyForUser('email'))
-  t.false(await t.context.auth.checkApiKeyForUser(undefined, 'apiKey'))
-})
-
-test('checkApiKeyForUser | no record', async (t) => {
-  t.context.auth.docs.get().promise.resolves({})
-  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
-})
-
-test('checkApiKeyForUser | key/email mismatch', async (t) => {
-  t.context.auth.docs.get().promise.resolves({ Item: { email: 'foo' } })
-  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
-})
-
-test('checkApiKeyForUser | dynamo throws', async (t) => {
-  t.context.auth.docs.get().promise.rejects()
-  t.false(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
-})
-
-test('checkApiKeyForUser | success', async (t) => {
-  t.context.auth.docs.get().promise.resolves({ Item: { email: 'bar' } })
-  t.true(await t.context.auth.checkApiKeyForUser('bar', 'valid-api-key'))
-})
-
 test('updateUserOptOutSetting', async (t) => {
   await t.context.auth.updateUserOptOutSetting('api-key', true)
   const putArgs = t.context.auth.docs.update.lastCall.args[0]

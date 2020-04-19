@@ -55,21 +55,6 @@ Auth.prototype.recordUserAuthCheck = function recordUserAuthCheck (email) {
   this.checkCache.set(email, Date.now())
 }
 
-Auth.prototype.checkApiKeyForUser = async function checkApiKeyForUser (email, key) {
-  if (!email || !key) return false
-
-  try {
-    const { Item } = await this.docs.get({
-      TableName: ApiTableName,
-      Key: { key }
-    }).promise()
-    if (!Item) return false
-    return Item.email === email
-  } catch (_) {
-    return false
-  }
-}
-
 Auth.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (key, optOut) {
   return this.docs.update({
     TableName: ApiTableName,
