@@ -3,7 +3,10 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 const { INTEG_TEST_KEY } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t, async (t, db) => {
+    const { apiKey } = await db.createUser({ email: 'honey@etsy.com', billingInfo: {} })
+    t.context.apiKey = apiKey
+  })
 })
 
 test.beforeEach(async (t) => {
@@ -45,14 +48,13 @@ test('POST `/user/check` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/check',
-    payload: { email: 'email@asdf.com', apiKey: 'apiKey' }
+    payload: { email: 'honey@etsy.com', apiKey: t.context.apiKey }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 })
 
 test('POST `/user/check` 401 unauthorized', async (t) => {
-  t.context.auth.checkApiKeyForUser.resolves(false)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/check',
@@ -92,7 +94,7 @@ test('POST `/user/check` no throttling for integ key', async (t) => {
 })
 
 test('POST `/user/check` 500 server error', async (t) => {
-  t.context.auth.checkApiKeyForUser.throws()
+  t.context.db.getUserByEmail = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/check',
