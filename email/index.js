@@ -7,7 +7,7 @@ AWS.config.update(config.getAwsConfig())
 
 const FLOSSBANK_ADMIN = 'Flossbank <admin@flossbank.com>'
 const FLOSSBANK_JOEL = 'Flossbank <joel@flossbank.com>'
-const STAGING_CONFIG_SET = 'staging-config-set'
+const DEFAULT_CONFIG_SET = 'default-config-set'
 
 // templates
 const USER_ACTIVATION_TEMPLATE = 'UserActivation'
@@ -26,7 +26,7 @@ class Email {
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },
       Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: STAGING_CONFIG_SET,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
       Template: USER_ACTIVATION_TEMPLATE,
       TemplateData: JSON.stringify({ activationUrl })
     }).promise()
@@ -37,7 +37,7 @@ class Email {
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },
       Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: STAGING_CONFIG_SET,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
       Template: ADVERTISER_ACTIVATION_TEMPLATE,
       TemplateData: JSON.stringify({ activationUrl })
     }).promise()
@@ -48,7 +48,7 @@ class Email {
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },
       Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: STAGING_CONFIG_SET,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
       Template: MAINTAINER_ACTIVATION_TEMPLATE,
       TemplateData: JSON.stringify({ activationUrl })
     }).promise()
@@ -59,7 +59,7 @@ class Email {
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },
       Source: FLOSSBANK_JOEL,
-      ConfigurationSetName: STAGING_CONFIG_SET,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
       Template: BETA_SUBSCRIBE_TEMPLATE,
       TemplateData: JSON.stringify({ unsubscribeUrl })
     }).promise()
@@ -70,7 +70,7 @@ class Email {
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },
       Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: STAGING_CONFIG_SET,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
       Template: USER_MAGIC_LINK_TEMPLATE,
       TemplateData: JSON.stringify({ code, loginUrl })
     }).promise()
