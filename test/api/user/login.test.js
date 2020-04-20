@@ -26,7 +26,7 @@ test('POST `/user/login` 200 success', async (t) => {
     body: { email: 'honey@etsy.com' }
   })
 
-  t.true(t.context.auth.sendMagicLink.calledOnce)
+  t.true(t.context.auth.generateMagicLinkParams.calledOnce)
 
   const payload = JSON.parse(res.payload)
   t.deepEqual(res.statusCode, 200)
@@ -40,7 +40,7 @@ test('POST `/user/login` 404 not found', async (t) => {
     body: { email: 'agave@etsy.com' }
   })
 
-  t.true(t.context.auth.sendMagicLink.notCalled)
+  t.true(t.context.auth.generateMagicLinkParams.notCalled)
 
   const payload = JSON.parse(res.payload)
   t.deepEqual(res.statusCode, 404)
@@ -57,7 +57,7 @@ test('POST `/user/login` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/login` 500 server error', async (t) => {
-  t.context.auth.sendMagicLink = () => { throw new Error() }
+  t.context.auth.generateMagicLinkParams = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/login',

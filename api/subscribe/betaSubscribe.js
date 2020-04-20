@@ -8,7 +8,7 @@ module.exports = async (req, res, ctx) => {
     try {
       const token = await ctx.db.betaSubscribe(email)
       ctx.log.info('subscribing to beta and sending welcome email to: %s with token %s', email, token)
-      await ctx.email.sendBetaEmail(email, token)
+      await ctx.email.sendBetaSubscriptionEmail(email, token)
       res.send({ success: true })
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000

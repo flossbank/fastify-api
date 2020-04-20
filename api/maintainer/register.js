@@ -20,7 +20,8 @@ module.exports = async (req, res, ctx) => {
       throw e
     }
     ctx.log.info('sending registration email for newly registered maintainer %s', id)
-    await ctx.auth.sendToken(email, ctx.auth.authKinds.MAINTAINER)
+    const token = await ctx.auth.generateToken(email, ctx.auth.authKinds.MAINTAINER)
+    await ctx.email.sendMaintainerActivationEmail(email, token)
     res.send({ success: true, id })
   } catch (e) {
     ctx.log.error(e)

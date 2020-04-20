@@ -275,23 +275,6 @@ test('generateToken | invalid kind', async (t) => {
   await t.throwsAsync(t.context.auth.generateToken('pam@dundermifflin.com', 'chickpea'))
 })
 
-test('sendToken | success', async (t) => {
-  await t.context.auth.sendToken('pam@dundermifflin.com', t.context.auth.authKinds.USER)
-  t.deepEqual(
-    t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
-    ['pam@dundermifflin.com']
-  )
-})
-
-test('sendMagicLink | success', async (t) => {
-  const code = await t.context.auth.sendMagicLink('pam@dundermifflin.com', t.context.auth.authKinds.USER)
-  t.is(code, 'Snot Otter')
-  t.deepEqual(
-    t.context.auth.ses.sendEmail.lastCall.args[0].Destination.ToAddresses,
-    ['pam@dundermifflin.com']
-  )
-})
-
 test('deleteToken | missing params', async (t) => {
   await t.context.auth.deleteToken()
   t.true(t.context.auth.docs.delete.notCalled)

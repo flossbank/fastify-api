@@ -4,7 +4,7 @@ const { Auth: originalAuth } = require('../../auth')
 module.exports = {
   Auth: function Auth () {
     this.authKinds = originalAuth.prototype.authKinds
-    this.sendMagicLink = sinon.stub().resolves('code')
+    this.generateMagicLinkParams = sinon.stub().resolves({ code: 'code', token: 'token' })
     this.hasUserAuthCheckedInPastOneMinute = sinon.stub()
       .onFirstCall().returns(false)
       .onSecondCall().returns(true)
@@ -15,8 +15,8 @@ module.exports = {
       maintainerId: 'valid-id',
       advertiserId: 'valid-id'
     })
+    this.generateToken = sinon.stub().resolves('random-token')
     this.createAdSession = sinon.stub().resolves('random-session-id')
-    this.sendToken = sinon.stub().resolves()
     this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
     this.deleteAdvertiserSession = sinon.stub().resolves()
     this.validateCaptcha = sinon.stub().resolves(true)
@@ -29,7 +29,11 @@ module.exports = {
     this.deleteUserSession = sinon.stub().resolves()
   },
   Email: function Email () {
-    this.sendBetaEmail = sinon.stub().resolves()
+    this.sendBetaSubscriptionEmail = sinon.stub().resolves()
+    this.sendUserActivationEmail = sinon.stub().resolves()
+    this.sendAdvertiserActivationEmail = sinon.stub().resolves()
+    this.sendMaintainerActivationEmail = sinon.stub().resolves()
+    this.sendUserMagicLinkEmail = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendMessage = sinon.stub().resolves()

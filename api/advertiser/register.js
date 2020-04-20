@@ -19,7 +19,8 @@ module.exports = async (req, res, ctx) => {
       throw e
     }
     ctx.log.info('sending registration email for newly registered advertiser %s', email)
-    await ctx.auth.sendToken(email, ctx.auth.authKinds.ADVERTISER)
+    const token = await ctx.auth.generateToken(email, ctx.auth.authKinds.ADVERTISER)
+    await ctx.email.sendAdvertiserActivationEmail(email, token)
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

@@ -4,7 +4,8 @@ module.exports = async (req, res, ctx) => {
     const email = rawEmail.toLowerCase()
 
     ctx.log.info('registering new user with email %s', email)
-    await ctx.auth.sendToken(email, ctx.auth.authKinds.USER)
+    const token = await ctx.auth.generateToken(email, ctx.auth.authKinds.USER)
+    await ctx.email.sendUserActivationEmail(email, token)
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)
