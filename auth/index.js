@@ -11,13 +11,10 @@ const {
   MAINTAINER_SESSION_KEY,
   USER_SESSION_KEY
 } = require('../helpers/constants')
-const { activationEmails } = require('../helpers/activationEmails')
-const magicLinkEmails = require('../helpers/magicLinkEmails')
 
 AWS.config.update(config.getAwsConfig())
 
 const docs = new AWS.DynamoDB.DocumentClient()
-const ses = new AWS.SES()
 const UserTableName = 'flossbank_user_auth' // user tokens
 const ApiTableName = 'flossbank_api_keys' // api keys
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
@@ -31,7 +28,6 @@ const weekExpiration = (7 * 24 * 60 * 1000)
 
 function Auth () {
   this.docs = docs // to ease testing
-  this.ses = ses
   this.post = got.post
   this.niceware = niceware
 
@@ -155,29 +151,14 @@ Auth.prototype.generateToken = async function generateToken (email, kind) {
   return token
 }
 
-Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
+Auth.prototype.generateMagicLinkParams = async function sendMagicLink (email, kind) {
   const token = await this.generateToken(email, kind)
 
   const code = this.niceware.generatePassphrase(4) // 2 words pls
     .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
     .join(' ') // as a string pls
 
-  await this.ses.sendEmail({
-    Destination: { ToAddresses: [email] },
-    Source: 'Flossbank <admin@flossbank.com>',
-    Message: magicLinkEmails[kind](email, token, code)
-  }).promise()
-
-  return code
-}
-
-Auth.prototype.sendToken = async function sendToken (email, kind) {
-  const token = await this.generateToken(email, kind)
-  return this.ses.sendEmail({
-    Destination: { ToAddresses: [email] },
-    Source: 'Flossbank <admin@flossbank.com>',
-    Message: activationEmails[kind](email, token)
-  }).promise()
+  return { code, token }
 }
 
 Auth.prototype.deleteToken = async function deleteToken (email) {

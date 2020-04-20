@@ -10,7 +10,8 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    const code = await ctx.auth.sendMagicLink(email, ctx.auth.authKinds.USER)
+    const { code, token } = await ctx.auth.generateMagicLinkParams(email, ctx.auth.authKinds.USER)
+    await ctx.email.sendUserMagicLinkEmail(email, token, code)
 
     res.send({ success: true, code })
   } catch (e) {
