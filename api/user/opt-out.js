@@ -1,11 +1,13 @@
 module.exports = async (req, res, ctx) => {
   try {
     const { optOutOfAds } = req.body
+    const { userId } = req.session
+    ctx.log.info('changing opt-out setting for user %s', userId)
 
-    const user = await ctx.db.getUserById(req.session.userId)
-    ctx.log.info('changing opt-out setting for user %s', user.email)
+    const user = await ctx.db.getUserById(userId)
 
-    await ctx.auth.updateUserOptOutSetting(user.apiKey, optOutOfAds)
+    await ctx.db.updateUserOptOutSetting(userId, optOutOfAds)
+    await ctx.auth.cacheUserOptOutSetting(user.apiKey, optOutOfAds)
 
     res.send({ success: true })
   } catch (e) {

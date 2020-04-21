@@ -51,7 +51,7 @@ Auth.prototype.recordUserAuthCheck = function recordUserAuthCheck (email) {
   this.checkCache.set(email, Date.now())
 }
 
-Auth.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (key, optOut) {
+Auth.prototype.cacheUserOptOutSetting = async function cacheUserOptOutSetting (key, optOut) {
   return this.docs.update({
     TableName: ApiTableName,
     Key: { key },
