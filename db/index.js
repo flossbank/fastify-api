@@ -58,6 +58,13 @@ Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysReques
     { $push: { apiKeysRequested: { timestamp: Date.now() } } })
 }
 
+Db.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (userId, optOutOfAds) {
+  return this.db.collection('users').updateOne(
+    { _id: ObjectId(userId) },
+    { $set: { optOutOfAds } }
+  )
+}
+
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
   return this.db.collection('advertisers').updateOne(
     { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },

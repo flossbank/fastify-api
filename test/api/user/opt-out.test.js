@@ -49,11 +49,14 @@ test('POST `/user/opt-out` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  t.deepEqual(t.context.auth.updateUserOptOutSetting.lastCall.args, [t.context.apiKey, true])
+  const user = await t.context.db.getUserById(t.context.userId1)
+  t.is(user.optOutOfAds, true)
+
+  t.deepEqual(t.context.auth.cacheUserOptOutSetting.lastCall.args, [t.context.apiKey, true])
 })
 
 test('POST `/user/opt-out` 500 server error', async (t) => {
-  t.context.auth.updateUserOptOutSetting = () => { throw new Error() }
+  t.context.db.updateUserOptOutSetting = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/opt-out',

@@ -47,8 +47,8 @@ test('recordUserAuthCheck | sets in cache', async (t) => {
   t.is(t.context.auth.checkCache.get('email'), 1234)
 })
 
-test('updateUserOptOutSetting', async (t) => {
-  await t.context.auth.updateUserOptOutSetting('api-key', true)
+test('cacheUserOptOutSetting', async (t) => {
+  await t.context.auth.cacheUserOptOutSetting('api-key', true)
   const putArgs = t.context.auth.docs.update.lastCall.args[0]
   t.deepEqual(putArgs.Key, { key: 'api-key' })
   t.deepEqual(putArgs.ExpressionAttributeValues, { ':setting': true })
