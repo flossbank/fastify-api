@@ -1,13 +1,14 @@
 const { emailAlreadySubscribed } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { email } = req.body
+  const { email: rawEmail } = req.body
+  const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('subscribing to beta with email %s', email)
     try {
       const token = await ctx.db.betaSubscribe(email)
       ctx.log.info('subscribing to beta and sending welcome email to: %s with token %s', email, token)
-      await ctx.email.sendBetaEmail(email, token)
+      await ctx.email.sendBetaSubscriptionEmail(email, token)
       res.send({ success: true })
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000

@@ -39,11 +39,11 @@ test('POST `/user/authenticate` 500 valid token / invalid user', async (t) => {
   t.is(res.statusCode, 500)
 })
 
-test.only('POST `/user/authenticate` 200 success', async (t) => {
+test('POST `/user/authenticate` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/authenticate',
-    body: { email: 'honey@etsy.com', token: 'totes valid' }
+    body: { email: 'HONEY@etsy.com', token: 'totes valid' }
   })
   t.is(res.statusCode, 200)
   t.is(res.headers['set-cookie'], `${USER_SESSION_KEY}=user-session; Path=/`)

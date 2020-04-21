@@ -1,22 +1,16 @@
 const { alreadyExistsMessage } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { advertiser } = req.body
+  const { advertiser: { firstName, lastName, organization, email: rawEmail, password } } = req.body
+  const email = rawEmail.toLowerCase()
   try {
-    ctx.log.info('registering new advertiser with email %s', advertiser.email)
-    let id
+    ctx.log.info('registering new advertiser with email %s', email)
     try {
-      // Create stripe customer, and add the customer ID to mongo
-      const stripeCustomer = await ctx.stripe.createStripeCustomer(advertiser.email)
-      advertiser.billingInfo = {
-        customerId: stripeCustomer.id,
-        cardOnFile: false
-      }
-      id = await ctx.db.createAdvertiser(advertiser)
+      await ctx.db.createAdvertiser({ firstName, lastName, organization, email, password })
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000
-        ctx.log.warn('attempt to create advertiser with existing email, rejecting request from email %s', advertiser.email)
-        res.status(400)
+        ctx.log.warn('attempt to create advertiser with existing email, rejecting request from email %s', email)
+        res.status(409)
         return res.send({
           success: false,
           message: alreadyExistsMessage
@@ -24,9 +18,10 @@ module.exports = async (req, res, ctx) => {
       }
       throw e
     }
-    ctx.log.info('sending registration email for newly registered advertiser %s', id)
-    await ctx.auth.sendToken(advertiser.email, ctx.auth.authKinds.ADVERTISER)
-    res.send({ success: true, id })
+    ctx.log.info('sending registration email for newly registered advertiser %s', email)
+    const token = await ctx.auth.generateToken(email, ctx.auth.authKinds.ADVERTISER)
+    await ctx.email.sendAdvertiserActivationEmail(email, token)
+    res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

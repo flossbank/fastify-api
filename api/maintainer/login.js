@@ -1,7 +1,8 @@
 const { MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { email, password } = req.body
+  const { email: rawEmail, password } = req.body
+  const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('logging in as maintainer %s', email)
     const maintainer = await ctx.db.authenticateMaintainer(email, password)

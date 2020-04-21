@@ -6,17 +6,17 @@ const fastifyPlugin = require('fastify-plugin')
 const Cache = require('quick-lru')
 const niceware = require('niceware')
 const { config } = require('../config')
-const { ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../helpers/constants')
-const { activationEmails } = require('../helpers/activationEmails')
-const magicLinkEmails = require('../helpers/magicLinkEmails')
+const {
+  ADVERTISER_SESSION_KEY,
+  MAINTAINER_SESSION_KEY,
+  USER_SESSION_KEY
+} = require('../helpers/constants')
 
 AWS.config.update(config.getAwsConfig())
 
 const docs = new AWS.DynamoDB.DocumentClient()
-const ses = new AWS.SES()
 const UserTableName = 'flossbank_user_auth' // user tokens
 const ApiTableName = 'flossbank_api_keys' // api keys
-const ApiTableEmailIndex = 'email-index'
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
 const MaintainerSessionTableName = 'flossbank_maintainer_session'
 const AdvertiserSessionTableName = 'flossbank_advertiser_session'
@@ -28,7 +28,6 @@ const weekExpiration = (7 * 24 * 60 * 1000)
 
 function Auth () {
   this.docs = docs // to ease testing
-  this.ses = ses
   this.post = got.post
   this.niceware = niceware
 
@@ -52,19 +51,13 @@ Auth.prototype.recordUserAuthCheck = function recordUserAuthCheck (email) {
   this.checkCache.set(email, Date.now())
 }
 
-Auth.prototype.checkApiKeyForUser = async function checkApiKeyForUser (email, key) {
-  if (!email || !key) return false
-
-  try {
-    const { Item } = await this.docs.get({
-      TableName: ApiTableName,
-      Key: { key }
-    }).promise()
-    if (!Item) return false
-    return Item.email === email
-  } catch (_) {
-    return false
-  }
+Auth.prototype.cacheUserOptOutSetting = async function cacheUserOptOutSetting (key, optOut) {
+  return this.docs.update({
+    TableName: ApiTableName,
+    Key: { key },
+    UpdateExpression: 'SET optOutOfAds = :setting',
+    ExpressionAttributeValues: { ':setting': optOut }
+  }).promise()
 }
 
 // Returns auth token or false
@@ -82,6 +75,9 @@ Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
     case this.authKinds.MAINTAINER:
       cookieKey = MAINTAINER_SESSION_KEY
       break
+    case this.authKinds.USER:
+      cookieKey = USER_SESSION_KEY
+      break
     default:
       return false
   }
@@ -89,11 +85,11 @@ Auth.prototype.getSessionToken = function getSessionToken (req, kind) {
   return req.cookies[cookieKey]
 }
 
-Auth.prototype.isAdSessionAllowed = async function isAdSessionAllowed (req) {
+Auth.prototype.getAdSessionApiKey = async function getAdSessionApiKey (req) {
   const token = this.getAuthToken(req)
-  if (!token) return false
+  if (!token) return null
 
-  return this.validateApiKey(token)
+  return this.getApiKey(token)
 }
 
 // Returns a UI Session | null
@@ -115,6 +111,13 @@ Auth.prototype.getUISession = async function getUISession (req, kind) {
       case (this.authKinds.ADVERTISER):
         ({ Item } = await this.docs.get({
           TableName: AdvertiserSessionTableName,
+          Key: { sessionId: token }
+        }).promise())
+        item = Item
+        break
+      case (this.authKinds.USER):
+        ({ Item } = await this.docs.get({
+          TableName: UserSessionTableName,
           Key: { sessionId: token }
         }).promise())
         item = Item
@@ -148,29 +151,14 @@ Auth.prototype.generateToken = async function generateToken (email, kind) {
   return token
 }
 
-Auth.prototype.sendMagicLink = async function sendMagicLink (email, kind) {
+Auth.prototype.generateMagicLinkParams = async function sendMagicLink (email, kind) {
   const token = await this.generateToken(email, kind)
 
   const code = this.niceware.generatePassphrase(4) // 2 words pls
     .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
     .join(' ') // as a string pls
 
-  await this.ses.sendEmail({
-    Destination: { ToAddresses: [email] },
-    Source: 'Flossbank <admin@flossbank.com>',
-    Message: magicLinkEmails[kind](email, token, code)
-  }).promise()
-
-  return code
-}
-
-Auth.prototype.sendToken = async function sendToken (email, kind) {
-  const token = await this.generateToken(email, kind)
-  return this.ses.sendEmail({
-    Destination: { ToAddresses: [email] },
-    Source: 'Flossbank <admin@flossbank.com>',
-    Message: activationEmails[kind](email, token)
-  }).promise()
+  return { code, token }
 }
 
 Auth.prototype.deleteToken = async function deleteToken (email) {
@@ -251,85 +239,32 @@ Auth.prototype.validateCaptcha = async function validateCaptcha (email, hexUserT
   return true
 }
 
-Auth.prototype.getOrCreateApiKey = async function getOrCreateApiKey (email) {
-  // there might be a fancy way to do this with 1 API call (condition expression ?)
-  // but i don't know how and this isn't a time-super-sensitive api
-
-  // we want unique emails only in this table, but unfortunately spammers can just add +something (a tag)
-  // to their email prefix and the query will not find them in the table. we want to honor the +something
-  // in all user-facing communication (not supporting address tags is really bad UX),
-  // but we need to strip it off to maintain the email uniqueness constraint in this table.
-  // the reason we actually care about email uniqueness here (and maybe not in an advertiser registration)
-  // is that if it's "too easy" for users to generate many API keys, it's much easier for them to abuse our platform.
-
-  /* --- explanation of regex: ---
-    ^         beginning of string
-    (         match group #1 (prefix)
-      [^+]+   one or more chars that aren't "+"
-    )
-    (         match group #2 (tag)
-      \+.*    a "+' char followed by 0 or more of any char
-    )*        0 or more of match group #2
-    @         @ sign
-    (         match group #3 (suffix)
-      .+      1 or more of any char
-    )
-    $         end of string
-  */
-  const emailParts = /^([^+]+)(\+.*)*@(.+)$/.exec(email)
-  if (!emailParts) {
-    // if the regex doesn't match anything, there's 0% chance this is a valid email address
-    // which should be impossible because of fastify schema validations, but throwing a check in here
-    // regardless
-    throw new Error(`invalid email provided to getOrCreateApiKey: ${email}`)
-  }
-
-  // /regex/.exec returns an array-like list of [full string, match 1, match 2, ..., match n]
-  // in our case [full email, local part, address tag, domain part] -- we only care abt local-part@domain-part
-  const [, prefix,, suffix] = emailParts
-  const taglessEmail = `${prefix}@${suffix}`
-
-  // try to get first
-  const { Items } = (await this.docs.query({
+Auth.prototype.cacheApiKey = async function cacheApiKey (apiKey, userId) {
+  return this.docs.put({
     TableName: ApiTableName,
-    IndexName: ApiTableEmailIndex,
-    KeyConditionExpression: 'email = :email',
-    ExpressionAttributeValues: { ':email': taglessEmail }
-  }).promise())
-
-  const foundEntry = Items.pop()
-
-  const key = foundEntry ? foundEntry.key : crypto.randomBytes(32).toString('hex')
-
-  await this.docs.update({
-    TableName: ApiTableName,
-    Key: { key },
-    UpdateExpression: 'SET email = if_not_exists (email, :email), created = if_not_exists (created, :now) ADD keysRequested :one',
-    ExpressionAttributeValues: {
-      ':email': taglessEmail,
-      ':now': Date.now(),
-      ':one': 1
+    Item: {
+      key: apiKey,
+      created: Date.now(),
+      id: userId
     }
   }).promise()
-
-  return key
 }
 
-Auth.prototype.validateApiKey = async function validateApiKey (key) {
-  if (!key) return false
+Auth.prototype.getApiKey = async function getApiKey (key) {
+  if (!key) return null
 
   try {
     const { Item } = await this.docs.get({
       TableName: ApiTableName,
       Key: { key }
     }).promise()
-    return !!Item
+    return Item
   } catch (_) {
-    return false
+    return null
   }
 }
 
-Auth.prototype.createAdSession = async function createSession (req) {
+Auth.prototype.createAdSession = async function createAdSession (req) {
   // standard authorization header is `{ authorization: 'Bearer token' }`
   const apiKey = req.headers.authorization.split(' ').pop()
   const sessionId = crypto.randomBytes(16).toString('hex')

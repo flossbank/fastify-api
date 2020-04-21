@@ -21,7 +21,7 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.getUser = async function getUser (email) {
+Db.prototype.getUserByEmail = async function getUserByEmail (email) {
   const user = await this.db.collection('users').findOne({ email })
 
   if (!user) return user
@@ -30,9 +30,39 @@ Db.prototype.getUser = async function getUser (email) {
   return { id, ...rest }
 }
 
-Db.prototype.createUser = async function createUser ({ email, apiKey, billingInfo }) {
-  const { insertedId } = await this.db.collection('users').insertOne({ email, apiKey, billingInfo })
-  return insertedId
+Db.prototype.getUserById = async function getUserById (userId) {
+  const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
+
+  if (!user) return user
+
+  const { _id: id, ...rest } = user
+  return { id, ...rest }
+}
+
+Db.prototype.createUser = async function createUser ({ email, billingInfo }) {
+  const apiKey = crypto.randomBytes(32).toString('hex')
+  const { insertedId } = await this.db.collection('users').insertOne({
+    email,
+    apiKey,
+    billingInfo,
+    apiKeysRequested: [
+      { timestamp: Date.now() }
+    ]
+  })
+  return { insertedId, apiKey }
+}
+
+Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysRequested (email) {
+  return this.db.collection('users').updateOne(
+    { email },
+    { $push: { apiKeysRequested: { timestamp: Date.now() } } })
+}
+
+Db.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (userId, optOutOfAds) {
+  return this.db.collection('users').updateOne(
+    { _id: ObjectId(userId) },
+    { $set: { optOutOfAds } }
+  )
 }
 
 Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
@@ -109,10 +139,19 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
     verified: false,
     active: true,
     adDrafts: [],
+    billingInfo: {},
     password: await bcrypt.hash(advertiser.password, 10)
   })
   const { insertedId } = await this.db.collection('advertisers').insertOne(advertiserWithDefaults)
   return insertedId
+}
+
+Db.prototype.updateAdvertiserCustomerId = async function updateAdvertiserCustomerId (id, customerId) {
+  return this.db.collection('advertisers').updateOne({
+    _id: ObjectId(id)
+  }, {
+    $set: { 'billingInfo.customerId': customerId }
+  })
 }
 
 Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard, last4) {
@@ -134,6 +173,17 @@ Db.prototype.verifyAdvertiser = async function verifyAdvertiser (email) {
 Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   const advertiser = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })
+
+  if (!advertiser) return advertiser
+
+  const { _id: id, ...rest } = advertiser
+  delete rest.password
+  return { id, ...rest }
+}
+
+Db.prototype.getAdvertiserByEmail = async function getAdvertiserByEmail (email) {
+  const advertiser = await this.db.collection('advertisers')
+    .findOne({ email })
 
   if (!advertiser) return advertiser
 
@@ -447,6 +497,17 @@ Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
 Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   const maintainer = await this.db.collection('maintainers')
     .findOne({ _id: ObjectId(maintainerId) })
+
+  if (!maintainer) return maintainer
+
+  const { _id: id, ...rest } = maintainer
+  delete rest.password
+  return { id, ...rest }
+}
+
+Db.prototype.getMaintainerByEmail = async function getMaintainerByEmail (email) {
+  const maintainer = await this.db.collection('maintainers')
+    .findOne({ email })
 
   if (!maintainer) return maintainer
 

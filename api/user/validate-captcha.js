@@ -1,6 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
-    const { email, token, response } = req.body
+    const { email: rawEmail, token, response } = req.body
+    const email = rawEmail.toLowerCase()
 
     ctx.log.info('validating captcha for %s', email)
 
@@ -10,12 +11,14 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
-    const apiKey = await ctx.auth.getOrCreateApiKey(email)
-
-    if (!await ctx.db.getUser(email)) {
-      await ctx.db.createUser({ email, apiKey, billingInfo: {} })
+    const existingUser = await ctx.db.getUserByEmail(email)
+    if (existingUser) {
+      await ctx.db.updateUserApiKeysRequested(email)
+      return res.send({ success: true, apiKey: existingUser.apiKey })
     }
 
+    const { insertedId, apiKey } = await ctx.db.createUser({ email, billingInfo: {} })
+    await ctx.auth.cacheApiKey(apiKey, insertedId.toString())
     res.send({ success: true, apiKey })
   } catch (e) {
     ctx.log.error(e)

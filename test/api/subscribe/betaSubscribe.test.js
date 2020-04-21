@@ -18,12 +18,11 @@ test.after(async (t) => {
 })
 
 test('POST `/beta/subscribe` success', async (t) => {
-  t.context.email.sendBetaEmail.resolves({ success: true })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/beta/subscribe',
     payload: {
-      email: 'poopyfeet@gmail.com'
+      email: 'POOPyfeet@gmail.com'
     }
   })
   const subscribers = await t.context.db.getBetaSubscribers()

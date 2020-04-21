@@ -1,7 +1,8 @@
 const { ADVERTISER_SESSION_KEY } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const { email, password } = req.body
+  const { email: rawEmail, password } = req.body
+  const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('logging in as advertiser %s', email)
     const advertiser = await ctx.db.authenticateAdvertiser(email, password)
