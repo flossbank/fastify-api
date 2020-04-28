@@ -5,8 +5,12 @@ const mocks = require('./_mocks')
 
 exports.before = async function (t, insertData) {
   const mongo = new MongoMemoryServer()
-
-  const db = new Db(await mongo.getConnectionString())
+  const mongoUri = await mongo.getConnectionString()
+  const db = new Db({
+    config: {
+      getMongoUri: () => mongoUri
+    }
+  })
   await db.connect()
 
   await insertData(t, db)
@@ -17,8 +21,12 @@ exports.before = async function (t, insertData) {
 }
 
 exports.beforeEach = async function (t) {
-  t.context.db = new Db(await t.context.mongo.getConnectionString())
-
+  const mongoUri = await t.context.mongo.getConnectionString()
+  t.context.db = new Db({
+    config: {
+      getMongoUri: () => mongoUri
+    }
+  })
   await t.context.db.connect()
 
   t.context.auth = new mocks.Auth()

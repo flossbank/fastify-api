@@ -28,9 +28,8 @@ const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // User
 const registerUser = require('../api/user/register')
-const validateCaptcha = require('../api/user/validate-captcha')
+const userCompleteRegistration = require('../api/user/complete-registration')
 const verifyUser = require('../api/user/verify')
-const checkUser = require('../api/user/check')
 const loginUser = require('../api/user/login')
 const authUser = require('../api/user/authenticate')
 const logoutUser = require('../api/user/logout')
@@ -94,9 +93,8 @@ async function routes (fastify, opts, next) {
 
   // User
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
-  fastify.post('/user/validate-captcha', { schema: Schema.user.validateCaptcha }, (req, res) => validateCaptcha(req, res, fastify))
-  fastify.post('/user/verify', { schema: Schema.user.verify }, (req, res) => verifyUser(req, res, fastify))
-  fastify.post('/user/check', { schema: Schema.user.check }, (req, res) => checkUser(req, res, fastify))
+  fastify.post('/user/verify', (req, res) => verifyUser(req, res, fastify))
+  fastify.post('/user/complete-registration', (req, res) => userCompleteRegistration(req, res, fastify))
   fastify.post('/user/login', { schema: Schema.user.login }, (req, res) => loginUser(req, res, fastify))
   fastify.post('/user/authenticate', { schema: Schema.user.authenticate }, (req, res) => authUser(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))

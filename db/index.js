@@ -3,14 +3,13 @@ const { MongoClient, ObjectId } = require('mongodb')
 const { ulid } = require('ulid')
 const crypto = require('crypto')
 const bcrypt = require('bcrypt')
-const { config } = require('../config')
 const Cleaner = require('../helpers/clean')
 const { AD_NOT_CLEAN, AD_NOT_CLEAN_MSG } = require('../helpers/constants')
 
-function Db (url) {
-  const _url = url || config.getMongoUri()
-  if (!_url) throw new Error('no mongo uri in environment')
-  this.mongoClient = new MongoClient(_url, {
+function Db ({ config }) {
+  const url = config.getMongoUri()
+  if (!url) throw new Error('no mongo uri in environment')
+  this.mongoClient = new MongoClient(url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -39,17 +38,15 @@ Db.prototype.getUserById = async function getUserById (userId) {
   return { id, ...rest }
 }
 
-Db.prototype.createUser = async function createUser ({ email, billingInfo }) {
+Db.prototype.createUser = async function createUser ({ email }) {
   const apiKey = crypto.randomBytes(32).toString('hex')
   const { insertedId } = await this.db.collection('users').insertOne({
     email,
     apiKey,
-    billingInfo,
-    apiKeysRequested: [
-      { timestamp: Date.now() }
-    ]
+    billingInfo: {},
+    apiKeysRequested: [{ timestamp: Date.now() }]
   })
-  return { insertedId, apiKey }
+  return { id: insertedId, apiKey }
 }
 
 Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysRequested (email) {

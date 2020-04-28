@@ -31,5 +31,3 @@ Config.prototype.getStripeToken = function getStripeToken () {
 }
 
 exports.Config = Config
-
-exports.config = new Config({ env: process.env })
