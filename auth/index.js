@@ -3,46 +3,47 @@ const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
 const niceware = require('niceware')
-const {
-  ADVERTISER_SESSION_KEY,
-  MAINTAINER_SESSION_KEY,
-  USER_SESSION_KEY
-} = require('../helpers/constants')
-const UserAuth = require('./user')
 
-const UserTableName = 'flossbank_user_auth' // user tokens
+const UserAuth = require('./user')
+const AdvertiserAuth = require('./advertiser')
+
 const ApiTableName = 'flossbank_api_keys' // api keys
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
-const MaintainerSessionTableName = 'flossbank_maintainer_session'
-const AdvertiserSessionTableName = 'flossbank_advertiser_session'
-const UserSessionTableName = 'flossbank_user_session'
-
-const fifteenMinutesExpirationMS = (15 * 60 * 1000)
-const weekExpiration = (7 * 24 * 60 * 1000)
 
 // General purpose authentication functions with more specific logic nested per usecase
 class Auth {
   constructor ({ config, docs }) {
     this.user = new UserAuth({ docs, common: this })
+    this.advertiser = new AdvertiserAuth({ docs, common: this })
 
     this.docs = docs
     this.post = got.post
     this.niceware = niceware
     this.recaptchaSecret = config.getRecaptchaSecret()
-    this.authKinds = {
-      USER: 'USER',
-      MAINTAINER: 'MAINTAINER',
-      ADVERTISER: 'ADVERTISER'
-    }
   }
 
-  async cacheUserOptOutSetting (key, optOut) {
-    return this.docs.update({
-      TableName: ApiTableName,
-      Key: { key },
-      UpdateExpression: 'SET optOutOfAds = :setting',
-      ExpressionAttributeValues: { ':setting': optOut }
-    }).promise()
+  async getAndUpdateWebSession ({ tableName, sessionId, expirationIncrementSeconds }) {
+    if (!sessionId) { return }
+    try {
+      const { Attributes } = await this.docs.update({
+        TableName: tableName,
+        Key: { sessionId },
+        UpdateExpression: 'SET expiration = :newExpiration',
+        ConditionExpression: 'expiration >= :now',
+        ExpressionAttributeValues: {
+          ':now': Date.now() / 1000,
+          ':newExpiration': this.getUnixTimestampPlus(expirationIncrementSeconds)
+        },
+        ReturnValues: 'ALL_OLD'
+      }).promise()
+      return Attributes
+    } catch (e) {
+      if (e.code === 'ConditionalCheckFailedException') {
+        // this means the token has expired
+        return
+      }
+      throw e
+    }
   }
 
   // Returns auth token or false
@@ -51,143 +52,33 @@ class Auth {
     return req.headers.authorization.split(' ').pop()
   }
 
-  getSessionToken (req, kind) {
-    let cookieKey
-    switch (kind) {
-      case this.authKinds.ADVERTISER:
-        cookieKey = ADVERTISER_SESSION_KEY
-        break
-      case this.authKinds.MAINTAINER:
-        cookieKey = MAINTAINER_SESSION_KEY
-        break
-      case this.authKinds.USER:
-        cookieKey = USER_SESSION_KEY
-        break
-      default:
-        return false
-    }
-    if (!req.cookies || !req.cookies[cookieKey]) { return false }
-    return req.cookies[cookieKey]
-  }
-
   async getAdSessionApiKey (req) {
     const token = this.getAuthToken(req)
     if (!token) { return null }
     return this.getApiKey(token)
   }
 
-  // Returns a UI Session | null
-  async getUISession (req, kind) {
-    const token = this.getSessionToken(req, kind)
-    if (!token) { return null }
-    let item, Item
-    // Validate based on the type of session being auth'd
-    try {
-      switch (this.authKinds[kind]) {
-        case (this.authKinds.MAINTAINER):
-          ({ Item } = await this.docs.get({
-            TableName: MaintainerSessionTableName,
-            Key: { sessionId: token }
-          }).promise())
-          item = Item
-          break
-        case (this.authKinds.ADVERTISER):
-          ({ Item } = await this.docs.get({
-            TableName: AdvertiserSessionTableName,
-            Key: { sessionId: token }
-          }).promise())
-          item = Item
-          break
-        case (this.authKinds.USER):
-          ({ Item } = await this.docs.get({
-            TableName: UserSessionTableName,
-            Key: { sessionId: token }
-          }).promise())
-          item = Item
-          break
-        default:
-          console.error('Attempting to validate invalid session kind')
-          return null
-      }
-    } catch (err) {
-      console.error(err)
-      return null
-    }
-    if (!item.sessionId || item.expires < Date.now()) {
-      return null
-    }
-    return item
+  areTokensEqual (tokenA, tokenB) {
+    return crypto.timingSafeEqual(
+      Buffer.from(tokenA, 'hex'),
+      Buffer.from(tokenB, 'hex')
+    )
   }
 
-  async generateToken (email, kind) {
-    if (!email) { throw new Error('email is required') }
-    if (!this.authKinds[kind]) { throw new Error('Invalid kind of token') }
-    const token = crypto.randomBytes(32).toString('hex')
-    await this.docs.put({
-      TableName: UserTableName,
-      Item: { email, token, kind, expires: Date.now() + fifteenMinutesExpirationMS }
-    }).promise()
-    return token
+  getUnixTimestampPlus (seconds) {
+    return Math.floor(Date.now() / 1000) + seconds
   }
 
-  async generateMagicLinkParams (email, kind) {
-    const token = await this.generateToken(email, kind)
+  generateRandomToken () {
+    return crypto.randomBytes(32).toString('hex')
+  }
+
+  async generateMagicLinkParams () {
+    const token = this.generateRandomToken()
     const code = this.niceware.generatePassphrase(4) // 2 words pls
       .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
       .join(' ') // as a string pls
-    return { code, token }
-  }
-
-  async deleteToken (email) {
-    if (!email) { return }
-    return this.docs.delete({
-      TableName: UserTableName,
-      Key: { email }
-    }).promise()
-  }
-
-  async validateToken (email, hexUserToken, tokenKind) {
-    if (!email || !hexUserToken || !tokenKind || !this.authKinds[tokenKind]) { return false }
-    const { Item: user } = await this.docs.get({
-      TableName: UserTableName,
-      Key: { email }
-    }).promise()
-    if (!user) {
-      console.error('Attempt to validate token for invalid email address %s', email)
-      return false
-    }
-    const { token: hexToken, expires, valid, kind } = user
-    if (!hexToken || !expires || !kind) {
-      console.error('Attempted to validate email %s but found no token or expiration or kind', email)
-      await this.deleteToken(email)
-      return false
-    }
-    if (kind !== tokenKind) {
-      console.error('Attempted to validate token for wrong kind', email)
-      return false
-    }
-    const token = Buffer.from(hexToken, 'hex')
-    const userToken = Buffer.from(hexUserToken, 'hex')
-    const userTokenValid = crypto.timingSafeEqual(token, userToken)
-    if (!userTokenValid) {
-      console.error('Attempt to validate invalid token for %s', email)
-      await this.deleteToken(email)
-      return false
-    }
-    if (expires - Date.now() <= 0) {
-      console.error('Attempt to validate expired token %s for %s', hexUserToken, email)
-      await this.deleteToken(email)
-      return false
-    }
-    if (!valid) {
-      await this.docs.update({
-        TableName: UserTableName,
-        Key: { email },
-        UpdateExpression: 'SET valid = :true',
-        ExpressionAttributeValues: { ':true': true }
-      }).promise()
-    }
-    return true
+    return { token, code }
   }
 
   async isRecaptchaResponseValid ({ recaptchaResponse }) {
@@ -225,57 +116,6 @@ class Auth {
       }
     }).promise()
     return sessionId
-  }
-
-  async createMaintainerSession (maintainerId) {
-    const sessionId = crypto.randomBytes(32).toString('hex')
-    await this.docs.put({
-      TableName: MaintainerSessionTableName,
-      Item: { sessionId, expires: Date.now() + weekExpiration, maintainerId }
-    }).promise()
-    return sessionId
-  }
-
-  async deleteMaintainerSession (sessionId) {
-    if (!sessionId) { return }
-    return this.docs.delete({
-      TableName: MaintainerSessionTableName,
-      Key: { sessionId }
-    }).promise()
-  }
-
-  async createAdvertiserSession (advertiserId) {
-    const sessionId = crypto.randomBytes(32).toString('hex')
-    await this.docs.put({
-      TableName: AdvertiserSessionTableName,
-      Item: { sessionId, expires: Date.now() + weekExpiration, advertiserId }
-    }).promise()
-    return sessionId
-  }
-
-  async deleteAdvertiserSession (sessionId) {
-    if (!sessionId) { return }
-    return this.docs.delete({
-      TableName: AdvertiserSessionTableName,
-      Key: { sessionId }
-    }).promise()
-  }
-
-  async createUserSession (userId) {
-    const sessionId = crypto.randomBytes(32).toString('hex')
-    await this.docs.put({
-      TableName: UserSessionTableName,
-      Item: { sessionId, expires: Date.now() + weekExpiration, userId }
-    }).promise()
-    return sessionId
-  }
-
-  async deleteUserSession (sessionId) {
-    if (!sessionId) { return }
-    return this.docs.delete({
-      TableName: UserSessionTableName,
-      Key: { sessionId }
-    }).promise()
   }
 }
 

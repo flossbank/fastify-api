@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
     if (maintainer) {
       res.setCookie(
         MAINTAINER_SESSION_KEY,
-        await ctx.auth.createMaintainerSession(maintainer.id),
+        await ctx.auth.maintainer.createWebSession({ maintainerId: maintainer.id.toString() }),
         { path: '/' }
       )
       res.send({ success: true, maintainer })

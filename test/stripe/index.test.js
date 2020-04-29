@@ -11,13 +11,17 @@ test.after(() => {
 })
 
 test.beforeEach((t) => {
-  t.context.stripe = new Stripe()
-  t.context.stripe.stripe = {
-    customers: {
-      create: sinon.stub().resolves({ id: 'blah' }),
-      update: sinon.stub().resolves({ id: 'blah' })
-    }
-  }
+  t.context.stripe = new Stripe({
+    stripe: () => ({
+      customers: {
+        create: sinon.stub().resolves({ id: 'blah' }),
+        update: sinon.stub().resolves({ id: 'blah' })
+      }
+    }),
+    config: { getStripeToken: sinon.stub() }
+  })
+
+  t.context.stripe.init()
 })
 
 test('stripe | create customer', async (t) => {

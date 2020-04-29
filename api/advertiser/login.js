@@ -1,4 +1,4 @@
-const { ADVERTISER_SESSION_KEY } = require('../../helpers/constants')
+const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, password } = req.body
@@ -8,8 +8,8 @@ module.exports = async (req, res, ctx) => {
     const advertiser = await ctx.db.authenticateAdvertiser(email, password)
     if (advertiser) {
       res.setCookie(
-        ADVERTISER_SESSION_KEY,
-        await ctx.auth.createAdvertiserSession(advertiser.id.toString()),
+        ADVERTISER_WEB_SESSION_COOKIE,
+        await ctx.auth.advertiser.createWebSession({ advertiserId: advertiser.id.toString() }),
         { path: '/' }
       )
       res.send({ success: true, advertiser })

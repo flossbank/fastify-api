@@ -32,7 +32,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/package/update` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.maintainer.getWebSession.resolves(null)
   const pkgId1 = (await t.context.db.createPackage({
     name: 'yttrium-server',
     registry: 'npm',
@@ -58,7 +58,7 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
 })
 
 test('POST `/package/update` 200 success', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   const pkgId1 = (await t.context.db.createPackage({
     name: 'yttrium-server',
     registry: 'npm',

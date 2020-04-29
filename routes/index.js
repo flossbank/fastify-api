@@ -28,12 +28,12 @@ const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // User
 const registerUser = require('../api/user/register')
+const verifyUserRegistration = require('../api/user/verify-registration')
 const userCompleteRegistration = require('../api/user/complete-registration')
-const verifyUser = require('../api/user/verify')
-const loginUser = require('../api/user/login')
-const authUser = require('../api/user/authenticate')
+const requestLoginUser = require('../api/user/request-login')
+const completeLoginUser = require('../api/user/complete-login')
 const logoutUser = require('../api/user/logout')
-const optOutUser = require('../api/user/opt-out')
+const getUser = require('../api/user/get')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -55,7 +55,7 @@ const startSession = require('../api/session/start')
 const completeSession = require('../api/session/complete')
 
 // Middleware
-const userUIAuthMiddleware = require('../middleware/user')
+const userWebAuthMiddleware = require('../middleware/user')
 const advertiserUIAuthMiddleware = require('../middleware/advertiser')
 const maintainerUIAuthMiddleware = require('../middleware/maintainer')
 
@@ -92,13 +92,13 @@ async function routes (fastify, opts, next) {
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User
+  fastify.get('/user/get', { preHandler: (req, res, done) => userWebAuthMiddleware(req, res, fastify, done) }, (req, res) => getUser(req, res, fastify))
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
-  fastify.post('/user/verify', (req, res) => verifyUser(req, res, fastify))
+  fastify.post('/user/verify-registration', (req, res) => verifyUserRegistration(req, res, fastify))
   fastify.post('/user/complete-registration', (req, res) => userCompleteRegistration(req, res, fastify))
-  fastify.post('/user/login', { schema: Schema.user.login }, (req, res) => loginUser(req, res, fastify))
-  fastify.post('/user/authenticate', { schema: Schema.user.authenticate }, (req, res) => authUser(req, res, fastify))
+  fastify.post('/user/request-login', { schema: Schema.user.login }, (req, res) => requestLoginUser(req, res, fastify))
+  fastify.post('/user/complete-login', { schema: Schema.user.authenticate }, (req, res) => completeLoginUser(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
-  fastify.post('/user/opt-out', { preHandler: (req, res, done) => userUIAuthMiddleware(req, res, fastify, done), schema: Schema.user.optOut }, (req, res) => optOutUser(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))

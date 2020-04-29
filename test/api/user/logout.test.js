@@ -37,7 +37,7 @@ test('POST `/user/logout` 200 success', async (t) => {
 })
 
 test('POST `/user/logout` 500 server error', async (t) => {
-  t.context.auth.deleteUserSession.throws()
+  t.context.auth.user.deleteWebSession.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/logout'

@@ -61,7 +61,7 @@ class Email {
     }).promise()
   }
 
-  async sendUserMagicLinkEmail (email, token, code) {
+  async sendUserMagicLinkEmail (email, { token, code }) {
     const loginUrl = this.createLoginUrl(email, token, 'user')
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },

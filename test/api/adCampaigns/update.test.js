@@ -40,7 +40,7 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.getUISession.resolves({
+  t.context.auth.advertiser.getWebSession.resolves({
     advertiserId: t.context.advertiserId1
   })
 })
@@ -54,7 +54,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.advertiser.getWebSession.resolves(null)
   const adCampaignIdBlah = await t.context.db.createAdCampaign(t.context.advertiserId1, {
     maxSpend: 500000,
     cpm: 500000,
@@ -122,7 +122,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
 })
 
 test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', async (t) => {
-  t.context.auth.getUISession.resolves({
+  t.context.auth.advertiser.getWebSession.resolves({
     advertiserId: t.context.advertiserId2
   })
   const adCampaignId = await t.context.db.createAdCampaign(t.context.advertiserId2, {
