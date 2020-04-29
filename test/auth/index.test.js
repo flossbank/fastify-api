@@ -1,8 +1,8 @@
-const crypto = require('crypto')
+// const crypto = require('crypto')
 const test = require('ava')
-const sinon = require('sinon')
-const { Auth } = require('../../auth')
-const { USER_SESSION_KEY, ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
+// const sinon = require('sinon')
+// const { Auth } = require('../../auth')
+// const { USER_SESSION_KEY, ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
 
 test('auth stub', t => t.pass())
 // test.before(() => {

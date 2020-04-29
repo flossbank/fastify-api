@@ -94,10 +94,10 @@ async function routes (fastify, opts, next) {
   // User
   fastify.get('/user/get', { preHandler: (req, res, done) => userWebAuthMiddleware(req, res, fastify, done) }, (req, res) => getUser(req, res, fastify))
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
-  fastify.post('/user/verify-registration', (req, res) => verifyUserRegistration(req, res, fastify))
-  fastify.post('/user/complete-registration', (req, res) => userCompleteRegistration(req, res, fastify))
-  fastify.post('/user/request-login', { schema: Schema.user.login }, (req, res) => requestLoginUser(req, res, fastify))
-  fastify.post('/user/complete-login', { schema: Schema.user.authenticate }, (req, res) => completeLoginUser(req, res, fastify))
+  fastify.post('/user/verify-registration', { schema: Schema.user.verifyRegistration }, (req, res) => verifyUserRegistration(req, res, fastify))
+  fastify.post('/user/complete-registration', { schema: Schema.user.completeRegistration }, (req, res) => userCompleteRegistration(req, res, fastify))
+  fastify.post('/user/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginUser(req, res, fastify))
+  fastify.post('/user/complete-login', { schema: Schema.user.completeLogin }, (req, res) => completeLoginUser(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
 
   // Maintainer
