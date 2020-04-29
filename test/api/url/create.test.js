@@ -18,7 +18,7 @@ test.after(async (t) => {
 })
 
 test('POST /url/create | 401', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.advertiser.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/url/create',

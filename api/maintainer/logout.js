@@ -4,7 +4,7 @@ module.exports = async (req, res, ctx) => {
   const sessionId = req.cookies[MAINTAINER_SESSION_KEY]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
-    await ctx.auth.deleteMaintainerSession(sessionId)
+    await ctx.auth.maintainer.deleteWebSession({ sessionId })
     res.clearCookie(
       MAINTAINER_SESSION_KEY,
       { path: '/' }

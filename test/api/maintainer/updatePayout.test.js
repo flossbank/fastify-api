@@ -14,7 +14,7 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.getUISession.resolves({
+  t.context.auth.maintainer.getWebSession.resolves({
     maintainerId: t.context.maintainerId1
   })
 })
@@ -28,7 +28,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/maintainer/update-payout` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.maintainer.getWebSession.resolves(null)
 
   const res = await t.context.app.inject({
     method: 'POST',

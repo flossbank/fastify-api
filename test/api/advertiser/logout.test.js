@@ -37,7 +37,7 @@ test('POST `/advertiser/logout` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/logout` 500 server error', async (t) => {
-  t.context.auth.deleteAdvertiserSession.throws()
+  t.context.auth.advertiser.deleteWebSession.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/logout'

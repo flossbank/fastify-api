@@ -3,7 +3,7 @@ module.exports = async (req, res, ctx) => {
   const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('verifying advertiser with email %s', email)
-    if (!await ctx.auth.validateToken(email, token, ctx.auth.authKinds.ADVERTISER)) {
+    if (!await ctx.auth.advertiser.completeRegistration({ email, token })) {
       ctx.log.warn('attempt to verify advertiser with invalid email or token from %s', email)
       res.status(401)
       return res.send()

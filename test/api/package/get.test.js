@@ -34,7 +34,7 @@ test.after.always(async (t) => {
 })
 
 test('GET `/package/get` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.maintainer.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',
@@ -45,7 +45,7 @@ test('GET `/package/get` 401 unauthorized', async (t) => {
 })
 
 test('GET `/package/get` 200 success', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',

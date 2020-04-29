@@ -1,32 +1,37 @@
 const sinon = require('sinon')
-const { Auth: originalAuth } = require('../../auth')
 
 module.exports = {
   Auth: function Auth () {
-    this.authKinds = originalAuth.prototype.authKinds
+    this.user = {
+      cacheApiKey: sinon.stub().resolves(),
+      createWebSession: sinon.stub().resolves('user-session'),
+      getWebSession: sinon.stub().resolves({ userId: 'valid-user-id' }),
+      deleteWebSession: sinon.stub().resolves(),
+      beginRegistration: sinon.stub().resolves({ registrationToken: 'reg-token' }),
+      validateRegistration: sinon.stub().resolves(true),
+      updateRegistrationApiKey: sinon.stub().resolves(),
+      completeRegistration: sinon.stub().resolves('apiKey'),
+      beginAuthentication: sinon.stub().resolves({ token: 'token', code: 'code' }),
+      completeAuthentication: sinon.stub().resolves({ success: true })
+    }
+    this.advertiser = {
+      createWebSession: sinon.stub().resolves('advertiser-session'),
+      getWebSession: sinon.stub().resolves({ userId: 'valid-advertiser-id' }),
+      deleteWebSession: sinon.stub().resolves(),
+      beginRegistration: sinon.stub().resolves({ registrationToken: 'reg-token' }),
+      completeRegistration: sinon.stub().resolves(true)
+    }
+    this.maintainer = {
+      createWebSession: sinon.stub().resolves('maintainer-session'),
+      getWebSession: sinon.stub().resolves({ userId: 'valid-maintainer-id' }),
+      deleteWebSession: sinon.stub().resolves(),
+      beginRegistration: sinon.stub().resolves({ registrationToken: 'reg-token' }),
+      completeRegistration: sinon.stub().resolves(true)
+    }
     this.generateMagicLinkParams = sinon.stub().resolves({ code: 'code', token: 'token' })
-    this.hasUserAuthCheckedInPastOneMinute = sinon.stub()
-      .onFirstCall().returns(false)
-      .onSecondCall().returns(true)
-    this.recordUserAuthCheck = sinon.stub()
-    this.cacheUserOptOutSetting = sinon.stub().resolves()
     this.getAdSessionApiKey = sinon.stub().resolves({})
-    this.getUISession = sinon.stub().resolves({
-      maintainerId: 'valid-id',
-      advertiserId: 'valid-id'
-    })
-    this.generateToken = sinon.stub().resolves('random-token')
     this.createAdSession = sinon.stub().resolves('random-session-id')
-    this.createAdvertiserSession = sinon.stub().resolves('advertiser-session')
-    this.deleteAdvertiserSession = sinon.stub().resolves()
-    this.validateCaptcha = sinon.stub().resolves(true)
     this.cacheApiKey = sinon.stub().resolves()
-    this.validateToken = sinon.stub().resolves(true)
-    this.deleteToken = sinon.stub().resolves()
-    this.createMaintainerSession = sinon.stub().resolves('maintainer-session')
-    this.deleteMaintainerSession = sinon.stub().resolves()
-    this.createUserSession = sinon.stub().resolves('user-session')
-    this.deleteUserSession = sinon.stub().resolves()
   },
   Email: function Email () {
     this.sendBetaSubscriptionEmail = sinon.stub().resolves()

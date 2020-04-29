@@ -17,7 +17,7 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.getUISession.resolves({
+  t.context.auth.advertiser.getWebSession.resolves({
     advertiserId: t.context.advertiserId
   })
 })
@@ -31,7 +31,7 @@ test.after(async (t) => {
 })
 
 test('GET `/advertiser/resume` 401 unauthorized | no session', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.advertiser.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/resume',

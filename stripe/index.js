@@ -1,23 +1,28 @@
 const fastifyPlugin = require('fastify-plugin')
-const { config } = require('../config')
-const stripe = require('stripe')(config.getStripeToken())
 
-function Stripe () {
-  this.stripe = stripe
-}
+class Stripe {
+  constructor ({ stripe, config }) {
+    this.stripe = stripe
+    this.config = config
+  }
 
-Stripe.prototype.createStripeCustomer = async function createStripeCustomer (email) {
-  return this.stripe.customers.create({
-    email,
-    metadata: { updatedAt: Date.now() }
-  })
-}
+  init () {
+    this.stripe = this.stripe(this.config.getStripeToken())
+  }
 
-Stripe.prototype.updateStripeCustomer = async function updateStripeCustomer (customerId, sourceId) {
-  return this.stripe.customers.update(customerId, {
-    source: sourceId,
-    metadata: { updatedAt: Date.now() }
-  })
+  async createStripeCustomer (email) {
+    return this.stripe.customers.create({
+      email,
+      metadata: { updatedAt: Date.now() }
+    })
+  }
+
+  async updateStripeCustomer (customerId, sourceId) {
+    return this.stripe.customers.update(customerId, {
+      source: sourceId,
+      metadata: { updatedAt: Date.now() }
+    })
+  }
 }
 
 exports.Stripe = Stripe

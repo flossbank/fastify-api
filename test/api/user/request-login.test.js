@@ -19,48 +19,44 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/user/login` 200 success', async (t) => {
+test('POST `/user/request-login` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/login',
+    url: '/user/request-login',
     body: { email: 'honey@etsy.com' }
   })
 
-  t.true(t.context.auth.generateMagicLinkParams.calledOnce)
-
-  const payload = JSON.parse(res.payload)
   t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
   t.deepEqual(payload, { success: true, code: 'code' })
 })
 
-test('POST `/user/login` 404 not found', async (t) => {
+test('POST `/user/request-login` 404 not found', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/login',
+    url: '/user/request-login',
     body: { email: 'agave@etsy.com' }
   })
 
-  t.true(t.context.auth.generateMagicLinkParams.notCalled)
-
-  const payload = JSON.parse(res.payload)
   t.deepEqual(res.statusCode, 404)
+  const payload = JSON.parse(res.payload)
   t.deepEqual(payload, { success: false })
 })
 
-test('POST `/user/login` 400 bad request', async (t) => {
+test('POST `/user/request-login` 400 bad request', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/login',
+    url: '/user/request-login',
     body: {}
   })
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/advertiser/login` 500 server error', async (t) => {
-  t.context.auth.generateMagicLinkParams = () => { throw new Error() }
+test('POST `/advertiser/request-login` 500 server error', async (t) => {
+  t.context.auth.user.beginAuthentication = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/login',
+    url: '/user/request-login',
     body: { email: 'honey@etsy.com' }
   })
   t.deepEqual(res.statusCode, 500)

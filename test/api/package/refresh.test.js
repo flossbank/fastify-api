@@ -121,7 +121,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/package/refresh` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.maintainer.getWebSession.resolves(null)
   t.context.registry.npm.getOwnedPackages.resolves(['unc-bootcamp-project-a'])
   const res = await t.context.app.inject({
     method: 'POST',
@@ -133,7 +133,7 @@ test('POST `/package/refresh` 401 unauthorized', async (t) => {
 })
 
 test('POST `/package/refresh` 200 success', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.registry.npm.getOwnedPackages.resolves([
     'caesar', // a new pkg
     'yttrium-server', // remains the same
@@ -182,7 +182,7 @@ test('POST `/package/refresh` 200 success', async (t) => {
 })
 
 test('POST `/package/refresh` 400 bad request | not a maintainer', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: '000000000000' })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
@@ -193,7 +193,7 @@ test('POST `/package/refresh` 400 bad request | not a maintainer', async (t) => 
 })
 
 test('POST `/package/refresh` 400 bad request | no tokens', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId5 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId5 })
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -224,7 +224,7 @@ test('POST `/package/refresh` 400 bad request', async (t) => {
 })
 
 test('POST `/package/refresh` 500 server error', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.db.refreshPackageOwnership = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',

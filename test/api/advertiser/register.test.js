@@ -1,6 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { alreadyExistsMessage } = require('../../../helpers/constants')
+const { ALREADY_EXISTS_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, () => {})
@@ -66,7 +66,7 @@ test('POST `/advertiser/register` 409 duplicate email', async (t) => {
 
   t.deepEqual(payload.success, false)
   const { message } = payload
-  t.deepEqual(message, alreadyExistsMessage)
+  t.deepEqual(message, ALREADY_EXISTS_MSG)
 })
 
 test('POST `/advertiser/register` 400 bad request', async (t) => {

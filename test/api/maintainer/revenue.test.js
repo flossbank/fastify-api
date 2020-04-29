@@ -51,7 +51,7 @@ test.after(async (t) => {
 })
 
 test('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
+  t.context.auth.maintainer.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
@@ -62,7 +62,7 @@ test('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId1 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
@@ -76,7 +76,7 @@ test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: t.context.maintainerId2 })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId2 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
@@ -90,7 +90,7 @@ test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | nobody', async (t) => {
-  t.context.auth.getUISession.resolves({ maintainerId: '000000000000' })
+  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',

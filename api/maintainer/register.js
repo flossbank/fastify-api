@@ -1,4 +1,4 @@
-const { alreadyExistsMessage } = require('../../helpers/constants')
+const { ALREADY_EXISTS_MSG } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { maintainer: { firstName, lastName, email: rawEmail, password, payoutInfo } } = req.body
@@ -14,14 +14,14 @@ module.exports = async (req, res, ctx) => {
         res.status(409)
         return res.send({
           success: false,
-          message: alreadyExistsMessage
+          message: ALREADY_EXISTS_MSG
         })
       }
       throw e
     }
     ctx.log.info('sending registration email for newly registered maintainer %s', id)
-    const token = await ctx.auth.generateToken(email, ctx.auth.authKinds.MAINTAINER)
-    await ctx.email.sendMaintainerActivationEmail(email, token)
+    const { registrationToken } = await ctx.auth.maintainer.beginRegistration({ email })
+    await ctx.email.sendMaintainerActivationEmail(email, registrationToken)
     res.send({ success: true, id })
   } catch (e) {
     ctx.log.error(e)

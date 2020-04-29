@@ -8,17 +8,21 @@ test.before(() => {
 })
 
 test.beforeEach((t) => {
-  t.context.url = new Url()
-  t.context.url.docs = {
-    put: sinon.stub().returns({
-      promise: sinon.stub().resolves()
-    }),
-    update: sinon.stub().returns({
-      promise: sinon.stub().resolves({
-        Attributes: { location: 'http://localhost.com' }
+  t.context.url = new Url({
+    config: {
+      getUrlHost: () => 'api.flossbank.io'
+    },
+    docs: {
+      put: sinon.stub().returns({
+        promise: sinon.stub().resolves()
+      }),
+      update: sinon.stub().returns({
+        promise: sinon.stub().resolves({
+          Attributes: { location: 'http://localhost.com' }
+        })
       })
-    })
-  }
+    }
+  })
 })
 
 test.after.always(() => {

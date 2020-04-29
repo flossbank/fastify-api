@@ -44,7 +44,7 @@ test('POST `/user/register` 200 success', async (t) => {
 })
 
 test('POST `/user/register` 500 server error', async (t) => {
-  t.context.auth.generateToken.throws()
+  t.context.auth.user.beginRegistration.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/register',
