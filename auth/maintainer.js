@@ -1,17 +1,13 @@
 class MaintainerAuthController {
-  constructor ({ docs, common }) {
+  constructor ({ docs, config, common }) {
     this.docs = docs
     this.common = common
-    this.constants = {
-      MAINTAINER_WEB_SESSION_TABLE: 'MaintainerWebSessions',
-      MAINTAINER_REGISTRATION_TABLE: 'MaintainerRegistrationTokens',
-      MAINTAINER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
-      MAINTAINER_REGISTRATION_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
-    }
+    this.config = config
+    this.constants = config.getAuthConfig().Maintainer
   }
 
   /* <web session> */
-  async createMaintainerSession ({ maintainerId }) {
+  async createWebSession ({ maintainerId }) {
     const sessionId = this.common.generateRandomToken()
     const sessionItem = {
       sessionId,
@@ -33,7 +29,7 @@ class MaintainerAuthController {
     })
   }
 
-  async deleteMaintainerSession ({ sessionId }) {
+  async deleteWebSession ({ sessionId }) {
     return sessionId && this.docs.delete({
       TableName: this.constants.MAINTAINER_WEB_SESSION_TABLE,
       Key: { sessionId }
@@ -59,7 +55,7 @@ class MaintainerAuthController {
       await this.docs.delete({
         TableName: this.constants.MAINTAINER_REGISTRATION_TABLE,
         Key: { email },
-        ConditionExpression: 'token = :token AND expiration >= :now',
+        ConditionExpression: 'registrationToken = :token AND expiration >= :now',
         ExpressionAttributeValues: {
           ':token': token,
           ':now': Date.now() / 1000

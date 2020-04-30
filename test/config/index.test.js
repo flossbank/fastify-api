@@ -37,7 +37,7 @@ test('config | getQueueUrl', (t) => {
 })
 
 test('config | getUrlHost', (t) => {
-  t.deepEqual(t.context.config.getUrlHost(), 'url_host')
+  t.deepEqual(t.context.config.getUrlConfig().URL_HOST, 'url_host')
 })
 
 test('config | getStripeToken', (t) => {
@@ -46,5 +46,5 @@ test('config | getStripeToken', (t) => {
 
 test('config | getUrlHost fallback', (t) => {
   t.context.config.env = {}
-  t.deepEqual(t.context.config.getUrlHost(), 'api.flossbank.io')
+  t.deepEqual(t.context.config.getUrlConfig().URL_HOST, 'api.flossbank.io')
 })

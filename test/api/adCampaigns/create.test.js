@@ -1,15 +1,16 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
+const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
       name: 'Honesty',
       email: 'honey@etsy.com',
       password: 'beekeeperbookkeeper'
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
+    t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
     t.context.adId1 = await db.createAdDraft(advertiserId1, {
       name: 'Teacher Fund #1',
       title: 'Teacher Fund',
@@ -29,6 +30,7 @@ test.before(async (t) => {
       password: 'beekeeperbookkeeper'
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
+    t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
     t.context.adId3 = await db.createAdDraft(advertiserId2, {
       name: 'Teacher Fund #5',
       title: 'Teacher Fund 5',
@@ -40,9 +42,6 @@ test.before(async (t) => {
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.advertiser.getWebSession.resolves({
-    advertiserId: t.context.advertiserId1
-  })
 })
 
 test.afterEach(async (t) => {
@@ -54,7 +53,6 @@ test.after.always(async (t) => {
 })
 
 test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
-  t.context.auth.advertiser.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
@@ -66,7 +64,9 @@ test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
         name: 'camp pain 1'
       }
     },
-    headers: { authorization: 'not a valid token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -85,7 +85,9 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
       adDrafts: [t.context.adId1, t.context.adId2],
       keepDrafts: true
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -106,9 +108,6 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
 })
 
 test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts', async (t) => {
-  t.context.auth.advertiser.getWebSession.resolves({
-    advertiserId: t.context.advertiserId2
-  })
   const campaignToCreate = {
     maxSpend: 500000,
     cpm: 500000,
@@ -121,7 +120,9 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
       adCampaign: campaignToCreate,
       adDrafts: [t.context.adId3]
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -154,7 +155,9 @@ test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
     payload: {
       adCampaign: campaignToCreate
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -185,7 +188,9 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
     payload: {
       adCampaign: campaignToCreate
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -220,7 +225,9 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
       adDrafts: [t.context.adId1],
       keepDrafts: true
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -249,7 +256,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -262,7 +271,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -275,7 +286,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         cpm: 500000
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -283,7 +296,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {},
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -305,7 +320,9 @@ test('POST `/ad-campaign/create` 400 bad request | trash ads', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
   t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
@@ -324,7 +341,9 @@ test('POST `/ad-campaign/create` 500 server error', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

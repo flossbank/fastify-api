@@ -33,7 +33,6 @@ const userCompleteRegistration = require('../api/user/complete-registration')
 const requestLoginUser = require('../api/user/request-login')
 const completeLoginUser = require('../api/user/complete-login')
 const logoutUser = require('../api/user/logout')
-const getUser = require('../api/user/get')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -55,9 +54,10 @@ const startSession = require('../api/session/start')
 const completeSession = require('../api/session/complete')
 
 // Middleware
-const userWebAuthMiddleware = require('../middleware/user')
-const advertiserUIAuthMiddleware = require('../middleware/advertiser')
-const maintainerUIAuthMiddleware = require('../middleware/maintainer')
+// const userWebMiddleware = require('../middleware/userWeb') // for when we have user routes (e.g. donation)
+const userCliMiddleware = require('../middleware/userCli')
+const advertiserWebMiddleware = require('../middleware/advertiser')
+const maintainerWebMiddleware = require('../middleware/maintainer')
 
 // URL
 const createUrl = require('../api/url/create')
@@ -73,26 +73,25 @@ async function routes (fastify, opts, next) {
   fastify.post('/beta/unsubscribe', { schema: Schema.subscribe.betaUnsubscribe }, (req, res) => betaUnSubscribe(req, res, fastify))
 
   // Ad
-  fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.ad.create }, (req, res) => createAd(req, res, fastify))
+  fastify.post('/ad/create', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.ad.create }, (req, res) => createAd(req, res, fastify))
 
   // Ad Campaigns
-  fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.adCampaign.create }, (req, res) => createAdCampaign(req, res, fastify))
-  fastify.post('/ad-campaign/update', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.adCampaign.update }, (req, res) => updateAdCampaign(req, res, fastify))
-  fastify.post('/ad-campaign/activate', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.adCampaign.activate }, (req, res) => activateAdCampaign(req, res, fastify))
-  fastify.get('/ad-campaign/get', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.adCampaign.get }, (req, res) => getAdCampaign(req, res, fastify))
-  fastify.get('/ad-campaign/get-all', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.adCampaign.getAll }, (req, res) => getAdCampaigns(req, res, fastify))
+  fastify.post('/ad-campaign/create', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.adCampaign.create }, (req, res) => createAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/update', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.adCampaign.update }, (req, res) => updateAdCampaign(req, res, fastify))
+  fastify.post('/ad-campaign/activate', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.adCampaign.activate }, (req, res) => activateAdCampaign(req, res, fastify))
+  fastify.get('/ad-campaign/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.adCampaign.get }, (req, res) => getAdCampaign(req, res, fastify))
+  fastify.get('/ad-campaign/get-all', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.adCampaign.getAll }, (req, res) => getAdCampaigns(req, res, fastify))
 
   // Advertiser
   fastify.post('/advertiser/register', { schema: Schema.advertiser.register }, (req, res) => registerAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => getAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: Schema.advertiser.login }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', { schema: Schema.advertiser.logout }, (req, res) => logoutAdvertiser(req, res, fastify))
-  fastify.post('/advertiser/update/billing', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
+  fastify.post('/advertiser/update/billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
   fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verifyAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
+  fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User
-  fastify.get('/user/get', { preHandler: (req, res, done) => userWebAuthMiddleware(req, res, fastify, done) }, (req, res) => getUser(req, res, fastify))
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
   fastify.post('/user/verify-registration', { schema: Schema.user.verifyRegistration }, (req, res) => verifyUserRegistration(req, res, fastify))
   fastify.post('/user/complete-registration', { schema: Schema.user.completeRegistration }, (req, res) => userCompleteRegistration(req, res, fastify))
@@ -101,26 +100,26 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
 
   // Maintainer
-  fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
+  fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
   fastify.post('/maintainer/login', { schema: Schema.maintainer.login }, (req, res) => loginMaintainer(req, res, fastify))
   fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: Schema.maintainer.register }, (req, res) => registerMaintainer(req, res, fastify))
-  fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.maintainer.revenue }, (req, res) => maintainerRevenue(req, res, fastify))
-  fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
+  fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.revenue }, (req, res) => maintainerRevenue(req, res, fastify))
+  fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
   fastify.post('/maintainer/verify', { schema: Schema.maintainer.verify }, (req, res) => verifyMaintainer(req, res, fastify))
-  fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
+  fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
 
   // Packages
-  fastify.get('/package/get', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.package.get }, (req, res) => getPackages(req, res, fastify))
-  fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.package.refresh }, (req, res) => refreshPackages(req, res, fastify))
-  fastify.post('/package/update', { preHandler: (req, res, done) => maintainerUIAuthMiddleware(req, res, fastify, done), schema: Schema.package.update }, (req, res) => updatePackages(req, res, fastify))
+  fastify.get('/package/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.get }, (req, res) => getPackages(req, res, fastify))
+  fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.refresh }, (req, res) => refreshPackages(req, res, fastify))
+  fastify.post('/package/update', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.update }, (req, res) => updatePackages(req, res, fastify))
 
   // Session
-  fastify.post('/session/start', { schema: Schema.session.start }, (req, res) => startSession(req, res, fastify))
-  fastify.post('/session/complete', { schema: Schema.session.complete }, (req, res) => completeSession(req, res, fastify))
+  fastify.post('/session/start', { preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done), schema: Schema.session.start }, (req, res) => startSession(req, res, fastify))
+  fastify.post('/session/complete', { preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done), schema: Schema.session.complete }, (req, res) => completeSession(req, res, fastify))
 
   // URL
-  fastify.post('/url/create', { preHandler: (req, res, done) => advertiserUIAuthMiddleware(req, res, fastify, done), schema: Schema.url.create }, (req, res) => createUrl(req, res, fastify))
+  fastify.post('/url/create', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.url.create }, (req, res) => createUrl(req, res, fastify))
   fastify.get('/u/:id', (req, res) => getUrl(req, res, fastify))
 
   next()

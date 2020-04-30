@@ -14,18 +14,11 @@ const isRegistrationItemValid = (item) => {
 }
 
 class UserAuthController {
-  constructor ({ docs, common }) {
-    this.constants = {
-      USER_API_KEY_TABLE: 'UserApiKeys',
-      USER_WEB_SESSION_TABLE: 'UserWebSessions',
-      USER_REGISTRATION_TABLE: 'UserRegistrationTokens',
-      USER_LOGIN_TOKEN_TABLE: 'UserLoginTokens',
-      USER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
-      USER_REGISTRATION_TIMEOUT: 15 * 60 * 60, // 15 minutes in seconds
-      USER_LOGIN_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
-    }
+  constructor ({ docs, config, common }) {
+    this.constants = config.getAuthConfig().User
     this.docs = docs
     this.common = common
+    this.config = config
   }
 
   /* <cli session> */
@@ -34,6 +27,39 @@ class UserAuthController {
       TableName: this.constants.USER_API_KEY_TABLE,
       Item: { apiKey, created: Date.now(), id: userId }
     }).promise()
+  }
+
+  async cacheApiKeyNoAdsSetting ({ apiKey, noAds }) {
+    return this.docs.update({
+      TableName: this.constants.USER_API_KEY_TABLE,
+      Key: { apiKey },
+      UpdateExpression: 'SET noAds = :noAds',
+      ExpressionAttributeValues: { ':noAds': noAds }
+    }).promise()
+  }
+
+  async getApiKey ({ apiKey }) {
+    if (!apiKey) { return null }
+    try {
+      const { Item } = await this.docs.get({
+        TableName: this.constants.USER_API_KEY_TABLE,
+        Key: { apiKey }
+      }).promise()
+      return Item
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  async createCliSession ({ apiKey }) {
+    const sessionId = this.common.generateRandomToken()
+    const sessionItem = { sessionId, apiKey, created: Date.now() }
+    await this.docs.put({
+      TableName: this.constants.USER_CLI_SESSION_TABLE,
+      Item: sessionItem
+    }).promise()
+    return sessionId
   }
   /* </cli session> */
 
@@ -79,7 +105,7 @@ class UserAuthController {
       Item: { email, registrationToken, pollingToken, expiration }
     }).promise()
 
-    return { registrationToken }
+    return { registrationToken, pollingToken }
   }
 
   async validateRegistration ({ email, registrationToken, recaptchaResponse }) {

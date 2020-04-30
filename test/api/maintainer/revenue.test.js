@@ -1,14 +1,16 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
       name: 'Pete',
       email: 'pete@flossbank.com',
       password: 'petespass'
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
+    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const maintainerId2 = await db.createMaintainer({
       name: 'Goelle',
@@ -16,6 +18,7 @@ test.before(async (t) => {
       password: 'cami42069'
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
+    t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
 
     await db.createPackage({
       name: 'yttrium-server',
@@ -51,22 +54,24 @@ test.after(async (t) => {
 })
 
 test('GET `/maintainer/revenue` 401 unauthorized', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
     query: { maintainerId: t.context.maintainerId1 },
-    headers: { authorization: 'invalid token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -76,11 +81,12 @@ test('GET `/maintainer/revenue` 200 success | maint1', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId2 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -90,11 +96,13 @@ test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | nobody', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: '000000000000' })
+  const sessionId = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -108,7 +116,9 @@ test('GET `/maintainer/revenue` 500 server error', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

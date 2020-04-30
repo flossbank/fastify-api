@@ -6,15 +6,14 @@ const niceware = require('niceware')
 
 const UserAuth = require('./user')
 const AdvertiserAuth = require('./advertiser')
-
-const ApiTableName = 'flossbank_api_keys' // api keys
-const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
+const MaintainerAuth = require('./maintainer')
 
 // General purpose authentication functions with more specific logic nested per usecase
 class Auth {
   constructor ({ config, docs }) {
-    this.user = new UserAuth({ docs, common: this })
-    this.advertiser = new AdvertiserAuth({ docs, common: this })
+    this.user = new UserAuth({ docs, config, common: this })
+    this.advertiser = new AdvertiserAuth({ docs, config, common: this })
+    this.maintainer = new MaintainerAuth({ docs, config, common: this })
 
     this.docs = docs
     this.post = got.post
@@ -46,19 +45,9 @@ class Auth {
     }
   }
 
-  // Returns auth token or false
-  getAuthToken (req) {
-    if (!req.headers || !req.headers.authorization) { return false }
-    return req.headers.authorization.split(' ').pop()
-  }
-
-  async getAdSessionApiKey (req) {
-    const token = this.getAuthToken(req)
-    if (!token) { return null }
-    return this.getApiKey(token)
-  }
-
   areTokensEqual (tokenA, tokenB) {
+    if (!tokenA || !tokenB) return false
+    if (tokenA.length !== tokenB.length) return false
     return crypto.timingSafeEqual(
       Buffer.from(tokenA, 'hex'),
       Buffer.from(tokenB, 'hex')
@@ -73,7 +62,7 @@ class Auth {
     return crypto.randomBytes(32).toString('hex')
   }
 
-  async generateMagicLinkParams () {
+  generateMagicLinkParams () {
     const token = this.generateRandomToken()
     const code = this.niceware.generatePassphrase(4) // 2 words pls
       .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
@@ -88,34 +77,6 @@ class Auth {
     const res = await this.post('https://www.google.com/recaptcha/api/siteverify', { body: form })
     const body = JSON.parse(res.body)
     return body.success
-  }
-
-  async getApiKey (key) {
-    if (!key) { return null }
-    try {
-      const { Item } = await this.docs.get({
-        TableName: ApiTableName,
-        Key: { key }
-      }).promise()
-      return Item
-    } catch (_) {
-      return null
-    }
-  }
-
-  async createAdSession (req) {
-    // standard authorization header is `{ authorization: 'Bearer token' }`
-    const apiKey = req.headers.authorization.split(' ').pop()
-    const sessionId = crypto.randomBytes(16).toString('hex')
-    await this.docs.put({
-      TableName: AdSessionTableName,
-      Item: {
-        sessionId,
-        apiKey,
-        created: Date.now()
-      }
-    }).promise()
-    return sessionId
   }
 }
 

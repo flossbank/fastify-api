@@ -1,8 +1,9 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
       name: 'Pete',
       email: 'pete@flossbank.com',
@@ -12,6 +13,7 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
+    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const maintainerId2 = await db.createMaintainer({
       name: 'Goelle',
@@ -22,6 +24,7 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
+    t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
 
     const maintainerId3 = await db.createMaintainer({
       name: 'Kelvin Moore Lando Calrissian',
@@ -32,6 +35,7 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId3 = maintainerId3.toHexString()
+    t.context.sessionId3 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId3 })
 
     const maintainerId4 = await db.createMaintainer({
       name: 'Steffen Dodges',
@@ -42,6 +46,7 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId4 = maintainerId4.toHexString()
+    t.context.sessionId4 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId4 })
 
     const maintainerId5 = await db.createMaintainer({
       name: 'Hickory Dickory',
@@ -50,6 +55,7 @@ test.before(async (t) => {
       tokens: {}
     })
     t.context.maintainerId5 = maintainerId5.toHexString()
+    t.context.sessionId5 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId5 })
 
     // a pkg that m4 owns that will not be changed
     await db.createPackage({
@@ -121,19 +127,19 @@ test.after.always(async (t) => {
 })
 
 test('POST `/package/refresh` 401 unauthorized', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves(null)
   t.context.registry.npm.getOwnedPackages.resolves(['unc-bootcamp-project-a'])
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
-    headers: { authorization: 'not a valid token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('POST `/package/refresh` 200 success', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.registry.npm.getOwnedPackages.resolves([
     'caesar', // a new pkg
     'yttrium-server', // remains the same
@@ -145,7 +151,9 @@ test('POST `/package/refresh` 200 success', async (t) => {
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
@@ -182,24 +190,26 @@ test('POST `/package/refresh` 200 success', async (t) => {
 })
 
 test('POST `/package/refresh` 400 bad request | not a maintainer', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: '000000000000' })
+  const sessionId = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/package/refresh` 400 bad request | no tokens', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId5 })
-
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId5}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -210,7 +220,9 @@ test('POST `/package/refresh` 400 bad request', async (t) => {
     method: 'POST',
     url: '/package/refresh',
     payload: {},
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId5}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -218,19 +230,22 @@ test('POST `/package/refresh` 400 bad request', async (t) => {
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'github.com' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId5}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/package/refresh` 500 server error', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   t.context.db.refreshPackageOwnership = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

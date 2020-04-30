@@ -1,9 +1,9 @@
 const test = require('ava')
-const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db }) => {
     await db.createMaintainer({
       firstName: 'Honesty',
       lastName: 'Honor',
@@ -66,7 +66,7 @@ test('POST `/maintainer/login` 200 success', async (t) => {
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
+  t.true(res.headers['set-cookie'].includes(MAINTAINER_WEB_SESSION_COOKIE))
 })
 
 test('POST `/maintainer/login` 200 success | email case does not matter', async (t) => {
@@ -76,7 +76,7 @@ test('POST `/maintainer/login` 200 success | email case does not matter', async 
     body: { email: 'HOney@ETSY.coM', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
+  t.true(res.headers['set-cookie'].includes(MAINTAINER_WEB_SESSION_COOKIE))
 })
 
 test('POST `/maintainer/login` 400 bad request', async (t) => {

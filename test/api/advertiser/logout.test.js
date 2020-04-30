@@ -3,7 +3,7 @@ const { ADVERTISER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -37,7 +37,7 @@ test('POST `/advertiser/logout` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/logout` 500 server error', async (t) => {
-  t.context.auth.advertiser.deleteWebSession.throws()
+  t.context.auth.advertiser.deleteWebSession = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/logout'
