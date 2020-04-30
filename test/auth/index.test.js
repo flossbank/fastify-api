@@ -3,42 +3,34 @@ const test = require('ava')
 // const sinon = require('sinon')
 // const { Auth } = require('../../auth')
 // const { USER_SESSION_KEY, ADVERTISER_SESSION_KEY, MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
+// const { setupDynamo, cleanupDynamo } = require('../_helpers/_setup')
+test('asf', t => t.pass())
 
-test('auth stub', t => t.pass())
-// test.before(() => {
-//   sinon.stub(console, 'error')
+// test.before(async (t) => {
 //   sinon.stub(Date, 'now').returns(1234)
 //   sinon.stub(crypto, 'randomBytes').returns(Buffer.from('ff', 'hex'))
+
+//   await setupDynamo(t, async (t, docs) => {
+//     await docs.put({
+//       TableName: 'flossbank_api_keys',
+//       Item: { key: 'asdffdsa', hello: 'world' }
+//     }).promise()
+//   })
 // })
 
-// test.beforeEach((t) => {
-//   t.context.auth = new Auth()
-//   t.context.auth.docs = {
-//     get: sinon.stub().returns({ promise: sinon.stub() }),
-//     put: sinon.stub().returns({ promise: sinon.stub() }),
-//     update: sinon.stub().returns({ promise: sinon.stub() }),
-//     delete: sinon.stub().returns({ promise: sinon.stub() }),
-//     query: sinon.stub().returns({ promise: sinon.stub() })
-//   }
-//   t.context.auth.ses = {
-//     sendEmail: sinon.stub().returns({ promise: sinon.stub() })
-//   }
+// test.beforeEach(async (t) => {
+//   t.context.auth = new Auth({
+//     docs: t.context.docs,
+//     config: { getRecaptchaSecret: () => 'abc' }
+//   })
 //   t.context.auth.post = sinon.stub().resolves({ body: JSON.stringify({ success: true }) })
 //   t.context.auth.niceware = { generatePassphrase: sinon.stub().returns(['snot', 'otter']) }
-//   t.context.auth.recaptchaSecret = 'abc'
 // })
 
-// test.after(() => {
-//   console.error.restore()
+// test.after.always(async (t) => {
+//   await cleanupDynamo(t)
 //   Date.now.restore()
 //   crypto.randomBytes.restore()
-// })
-
-// test('cacheUserOptOutSetting', async (t) => {
-//   await t.context.auth.cacheUserOptOutSetting('api-key', true)
-//   const putArgs = t.context.auth.docs.update.lastCall.args[0]
-//   t.deepEqual(putArgs.Key, { key: 'api-key' })
-//   t.deepEqual(putArgs.ExpressionAttributeValues, { ':setting': true })
 // })
 
 // test('getAuthToken | no token', (t) => {
@@ -50,49 +42,6 @@ test('auth stub', t => t.pass())
 //     t.context.auth.getAuthToken({ headers: { authorization: 'bearer hotaf' } }),
 //     'hotaf'
 //   )
-// })
-
-// test('getSessionToken | advertiser', (t) => {
-//   const token = t.context.auth.getSessionToken({
-//     cookies: {
-//       [ADVERTISER_SESSION_KEY]: 'adv_sess'
-//     }
-//   }, t.context.auth.authKinds.ADVERTISER)
-//   t.is(token, 'adv_sess')
-// })
-
-// test('getSessionToken | maintainer', (t) => {
-//   const token = t.context.auth.getSessionToken({
-//     cookies: {
-//       [MAINTAINER_SESSION_KEY]: 'mnt_sess'
-//     }
-//   }, t.context.auth.authKinds.MAINTAINER)
-//   t.is(token, 'mnt_sess')
-// })
-
-// test('getSessionToken | user', (t) => {
-//   const token = t.context.auth.getSessionToken({
-//     cookies: {
-//       [USER_SESSION_KEY]: 'user_sess'
-//     }
-//   }, t.context.auth.authKinds.USER)
-//   t.is(token, 'user_sess')
-// })
-
-// test('getSessionToken | invalid kind', (t) => {
-//   const token = t.context.auth.getSessionToken({
-//     cookies: {
-//       [MAINTAINER_SESSION_KEY]: 'mnt_sess'
-//     }
-//   }, 'josh groban')
-//   t.is(token, false)
-// })
-
-// test('getSessionToken | no token in cookie', (t) => {
-//   const token = t.context.auth.getSessionToken({
-//     cookies: {}
-//   }, t.context.auth.authKinds.MAINTAINER)
-//   t.is(token, false)
 // })
 
 // test('getAdSessionApiKey | missing headers', async (t) => {
@@ -372,8 +321,10 @@ test('auth stub', t => t.pass())
 // })
 
 // test('getApiKey | success', async (t) => {
-//   t.context.auth.docs.get().promise.resolves({ Item: { key: 'asdf' } })
-//   t.deepEqual(await t.context.auth.getApiKey('ff'), { key: 'asdf' })
+//   const { auth } = t.context
+//   const item = await auth.getApiKey('asdffdsa')
+//   t.log(item)
+//   t.pass()
 // })
 
 // test('cacheApiKey | first time', async (t) => {

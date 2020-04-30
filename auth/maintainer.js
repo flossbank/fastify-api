@@ -11,7 +11,7 @@ class MaintainerAuthController {
   }
 
   /* <web session> */
-  async createMaintainerSession ({ maintainerId }) {
+  async createWebSession ({ maintainerId }) {
     const sessionId = this.common.generateRandomToken()
     const sessionItem = {
       sessionId,
@@ -33,7 +33,7 @@ class MaintainerAuthController {
     })
   }
 
-  async deleteMaintainerSession ({ sessionId }) {
+  async deleteWebSession ({ sessionId }) {
     return sessionId && this.docs.delete({
       TableName: this.constants.MAINTAINER_WEB_SESSION_TABLE,
       Key: { sessionId }

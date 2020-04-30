@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "AWS_NODEJS_CONNECTION_REUSE_ENABLED=1 node index.js",
     "lint": "standard --fix",
     "depcheck": "dependency-check ./**/*.js --unused --no-dev",
     "coverage": "nyc npm run unit-tests",
@@ -15,7 +15,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm t"
+      "pre-commit": "exit 0 || npm t"
     }
   },
   "author": "",
@@ -46,6 +46,7 @@
   "devDependencies": {
     "ava": "^3.7.1",
     "dependency-check": "^4.1.0",
+    "dynalite": "^3.1.6",
     "husky": "^3.0.8",
     "mongodb-memory-server": "^6.0.2",
     "nyc": "^14.1.1",

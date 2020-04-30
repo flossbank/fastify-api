@@ -11,7 +11,7 @@ class AdvertiserAuthController {
   }
 
   /* <web session> */
-  async createAdvertiserSession ({ advertiserId }) {
+  async createWebSession ({ advertiserId }) {
     const sessionId = this.common.generateRandomToken()
     const sessionItem = {
       sessionId,
@@ -33,7 +33,7 @@ class AdvertiserAuthController {
     })
   }
 
-  async deleteAdvertiserSession ({ sessionId }) {
+  async deleteWebSession ({ sessionId }) {
     if (!sessionId) { return }
     return this.docs.delete({
       TableName: this.constants.ADVERTISER_WEB_SESSION_TABLE,
@@ -60,7 +60,7 @@ class AdvertiserAuthController {
       await this.docs.delete({
         TableName: this.constants.ADVERTISER_REGISTRATION_TABLE,
         Key: { email },
-        ConditionExpression: 'token = :token AND expiration >= :now',
+        ConditionExpression: 'registrationToken = :token AND expiration >= :now',
         ExpressionAttributeValues: {
           ':token': token,
           ':now': Date.now() / 1000

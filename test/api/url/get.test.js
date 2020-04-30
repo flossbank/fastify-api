@@ -17,17 +17,19 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('GET /u/asdf | 301', async (t) => {
+test('GET /u/<urlId> | 301', async (t) => {
+  const { url } = t.context
+  const shortUrl = await url.createUrl('http://localhost.com', 'advertiser-id')
+  const urlId = shortUrl.slice(shortUrl.lastIndexOf('/') + 1)
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/u/asdf'
+    url: `/u/${urlId}`
   })
   t.is(res.statusCode, 301)
   t.is(res.headers.location, 'http://localhost.com')
 })
 
 test('GET /u/fdsa | 404', async (t) => {
-  t.context.url.getUrl.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/u/fdsa'
