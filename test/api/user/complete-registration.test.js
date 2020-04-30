@@ -1,10 +1,8 @@
 const test = require('ava')
-const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, () => {})
-  sinon.stub(Date, 'now').returns(1234)
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -17,7 +15,6 @@ test.afterEach(async (t) => {
 
 test.after(async (t) => {
   await after(t)
-  Date.now.restore()
 })
 
 test('POST `/user/complete-registration` 400 bad request', async (t) => {
@@ -51,29 +48,34 @@ test('POST `/user/complete-registration` 400 bad request', async (t) => {
 })
 
 test('POST `/user/complete-registration` 200 success', async (t) => {
+  const { auth } = t.context
+  const { pollingToken } = await auth.user.beginRegistration({ email: 'peter@quo.cc' })
+  await auth.user.updateRegistrationApiKey({ email: 'peter@quo.cc', apiKey: 'asdf' })
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-registration',
-    payload: { email: 'PETER@quo.cc', pollingToken: 'token' }
+    payload: { email: 'PETER@quo.cc', pollingToken }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
-  t.is(payload.success, true)
-  t.true(payload.apiKey.length > 0)
+  t.deepEqual(payload, { success: true, apiKey: 'asdf' })
 })
 
-test('POST `/user/complete-registration` 404 not found', async (t) => {
-  t.context.auth.user.completeRegistration.resolves()
+test('POST `/user/complete-registration` 404 registration incomplete', async (t) => {
+  const { auth } = t.context
+  const { pollingToken } = await auth.user.beginRegistration({ email: 'joseph@quo.cc' })
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-registration',
-    payload: { email: 'peter@quo.cc', pollingToken: 'token' }
+    payload: { email: 'joseph@quo.cc', pollingToken }
   })
   t.deepEqual(res.statusCode, 404)
 })
 
 test('POST `/user/complete-registration` 500 server error', async (t) => {
-  t.context.auth.user.completeRegistration.throws()
+  t.context.auth.user.completeRegistration = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-registration',

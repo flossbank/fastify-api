@@ -1,33 +1,83 @@
-function Config ({ env }) {
-  this.env = env
-}
+class Config {
+  constructor ({ env }) {
+    this.env = env
+  }
 
-Config.prototype.getAwsConfig = function getAwsConfig () {
-  return {
-    accessKeyId: this.env.access_key,
-    secretAccessKey: this.env.secret_key,
-    region: this.env.region
+  getAwsConfig () {
+    return {
+      accessKeyId: this.env.access_key,
+      secretAccessKey: this.env.secret_key,
+      region: this.env.region
+    }
+  }
+
+  getAuthConfig () {
+    return {
+      Advertiser: {
+        TableAttributes: [
+          { TableName: 'AdvertiserWebSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } },
+          { TableName: 'AdvertiserRegistrationTokens', KeyAttribute: { AttributeName: 'email', AttributeType: 'S' } }
+        ],
+        ADVERTISER_WEB_SESSION_TABLE: 'AdvertiserWebSessions',
+        ADVERTISER_REGISTRATION_TABLE: 'AdvertiserRegistrationTokens',
+        ADVERTISER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
+        ADVERTISER_REGISTRATION_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+      },
+      Maintainer: {
+        TableAttributes: [
+          { TableName: 'MaintainerWebSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } },
+          { TableName: 'MaintainerRegistrationTokens', KeyAttribute: { AttributeName: 'email', AttributeType: 'S' } }
+        ],
+        MAINTAINER_WEB_SESSION_TABLE: 'MaintainerWebSessions',
+        MAINTAINER_REGISTRATION_TABLE: 'MaintainerRegistrationTokens',
+        MAINTAINER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
+        MAINTAINER_REGISTRATION_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+      },
+      User: {
+        TableAttributes: [
+          { TableName: 'UserApiKeys', KeyAttribute: { AttributeName: 'apiKey', AttributeType: 'S' } },
+          { TableName: 'UserWebSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } },
+          { TableName: 'UserRegistrationTokens', KeyAttribute: { AttributeName: 'email', AttributeType: 'S' } },
+          { TableName: 'UserLoginTokens', KeyAttribute: { AttributeName: 'token', AttributeType: 'S' } },
+          { TableName: 'UserCliSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } }
+        ],
+        USER_API_KEY_TABLE: 'UserApiKeys',
+        USER_CLI_SESSION_TABLE: 'UserCliSessions',
+        USER_WEB_SESSION_TABLE: 'UserWebSessions',
+        USER_REGISTRATION_TABLE: 'UserRegistrationTokens',
+        USER_LOGIN_TOKEN_TABLE: 'UserLoginTokens',
+        USER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
+        USER_REGISTRATION_TIMEOUT: 15 * 60 * 60, // 15 minutes in seconds
+        USER_LOGIN_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+      }
+    }
+  }
+
+  getMongoUri () {
+    return this.env.mongo_uri
+  }
+
+  getRecaptchaSecret () {
+    return this.env.recaptcha_secret
+  }
+
+  getQueueUrl () {
+    return this.env.queue_url
+  }
+
+  getUrlConfig () {
+    return {
+      TableAttributes: [
+        { TableName: 'ShortUrls', KeyAttribute: { AttributeName: 'urlId', AttributeType: 'S' } }
+      ],
+      URL_HOST: this.env.url_host || 'api.flossbank.io',
+      URL_TABLE: 'ShortUrls'
+    }
+  }
+
+  getStripeToken () {
+    return this.env.stripe_token
   }
 }
 
-Config.prototype.getMongoUri = function getMongoUri () {
-  return this.env.mongo_uri
-}
-
-Config.prototype.getRecaptchaSecret = function getRecaptchaSecret () {
-  return this.env.recaptcha_secret
-}
-
-Config.prototype.getQueueUrl = function getQueueUrl () {
-  return this.env.queue_url
-}
-
-Config.prototype.getUrlHost = function getUrlHost () {
-  return this.env.url_host || 'api.flossbank.io'
-}
-
-Config.prototype.getStripeToken = function getStripeToken () {
-  return this.env.stripe_token
-}
-
-exports.Config = Config
+module.exports = { Config }

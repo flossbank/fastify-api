@@ -4,11 +4,11 @@ module.exports = async (req, res, ctx) => {
     const email = rawEmail.toLowerCase()
 
     ctx.log.info('registering new user with email %s', email)
-    const { registrationToken } = await ctx.auth.user.beginRegistration({ email })
+    const { registrationToken, pollingToken } = await ctx.auth.user.beginRegistration({ email })
 
     await ctx.email.sendUserActivationEmail(email, registrationToken)
 
-    res.send({ success: true })
+    res.send({ success: true, pollingToken })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

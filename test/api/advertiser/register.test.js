@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 const { ALREADY_EXISTS_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {

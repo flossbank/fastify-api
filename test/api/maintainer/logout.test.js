@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {

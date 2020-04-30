@@ -2,7 +2,7 @@ const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -40,11 +40,13 @@ test('POST `/user/register` 200 success', async (t) => {
     payload: { email: 'peter@quo.cc' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  const payload = JSON.parse(res.payload)
+  t.true(payload.success)
+  t.true(payload.pollingToken.length > 0)
 })
 
 test('POST `/user/register` 500 server error', async (t) => {
-  t.context.auth.user.beginRegistration.throws()
+  t.context.auth.user.beginRegistration = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/register',

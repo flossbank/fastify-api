@@ -2,12 +2,12 @@ const fastifyPlugin = require('fastify-plugin')
 const { base32 } = require('rfc4648')
 const { randomBytes } = require('crypto')
 
-const UrlTableName = 'flossbank_urls'
-
 class Url {
   constructor ({ config, docs }) {
     this.docs = docs
-    this.host = config.getUrlHost()
+    const { URL_HOST, URL_TABLE } = config.getUrlConfig()
+    this.host = URL_HOST
+    this.urlTable = URL_TABLE
   }
 
   // generate ID, persist it
@@ -22,7 +22,7 @@ class Url {
       const urlId = base32.stringify(randomBytes(5))
       try {
         await this.docs.put({
-          TableName: UrlTableName,
+          TableName: this.urlTable,
           Item: {
             urlId,
             location,
@@ -50,7 +50,7 @@ class Url {
     let urlInfo = {}
     try {
       const { Attributes } = await this.docs.update({
-        TableName: UrlTableName,
+        TableName: this.urlTable,
         Key: { urlId },
         UpdateExpression: 'SET hits = hits + :one',
         ConditionExpression: 'urlId = :urlId',

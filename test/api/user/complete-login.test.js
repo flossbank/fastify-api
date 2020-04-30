@@ -3,8 +3,11 @@ const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
-    await db.createUser({ email: 'honey@etsy.com', apiKey: 'ff', billingInfo: {} })
+  await before(t, async ({ db, auth }) => {
+    const { id } = await db.createUser({ email: 'honey@etsy.com' })
+    t.context.userId = id.toHexString()
+    const { token } = await auth.user.beginAuthentication({ userId: t.context.userId })
+    t.context.token = token
   })
 })
 
@@ -21,7 +24,6 @@ test.after(async (t) => {
 })
 
 test('POST `/user/complete-login` 401 unauthorized | bad token', async (t) => {
-  t.context.auth.user.completeAuthentication.resolves({ success: false })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-login',
@@ -30,7 +32,7 @@ test('POST `/user/complete-login` 401 unauthorized | bad token', async (t) => {
   t.is(res.statusCode, 401)
 })
 
-test('POST `/user/complete-login` 500 invalid user', async (t) => {
+test('POST `/user/complete-login` 404 invalid user', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-login',
@@ -43,10 +45,11 @@ test('POST `/user/complete-login` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-login',
-    body: { email: 'HONEY@etsy.com', token: 'totes valid' }
+    body: { email: 'HONEY@etsy.com', token: t.context.token }
   })
   t.is(res.statusCode, 200)
-  t.is(res.headers['set-cookie'], `${USER_WEB_SESSION_COOKIE}=user-session; Path=/`)
+  t.true(res.headers['set-cookie'].includes(USER_WEB_SESSION_COOKIE))
+
   const payload = JSON.parse(res.payload)
   t.is(payload.success, true)
   t.is(payload.user.email, 'honey@etsy.com')

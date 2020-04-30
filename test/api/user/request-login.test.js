@@ -2,7 +2,7 @@ const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db }) => {
     await db.createUser({ email: 'honey@etsy.com' })
   })
 })
@@ -28,7 +28,10 @@ test('POST `/user/request-login` 200 success', async (t) => {
 
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
-  t.deepEqual(payload, { success: true, code: 'code' })
+
+  const emailArgs = t.context.email.sendUserMagicLinkEmail.lastCall.args[1]
+  t.is(payload.success, true)
+  t.is(payload.code, emailArgs.code)
 })
 
 test('POST `/user/request-login` 404 not found', async (t) => {

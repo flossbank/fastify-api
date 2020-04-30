@@ -15,7 +15,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "exit 0 || npm t"
+      "pre-commit": "npm t"
     }
   },
   "author": "",
