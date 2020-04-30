@@ -18,15 +18,6 @@ const { Stripe } = require('./stripe')
   // AWS resources
   AWS.config.update(config.getAwsConfig())
   const docs = new AWS.DynamoDB.DocumentClient()
-  const a = await docs.update({
-    TableName: 'UserRegistrationTokens',
-    Key: { email: 'asdf@asdf.com' },
-    UpdateExpression: 'SET registrationToken = :fee',
-    ExpressionAttributeValues: {
-      ':fee': 'fee'
-    }
-  }).promise()
-  console.error(a)
 
   const db = new Db({ config })
   const auth = new Auth({ config, docs })
