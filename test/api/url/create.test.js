@@ -1,18 +1,18 @@
 const test = require('ava')
 const sinon = require('sinon')
+const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 const { base32 } = require('rfc4648')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t)
+  await before(t, async ({ auth }) => {
+    t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: 'advertiser-id' })
+  })
   sinon.stub(base32, 'stringify').returns('DEADBEEF')
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.advertiser.getWebSession = () => ({
-    advertiserId: 'advertiser-id'
-  })
 })
 
 test.afterEach(async (t) => {
@@ -24,11 +24,13 @@ test.after(async (t) => {
 })
 
 test('POST /url/create | 401', async (t) => {
-  t.context.auth.advertiser.getWebSession = () => null
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/url/create',
-    body: { url: 'http://localhost.com' }
+    body: { url: 'http://localhost.com' },
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.is(res.statusCode, 401)
 })
@@ -37,7 +39,10 @@ test('POST /url/create | 200', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/url/create',
-    body: { url: 'http://localhost.com' }
+    body: { url: 'http://localhost.com' },
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
+    }
   })
   t.is(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -50,7 +55,10 @@ test('POST /url/create | 400', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/url/create',
-    body: {}
+    body: {},
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -60,7 +68,10 @@ test('POST /url/create | 500', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/url/create',
-    body: { url: 'http://localhost.com' }
+    body: { url: 'http://localhost.com' },
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

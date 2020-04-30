@@ -1,8 +1,9 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
       firstName: 'Honesty',
       lastName: 'Empathy',
@@ -14,6 +15,8 @@ test.before(async (t) => {
     await db.updateAdvertiserCustomerId(t.context.advertiserId1, 'honesty-cust-id')
     await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, true, '2222')
 
+    t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+
     // no billing info
     const advertiserId2 = await db.createAdvertiser({
       firstName: 'Papa',
@@ -23,14 +26,13 @@ test.before(async (t) => {
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
     await db.verifyAdvertiser('papa@papajohns.com')
+
+    t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.advertiser.getWebSession.resolves({
-    advertiserId: t.context.advertiserId1
-  })
 })
 
 test.afterEach(async (t) => {
@@ -42,13 +44,13 @@ test.after.always(async (t) => {
 })
 
 test('POST `/advertiser/update` 401 unauthorized', async (t) => {
-  t.context.auth.advertiser.getWebSession.resolves(null)
-
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
     payload: { billingToken: 'new-stripe-token', last4: '1234' },
-    headers: { authorization: 'not a valid token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -58,7 +60,9 @@ test('POST `/advertiser/update` 200 success | update card on file', async (t) =>
     method: 'POST',
     url: '/advertiser/update/billing',
     payload: { billingToken: 'stripe-billing-token', last4: '1234' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
@@ -72,14 +76,13 @@ test('POST `/advertiser/update` 200 success | update card on file', async (t) =>
 })
 
 test('POST `/advertiser/update` 200 success | first card added', async (t) => {
-  t.context.auth.advertiser.getWebSession.resolves({
-    advertiserId: t.context.advertiserId2
-  })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
     payload: { billingToken: 'stripe-billing-token', last4: '1234' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
@@ -98,7 +101,9 @@ test('POST `/advertiser/update` 500 server error', async (t) => {
     method: 'POST',
     url: '/advertiser/update/billing',
     payload: { billingToken: 'new-stripe-token', last4: '1234' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })
