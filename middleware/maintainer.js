@@ -12,7 +12,8 @@ module.exports = async (req, res, ctx) => {
     }
     req.session = session
   } catch (e) {
-    res.status(401)
+    ctx.log.error(e)
+    res.status(500)
     return res.send()
   }
 }

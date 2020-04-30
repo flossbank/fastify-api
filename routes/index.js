@@ -33,7 +33,6 @@ const userCompleteRegistration = require('../api/user/complete-registration')
 const requestLoginUser = require('../api/user/request-login')
 const completeLoginUser = require('../api/user/complete-login')
 const logoutUser = require('../api/user/logout')
-const getUser = require('../api/user/get')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -55,8 +54,8 @@ const startSession = require('../api/session/start')
 const completeSession = require('../api/session/complete')
 
 // Middleware
+// const userWebMiddleware = require('../middleware/userWeb') // for when we have user routes (e.g. donation)
 const userCliMiddleware = require('../middleware/userCli')
-const userWebMiddleware = require('../middleware/userWeb')
 const advertiserWebMiddleware = require('../middleware/advertiser')
 const maintainerWebMiddleware = require('../middleware/maintainer')
 
@@ -93,7 +92,6 @@ async function routes (fastify, opts, next) {
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User
-  fastify.get('/user/get', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => getUser(req, res, fastify))
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
   fastify.post('/user/verify-registration', { schema: Schema.user.verifyRegistration }, (req, res) => verifyUserRegistration(req, res, fastify))
   fastify.post('/user/complete-registration', { schema: Schema.user.completeRegistration }, (req, res) => userCompleteRegistration(req, res, fastify))

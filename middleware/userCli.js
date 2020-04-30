@@ -10,7 +10,8 @@ module.exports = async (req, res, ctx) => {
     }
     req.apiKeyInfo = apiKeyInfo
   } catch (e) {
-    res.status(401)
+    ctx.log.error(e)
+    res.status(500)
     return res.send()
   }
 }
