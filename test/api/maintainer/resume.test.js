@@ -1,9 +1,9 @@
 const test = require('ava')
-const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
       name: 'Honesty',
       email: 'honey@etsy.com',
@@ -12,14 +12,12 @@ test.before(async (t) => {
     })
     t.context.maintainerId = maintainerId1.toHexString()
     await db.verifyMaintainer('honey@etsy.com')
+    t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId })
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.maintainer.getWebSession.resolves({
-    maintainerId: t.context.maintainerId
-  })
 })
 
 test.afterEach(async (t) => {
@@ -31,12 +29,11 @@ test.after(async (t) => {
 })
 
 test('GET `/maintainer/resume` 401 unauthorized | no session', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
     }
   })
   t.deepEqual(res.statusCode, 401)
@@ -47,7 +44,7 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
     }
   })
   t.deepEqual(res.statusCode, 200)
@@ -63,7 +60,7 @@ test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
     }
   })
   t.deepEqual(res.statusCode, 400)
@@ -75,7 +72,7 @@ test('GET `/maintainer/resume` 500 | maintainer query error', async (t) => {
     method: 'GET',
     url: '/maintainer/resume',
     headers: {
-      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
     }
   })
   t.deepEqual(res.statusCode, 500)

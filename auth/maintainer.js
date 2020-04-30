@@ -59,7 +59,7 @@ class MaintainerAuthController {
       await this.docs.delete({
         TableName: this.constants.MAINTAINER_REGISTRATION_TABLE,
         Key: { email },
-        ConditionExpression: 'token = :token AND expiration >= :now',
+        ConditionExpression: 'registrationToken = :token AND expiration >= :now',
         ExpressionAttributeValues: {
           ':token': token,
           ':now': Date.now() / 1000

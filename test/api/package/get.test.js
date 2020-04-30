@@ -1,14 +1,16 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
       name: 'Pete',
       email: 'pete@flossbank.com',
       password: 'petespass'
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
+    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const pkgId1 = await db.createPackage({
       name: 'yttrium-server',
@@ -34,22 +36,25 @@ test.after.always(async (t) => {
 })
 
 test('GET `/package/get` 401 unauthorized', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',
     query: { maintainerId: t.context.maintainerId1 },
-    headers: { authorization: 'invalid token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('GET `/package/get` 200 success', async (t) => {
-  t.context.auth.maintainer.getWebSession.resolves({ maintainerId: t.context.maintainerId1 })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -73,7 +78,9 @@ test('GET `/package/get` 500 server error', async (t) => {
     method: 'GET',
     url: '/package/get',
     query: { maintainerId: 'test-maintainer-0' },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

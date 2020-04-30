@@ -2,7 +2,7 @@ const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
+  await before(t, async ({ db }) => {
     t.context.token = await db.betaSubscribe('poopy_feet@gmail.com')
   })
 })

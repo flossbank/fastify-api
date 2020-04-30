@@ -6,6 +6,7 @@ const niceware = require('niceware')
 
 const UserAuth = require('./user')
 const AdvertiserAuth = require('./advertiser')
+const MaintainerAuth = require('./maintainer')
 
 const ApiTableName = 'flossbank_api_keys' // api keys
 const AdSessionTableName = 'flossbank_ad_session' // temporary holding ground for cli sessionIds
@@ -15,6 +16,7 @@ class Auth {
   constructor ({ config, docs }) {
     this.user = new UserAuth({ docs, common: this })
     this.advertiser = new AdvertiserAuth({ docs, common: this })
+    this.maintainer = new MaintainerAuth({ docs, common: this })
 
     this.docs = docs
     this.post = got.post
