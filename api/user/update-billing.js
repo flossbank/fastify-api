@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
       customerId = user.billingInfo.customerId
     }
 
-    // Update the stripe advertiser with the new billing token (stripe CC card token) if it exists
+    // Update the stripe user with the new billing token (stripe CC card token) if it exists
     await ctx.stripe.updateStripeCustomer(customerId, billingToken)
     await ctx.db.updateUserHasCardInfo(req.session.userId, true, last4)
     res.send({ success: true })
