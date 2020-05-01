@@ -43,7 +43,7 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/advertiser/update` 401 unauthorized', async (t) => {
+test('POST `/advertiser/update/billing` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -55,7 +55,7 @@ test('POST `/advertiser/update` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/advertiser/update` 200 success | update card on file', async (t) => {
+test('POST `/advertiser/update/billing` 200 success | update card on file', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -75,7 +75,7 @@ test('POST `/advertiser/update` 200 success | update card on file', async (t) =>
   t.true(t.context.stripe.createStripeCustomer.notCalled)
 })
 
-test('POST `/advertiser/update` 200 success | first card added', async (t) => {
+test('POST `/advertiser/update/billing` 200 success | first card added', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -95,7 +95,7 @@ test('POST `/advertiser/update` 200 success | first card added', async (t) => {
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
 })
 
-test('POST `/advertiser/update` 500 server error', async (t) => {
+test('POST `/advertiser/update/billing` 500 server error', async (t) => {
   t.context.db.updateAdvertiserHasCardInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
