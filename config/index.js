@@ -21,7 +21,7 @@ class Config {
         ADVERTISER_WEB_SESSION_TABLE: 'AdvertiserWebSessions',
         ADVERTISER_REGISTRATION_TABLE: 'AdvertiserRegistrationTokens',
         ADVERTISER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
-        ADVERTISER_REGISTRATION_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+        ADVERTISER_REGISTRATION_TIMEOUT: 15 * 60 // 15 minutes in seconds
       },
       Maintainer: {
         TableAttributes: [
@@ -31,7 +31,7 @@ class Config {
         MAINTAINER_WEB_SESSION_TABLE: 'MaintainerWebSessions',
         MAINTAINER_REGISTRATION_TABLE: 'MaintainerRegistrationTokens',
         MAINTAINER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
-        MAINTAINER_REGISTRATION_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+        MAINTAINER_REGISTRATION_TIMEOUT: 15 * 60 // 15 minutes in seconds
       },
       User: {
         TableAttributes: [
@@ -47,8 +47,8 @@ class Config {
         USER_REGISTRATION_TABLE: 'UserRegistrationTokens',
         USER_LOGIN_TOKEN_TABLE: 'UserLoginTokens',
         USER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
-        USER_REGISTRATION_TIMEOUT: 15 * 60 * 60, // 15 minutes in seconds
-        USER_LOGIN_TIMEOUT: 15 * 60 * 60 // 15 minutes in seconds
+        USER_REGISTRATION_TIMEOUT: 15 * 60, // 15 minutes in seconds
+        USER_LOGIN_TIMEOUT: 15 * 60 // 15 minutes in seconds
       }
     }
   }
