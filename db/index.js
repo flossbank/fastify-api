@@ -49,11 +49,11 @@ Db.prototype.createUser = async function createUser ({ email }) {
   return { id: insertedId, apiKey }
 }
 
-Db.prototype.updateUserHasCardInfo = async function updateUserHasCardInfo (id, hasCard, last4) {
+Db.prototype.updateUserHasCardInfo = async function updateUserHasCardInfo (id, last4) {
   return this.db.collection('users').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: { 'billingInfo.cardOnFile': hasCard, 'billingInfo.last4': last4 }
+    $set: { 'billingInfo.last4': last4 }
   })
 }
 
@@ -167,11 +167,11 @@ Db.prototype.updateAdvertiserCustomerId = async function updateAdvertiserCustome
   })
 }
 
-Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, hasCard, last4) {
+Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, last4) {
   return this.db.collection('advertisers').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: { 'billingInfo.cardOnFile': hasCard, 'billingInfo.last4': last4 }
+    $set: { 'billingInfo.last4': last4 }
   })
 }
 
