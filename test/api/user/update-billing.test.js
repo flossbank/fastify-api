@@ -7,7 +7,7 @@ test.before(async (t) => {
     const { id: userId1 } = await db.createUser({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
     await db.updateUserCustomerId(t.context.userId1, 'honesty-cust-id')
-    await db.updateUserHasCardInfo(t.context.userId1, true, '2222')
+    await db.updateUserHasCardInfo(t.context.userId1, '2222')
 
     t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
 
@@ -57,7 +57,6 @@ test('POST `/user/update-billing` 200 success | update card on file', async (t) 
 
   const user = await t.context.db.getUserById(t.context.userId1)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
-  t.deepEqual(user.billingInfo.cardOnFile, true)
   t.deepEqual(user.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.notCalled)
@@ -77,7 +76,6 @@ test('POST `/user/update-billing` 200 success | first card added', async (t) => 
 
   const user = await t.context.db.getUserById(t.context.userId2)
   t.deepEqual(user.billingInfo.customerId, 'test-stripe-id')
-  t.deepEqual(user.billingInfo.cardOnFile, true)
   t.deepEqual(user.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.calledOnce)

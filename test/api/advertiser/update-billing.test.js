@@ -13,7 +13,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     await db.verifyAdvertiser('honey@etsy.com')
     await db.updateAdvertiserCustomerId(t.context.advertiserId1, 'honesty-cust-id')
-    await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, true, '2222')
+    await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, '2222')
 
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
@@ -69,7 +69,6 @@ test('POST `/advertiser/update-billing` 200 success | update card on file', asyn
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
   t.deepEqual(advertiser.billingInfo.customerId, 'honesty-cust-id')
-  t.deepEqual(advertiser.billingInfo.cardOnFile, true)
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.notCalled)
@@ -89,7 +88,6 @@ test('POST `/advertiser/update-billing` 200 success | first card added', async (
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
   t.deepEqual(advertiser.billingInfo.customerId, 'test-stripe-id')
-  t.deepEqual(advertiser.billingInfo.cardOnFile, true)
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
