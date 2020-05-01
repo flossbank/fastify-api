@@ -13,7 +13,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     await db.verifyAdvertiser('honey@etsy.com')
     await db.updateAdvertiserCustomerId(t.context.advertiserId1, 'honesty-cust-id')
-    await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, true, '2222')
+    await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, '2222')
 
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
@@ -43,7 +43,7 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/advertiser/update` 401 unauthorized', async (t) => {
+test('POST `/advertiser/update/billing` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -55,7 +55,7 @@ test('POST `/advertiser/update` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/advertiser/update` 200 success | update card on file', async (t) => {
+test('POST `/advertiser/update/billing` 200 success | update card on file', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -69,13 +69,12 @@ test('POST `/advertiser/update` 200 success | update card on file', async (t) =>
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
   t.deepEqual(advertiser.billingInfo.customerId, 'honesty-cust-id')
-  t.deepEqual(advertiser.billingInfo.cardOnFile, true)
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.notCalled)
 })
 
-test('POST `/advertiser/update` 200 success | first card added', async (t) => {
+test('POST `/advertiser/update/billing` 200 success | first card added', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/update/billing',
@@ -89,13 +88,12 @@ test('POST `/advertiser/update` 200 success | first card added', async (t) => {
 
   const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
   t.deepEqual(advertiser.billingInfo.customerId, 'test-stripe-id')
-  t.deepEqual(advertiser.billingInfo.cardOnFile, true)
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
 })
 
-test('POST `/advertiser/update` 500 server error', async (t) => {
+test('POST `/advertiser/update/billing` 500 server error', async (t) => {
   t.context.db.updateAdvertiserHasCardInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
