@@ -4,8 +4,8 @@ const Schema = require('@flossbank/schema')
 const health = require('../api/health')
 
 // Subscribe
-const betaSubscribe = require('../api/subscribe/betaSubscribe')
-const betaUnSubscribe = require('../api/subscribe/betaUnsubscribe')
+const betaSubscribe = require('../api/subscribe/beta-subscribe')
+const betaUnSubscribe = require('../api/subscribe/beta-unsubscribe')
 
 // Ad
 const createAd = require('../api/ad/create')
@@ -22,7 +22,7 @@ const registerAdvertiser = require('../api/advertiser/register')
 const getAdvertiser = require('../api/advertiser/get')
 const loginAdvertiser = require('../api/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
-const updateAdvertiserBilling = require('../api/advertiser/updateBilling')
+const updateAdvertiserBilling = require('../api/advertiser/update-billing')
 const verifyAdvertiser = require('../api/advertiser/verify')
 const resumeAdvertiserSession = require('../api/advertiser/resume')
 
@@ -41,7 +41,7 @@ const loginMaintainer = require('../api/maintainer/login')
 const logoutMaintainer = require('../api/maintainer/logout')
 const registerMaintainer = require('../api/maintainer/register')
 const maintainerRevenue = require('../api/maintainer/revenue')
-const updateMaintainerPayout = require('../api/maintainer/updatePayout')
+const updateMaintainerPayout = require('../api/maintainer/update-payout')
 const verifyMaintainer = require('../api/maintainer/verify')
 const resumeMaintainerSession = require('../api/maintainer/resume')
 
@@ -88,7 +88,7 @@ async function routes (fastify, opts, next) {
   fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: Schema.advertiser.login }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', { schema: Schema.advertiser.logout }, (req, res) => logoutAdvertiser(req, res, fastify))
-  fastify.post('/advertiser/update/billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
+  fastify.post('/advertiser/update-billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
   fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verifyAdvertiser(req, res, fastify))
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 

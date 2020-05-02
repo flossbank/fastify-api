@@ -43,10 +43,10 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/advertiser/update/billing` 401 unauthorized', async (t) => {
+test('POST `/advertiser/update-billing` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/update/billing',
+    url: '/advertiser/update-billing',
     payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: {
       cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
@@ -55,10 +55,10 @@ test('POST `/advertiser/update/billing` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/advertiser/update/billing` 200 success | update card on file', async (t) => {
+test('POST `/advertiser/update-billing` 200 success | update card on file', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/update/billing',
+    url: '/advertiser/update-billing',
     payload: { billingToken: 'stripe-billing-token', last4: '1234' },
     headers: {
       cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
@@ -74,10 +74,10 @@ test('POST `/advertiser/update/billing` 200 success | update card on file', asyn
   t.true(t.context.stripe.createStripeCustomer.notCalled)
 })
 
-test('POST `/advertiser/update/billing` 200 success | first card added', async (t) => {
+test('POST `/advertiser/update-billing` 200 success | first card added', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/update/billing',
+    url: '/advertiser/update-billing',
     payload: { billingToken: 'stripe-billing-token', last4: '1234' },
     headers: {
       cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
@@ -93,11 +93,11 @@ test('POST `/advertiser/update/billing` 200 success | first card added', async (
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
 })
 
-test('POST `/advertiser/update/billing` 500 server error', async (t) => {
+test('POST `/advertiser/update-billing` 500 server error', async (t) => {
   t.context.db.updateAdvertiserHasCardInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/advertiser/update/billing',
+    url: '/advertiser/update-billing',
     payload: { billingToken: 'new-stripe-token', last4: '1234' },
     headers: {
       cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
