@@ -21,5 +21,8 @@ module.exports = {
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.updateStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.createDonation = sinon.stub().resolves()
+  },
+  Config: function Config () {
+    this.getNoAdThreshold = sinon.stub().resolves(1000)
   }
 }

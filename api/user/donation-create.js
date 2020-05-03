@@ -1,7 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
     const { amount, billingToken, last4 } = req.body
-    ctx.log.info('creation donation for %s for amount %s, token %s', req.session.userId, amount, token)
+    ctx.log.info('creation donation for %s for amount %s, token %s', req.session.userId, amount, billingToken)
     const user = await ctx.db.getUserById(req.session.userId)
     // If the user already has a donation, return conflict
     if (user.billingInfo.monthlyDonation) {
@@ -26,12 +26,13 @@ module.exports = async (req, res, ctx) => {
 
     // Create the subscription and donation in stripe as well as mongo
     await ctx.stripe.createDonation(customerId, amount)
-    await ctx.db.createUserDonation(req.session.userId, amount)
+    await ctx.db.createDonation(req.session.userId, amount)
 
     // If the amount of is 10 dollars or above (in cents), opt out of ads in mongo and dynamo
-    if (amount > 999) {
+    const noAdThresholdInCents = ctx.config.getNoAdThreshold()
+    if (amount >= noAdThresholdInCents) {
       await ctx.db.updateUserOptOutSetting(req.session.userId, true)
-      await ctx.auth.cacheApiKeyNoAdsSetting({ noAds: true, apiKey: user.apiKey })
+      await ctx.auth.user.cacheApiKeyNoAdsSetting({ noAds: true, apiKey: user.apiKey })
     }
 
     res.send({ success: true })

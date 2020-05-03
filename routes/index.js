@@ -100,7 +100,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginUser(req, res, fastify))
   fastify.post('/user/complete-login', { schema: Schema.user.completeLogin }, (req, res) => completeLoginUser(req, res, fastify))
   fastify.post('/user/update-billing', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.updateBilling }, (req, res) => updateUserBilling(req, res, fastify))
-  fastify.post('/user/donation/create', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.createDonation }, (req, res) => createUserDonation(req, res, fastify))
+  fastify.post('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.createDonation }, (req, res) => createUserDonation(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
 
   // Maintainer

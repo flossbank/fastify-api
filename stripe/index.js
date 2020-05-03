@@ -26,26 +26,19 @@ class Stripe {
 
   // Amount is in cents
   async createDonation (customerId, amount) {
-    let plan
-
     // Fetch all plans to see if we have one that matches the amount already
     const existingPlansRes = await this.stripe.plans.list()
-    const matchingPlan = existingPlansRes.data.filter(p => p.amount === amount)
-    if (matchingPlan[0]) {
-      plan = matchingPlan[0]
-    } else {
-      plan = await this.stripe.plans.create({
-        amount: amount,
-        interval: "month",
-        product: {
-          name: "Flossbank user donation"
-        },
-        currency: "usd",
-      })
-    }
+    const plan = existingPlansRes.data.find(p => p.amount === amount) || await this.stripe.plans.create({
+      amount: amount,
+      interval: 'month',
+      product: {
+        name: `Flossbank user donation plan for $${amount / 100}`
+      },
+      currency: 'usd'
+    })
 
     // Subscribe the customer to the plan
-    await stripe.subscriptions.create({
+    await this.stripe.subscriptions.create({
       customer: customerId,
       items: [{ plan: plan.id }]
     })

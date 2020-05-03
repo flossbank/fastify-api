@@ -61,6 +61,7 @@ exports.beforeEach = async function (t) {
     stripe: t.context.stripe,
     registry: t.context.registry,
     url: t.context.url,
+    config: t.context.config,
     logger: false,
     csrf: false
   })
