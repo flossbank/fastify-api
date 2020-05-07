@@ -30,7 +30,7 @@ const { Stripe } = require('./stripe')
   await db.connect()
   stripe.init()
 
-  const app = await App({ db, auth, sqs, email, stripe, registry, url })
+  const app = await App({ db, auth, sqs, email, stripe, registry, url, config })
   try {
     await app.listen(8081)
   } catch (err) {

@@ -71,6 +71,17 @@ Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysReques
     { $push: { apiKeysRequested: { timestamp: Date.now() } } })
 }
 
+Db.prototype.createDonation = async function createDonation (id, amount) {
+  // Amount in this case is passed in as cents so need to convert to mc
+  const donationInMc = amount * 1000
+  return this.db.collection('users').updateOne({
+    _id: ObjectId(id)
+  }, {
+    $set: { 'billingInfo.monthlyDonation': true },
+    $push: { 'billingInfo.donationChanges': { timestamp: Date.now(), donationAmount: donationInMc } }
+  })
+}
+
 Db.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (userId, optOutOfAds) {
   return this.db.collection('users').updateOne(
     { _id: ObjectId(userId) },

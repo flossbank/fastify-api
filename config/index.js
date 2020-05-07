@@ -1,3 +1,5 @@
+const fastifyPlugin = require('fastify-plugin')
+
 class Config {
   constructor ({ env }) {
     this.env = env
@@ -78,6 +80,15 @@ class Config {
   getStripeToken () {
     return this.env.stripe_token
   }
+
+  // Current no ad threshold is $10 bucks
+  getNoAdThreshold () {
+    return 1000
+  }
 }
 
-module.exports = { Config }
+const configPlugin = (config) => fastifyPlugin(async (fastify) => {
+  fastify.decorate('config', config)
+})
+
+module.exports = { Config, configPlugin }
