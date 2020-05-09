@@ -71,7 +71,7 @@ Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysReques
     { $push: { apiKeysRequested: { timestamp: Date.now() } } })
 }
 
-Db.prototype.createDonation = async function createDonation (id, amount) {
+Db.prototype.setUserDonation = async function setUserDonation (id, amount) {
   // Amount in this case is passed in as cents so need to convert to mc
   const donationInMc = amount * 1000
   return this.db.collection('users').updateOne({
