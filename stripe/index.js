@@ -26,7 +26,7 @@ class Stripe {
 
   // Amount is in cents
   async createDonation (customerId, amount) {
-    const plan = this.findOrCreatePlan(amount)
+    const plan = await this.findOrCreatePlan(amount)
 
     // Subscribe the customer to the plan
     await this.stripe.subscriptions.create({
@@ -37,11 +37,16 @@ class Stripe {
 
   // Amount is in cents
   async updateDonation (customerId, amount) {
-    const plan = this.findOrCreatePlan(amount)
+    const plan = await this.findOrCreatePlan(amount)
+    const customer = await this.stripe.customers.retrieve(customerId)
+    const currentSubscription = customer.subscriptions.data[0]
+
+    if (!currentSubscription) {
+      return this.createDonation(customerId, amount)
+    }
 
     // Update the customers subscription to whichever plans
-    await this.stripe.subscriptions.update({
-      customer: customerId,
+    await this.stripe.subscriptions.update(currentSubscription.id, {
       items: [{ plan: plan.id }]
     })
   }
