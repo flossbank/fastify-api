@@ -35,6 +35,7 @@ const completeLoginUser = require('../api/user/complete-login')
 const updateUserBilling = require('../api/user/update-billing')
 const logoutUser = require('../api/user/logout')
 const createUserDonation = require('../api/user/donation-create')
+const updateUserDonation = require('../api/user/donation-update')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -100,8 +101,9 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginUser(req, res, fastify))
   fastify.post('/user/complete-login', { schema: Schema.user.completeLogin }, (req, res) => completeLoginUser(req, res, fastify))
   fastify.post('/user/update-billing', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.updateBilling }, (req, res) => updateUserBilling(req, res, fastify))
-  fastify.post('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.createDonation }, (req, res) => createUserDonation(req, res, fastify))
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
+  fastify.post('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.createDonation }, (req, res) => createUserDonation(req, res, fastify))
+  fastify.put('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.updateDonation }, (req, res) => updateUserDonation(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))

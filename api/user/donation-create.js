@@ -26,7 +26,7 @@ module.exports = async (req, res, ctx) => {
 
     // Create the subscription and donation in stripe as well as mongo
     await ctx.stripe.createDonation(customerId, amount)
-    await ctx.db.createDonation(req.session.userId, amount)
+    await ctx.db.setUserDonation(req.session.userId, amount)
 
     // If the amount of is 10 dollars or above (in cents), opt out of ads in mongo and dynamo
     const noAdThresholdInCents = ctx.config.getNoAdThreshold()

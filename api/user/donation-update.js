@@ -11,8 +11,9 @@ module.exports = async (req, res, ctx) => {
 
     const customerId = user.billingInfo.customerId
 
-    // Update the subscription and donation in stripe
+    // Update the subscription and donation in stripe as well as push the donation change to mongo
     await ctx.stripe.updateDonation(customerId, amount)
+    await ctx.db.setUserDonation(req.session.userId, amount)
 
     // If the amount of is 10 dollars or above (in cents), opt out of ads in mongo and dynamo
     const noAdThresholdInCents = ctx.config.getNoAdThreshold()
