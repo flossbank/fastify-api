@@ -22,5 +22,6 @@ module.exports = {
     this.updateStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.createDonation = sinon.stub().resolves()
     this.updateDonation = sinon.stub().resolves()
+    this.deleteDonation = sinon.stub().resolves()
   }
 }

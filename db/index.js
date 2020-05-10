@@ -77,7 +77,7 @@ Db.prototype.setUserDonation = async function setUserDonation (id, amount) {
   return this.db.collection('users').updateOne({
     _id: ObjectId(id)
   }, {
-    $set: { 'billingInfo.monthlyDonation': true },
+    $set: { 'billingInfo.monthlyDonation': donationInMc === 0 ? false : true },
     $push: { 'billingInfo.donationChanges': { timestamp: Date.now(), donationAmount: donationInMc } }
   })
 }
