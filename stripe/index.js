@@ -57,7 +57,7 @@ class Stripe {
 
     if (!currentSubscription) return
 
-    // Delete the customers subscription 
+    // Delete the customers subscription
     await this.stripe.subscriptions.del(currentSubscription.id)
   }
 
