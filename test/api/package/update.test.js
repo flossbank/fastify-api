@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.maintainer.createMaintainer({
+    const maintainerId1 = await db.maintainer.create({
       maintainer: {
         name: 'Pete',
         email: 'pete@flossbank.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
-    const maintainerId2 = await db.maintainer.createMaintainer({
+    const maintainerId2 = await db.maintainer.create({
       maintainer: {
         name: 'Goelle',
         email: 'goelle@flossbank.com',
@@ -39,7 +39,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/package/update` 401 unauthorized', async (t) => {
-  const pkgId1 = (await t.context.db.package.createPackage({
+  const pkgId1 = (await t.context.db.package.create({
     pkg: {
       name: 'yttrium-server',
       registry: 'npm',
@@ -68,7 +68,7 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
 })
 
 test('POST `/package/update` 200 success', async (t) => {
-  const pkgId1 = (await t.context.db.package.createPackage({
+  const pkgId1 = (await t.context.db.package.create({
     pkg: {
       name: 'yttrium-server',
       registry: 'npm',
@@ -96,7 +96,7 @@ test('POST `/package/update` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const pkg = await t.context.db.package.getPackage({ packageId: pkgId1 })
+  const pkg = await t.context.db.package.get({ packageId: pkgId1 })
   t.deepEqual(pkg.maintainers, [
     { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
     { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
@@ -186,7 +186,7 @@ test('POST `/package/update` 400 bad request', async (t) => {
 })
 
 test('POST `/package/update` 500 server error', async (t) => {
-  t.context.db.package.getPackage = () => { throw new Error() }
+  t.context.db.package.get = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/update',

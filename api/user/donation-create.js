@@ -2,7 +2,7 @@ module.exports = async (req, res, ctx) => {
   try {
     const { amount, billingToken, last4 } = req.body
     ctx.log.info('creation donation for %s for amount %s, token %s', req.session.userId, amount, billingToken)
-    const user = await ctx.db.user.getUserById({ userId: req.session.userId })
+    const user = await ctx.db.user.get({ userId: req.session.userId })
     // If the user already has a donation, return conflict
     if (user.billingInfo.monthlyDonation) {
       res.status(409)
@@ -13,7 +13,7 @@ module.exports = async (req, res, ctx) => {
     if (!user.billingInfo || !user.billingInfo.customerId) {
       // Create stripe customer, and add the stripe customer id to db
       const stripeCustomer = await ctx.stripe.createStripeCustomer(user.email)
-      await ctx.db.user.updateUserCustomerId({
+      await ctx.db.user.updateCustomerId({
         userId: req.session.userId,
         customerId: stripeCustomer.id
       })
@@ -25,14 +25,14 @@ module.exports = async (req, res, ctx) => {
 
     // Update the stripe user with the billing token (stripe CC card token) and the last 4
     await ctx.stripe.updateStripeCustomer(customerId, billingToken)
-    await ctx.db.user.updateUserHasCardInfo({
+    await ctx.db.user.updateHasCardInfo({
       userId: req.session.userId,
       last4
     })
 
     // Create the subscription and donation in stripe as well as mongo
     await ctx.stripe.createDonation(customerId, amount)
-    await ctx.db.user.setUserDonation({
+    await ctx.db.user.setDonation({
       userId: req.session.userId,
       amount
     })
@@ -40,7 +40,7 @@ module.exports = async (req, res, ctx) => {
     // If the amount of is 10 dollars or above (in cents), opt out of ads in mongo and dynamo
     const noAdThresholdInCents = ctx.config.getNoAdThreshold()
     if (amount >= noAdThresholdInCents) {
-      await ctx.db.user.updateUserOptOutSetting({
+      await ctx.db.user.updateOptOutSetting({
         userId: req.session.userId,
         optOutOfAds: true
       })

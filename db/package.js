@@ -5,12 +5,12 @@ class PackageDbController {
     this.db = db
   }
 
-  async createPackage ({ pkg }) {
+  async create ({ pkg }) {
     const { insertedId } = await this.db.collection('packages').insertOne(pkg)
     return insertedId
   }
 
-  async getPackage ({ packageId }) {
+  async get ({ packageId }) {
     const pkg = await this.db.collection('packages').findOne({
       _id: ObjectId(packageId)
     })
@@ -21,7 +21,7 @@ class PackageDbController {
     return { id, ...rest }
   }
 
-  async getPackageByName ({ name, registry }) {
+  async getByName ({ name, registry }) {
     const pkg = await this.db.collection('packages').findOne({
       name, registry
     })
@@ -32,7 +32,7 @@ class PackageDbController {
     return { id, ...rest }
   }
 
-  async updatePackage ({ packageId, maintainers, owner }) {
+  async update ({ packageId, maintainers, owner }) {
     return this.db.collection('packages').updateOne({
       _id: ObjectId(packageId)
     }, {
@@ -40,7 +40,7 @@ class PackageDbController {
     })
   }
 
-  async refreshPackageOwnership ({ packages, registry, maintainerId }) {
+  async refreshOwnership ({ packages, registry, maintainerId }) {
     const existingPackages = await this.db.collection('packages').find({
       $or: [
         { name: { $in: packages } },

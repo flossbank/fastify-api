@@ -1,7 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('deleting donation for %s', req.session.userId)
-    const user = await ctx.db.user.getUserById({ userId: req.session.userId })
+    const user = await ctx.db.user.get({ userId: req.session.userId })
     // If the user doesn't have a donation, return not found
     if (!user.billingInfo.monthlyDonation) {
       res.status(404)
@@ -14,12 +14,12 @@ module.exports = async (req, res, ctx) => {
 
     // Delete the subscription and donation in stripe as well as push the donation change to mongo
     await ctx.stripe.deleteDonation(customerId)
-    await ctx.db.user.setUserDonation({
+    await ctx.db.user.setDonation({
       userId: req.session.userId,
       amount: 0
     })
 
-    await ctx.db.user.updateUserOptOutSetting({
+    await ctx.db.user.updateOptOutSetting({
       userId: req.session.userId,
       optOutOfAds: false
     })

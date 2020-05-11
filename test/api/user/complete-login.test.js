@@ -4,7 +4,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const { id } = await db.user.createUser({ email: 'honey@etsy.com' })
+    const { id } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId = id.toHexString()
     const { token } = await auth.user.beginAuthentication({ userId: t.context.userId })
     t.context.token = token
@@ -79,7 +79,7 @@ test('POST `/user/complete-login` 400 bad request', async (t) => {
 })
 
 test('POST `/user/complete-login` 500 server error', async (t) => {
-  t.context.db.user.getUserByEmail = () => { throw new Error() }
+  t.context.db.user.getByEmail = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/complete-login',
