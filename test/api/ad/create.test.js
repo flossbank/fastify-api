@@ -5,9 +5,11 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
@@ -64,7 +66,7 @@ test('POST `/ad/create` 200 success', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
   const createdAd = Object.assign({}, adToCreate, { id })
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   t.deepEqual(advertiser.adDrafts.length, 1)
   t.deepEqual(advertiser.adDrafts[0], createdAd)
 })

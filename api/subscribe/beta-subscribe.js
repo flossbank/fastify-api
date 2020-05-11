@@ -6,7 +6,7 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('subscribing to beta with email %s', email)
     try {
-      const token = await ctx.db.betaSubscribe(email)
+      const token = await ctx.db.betaSubscribe({ email })
       ctx.log.info('subscribing to beta and sending welcome email to: %s with token %s', email, token)
       await ctx.email.sendBetaSubscriptionEmail(email, token)
       res.send({ success: true })

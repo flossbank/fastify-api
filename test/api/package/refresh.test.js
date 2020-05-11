@@ -5,110 +5,130 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
-      name: 'Pete',
-      email: 'pete@flossbank.com',
-      password: 'petespass',
-      tokens: {
-        npm: 'pete-token'
+      maintainer: {
+        name: 'Pete',
+        email: 'pete@flossbank.com',
+        password: 'petespass',
+        tokens: {
+          npm: 'pete-token'
+        }
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const maintainerId2 = await db.createMaintainer({
-      name: 'Goelle',
-      email: 'goelle@flossbank.com',
-      password: 'cami42069',
-      tokens: {
-        npm: 'goelle-token'
+      maintainer: {
+        name: 'Goelle',
+        email: 'goelle@flossbank.com',
+        password: 'cami42069',
+        tokens: {
+          npm: 'goelle-token'
+        }
       }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
     t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
 
     const maintainerId3 = await db.createMaintainer({
-      name: 'Kelvin Moore Lando Calrissian',
-      email: 'kmoorlando7@gmail.com',
-      password: 'ashes2ashes',
-      tokens: {
-        npm: 'kelv-token'
+      maintainer: {
+        name: 'Kelvin Moore Lando Calrissian',
+        email: 'kmoorlando7@gmail.com',
+        password: 'ashes2ashes',
+        tokens: {
+          npm: 'kelv-token'
+        }
       }
     })
     t.context.maintainerId3 = maintainerId3.toHexString()
     t.context.sessionId3 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId3 })
 
     const maintainerId4 = await db.createMaintainer({
-      name: 'Steffen Dodges',
-      email: 'dodgeball@hotmail.com',
-      password: 'john316',
-      tokens: {
-        npm: 'steffen-token'
+      maintainer: {
+        name: 'Steffen Dodges',
+        email: 'dodgeball@hotmail.com',
+        password: 'john316',
+        tokens: {
+          npm: 'steffen-token'
+        }
       }
     })
     t.context.maintainerId4 = maintainerId4.toHexString()
     t.context.sessionId4 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId4 })
 
     const maintainerId5 = await db.createMaintainer({
-      name: 'Hickory Dickory',
-      email: 'dock@mouse.com',
-      password: 'cheeze',
-      tokens: {}
+      maintainer: {
+        name: 'Hickory Dickory',
+        email: 'dock@mouse.com',
+        password: 'cheeze',
+        tokens: {}
+      }
     })
     t.context.maintainerId5 = maintainerId5.toHexString()
     t.context.sessionId5 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId5 })
 
     // a pkg that m4 owns that will not be changed
     await db.createPackage({
-      name: 'unc-bootcamp-project-a',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId4,
-      maintainers: [{ maintainerId: t.context.maintainerId4, revenuePercent: 100 }]
+      pkg: {
+        name: 'unc-bootcamp-project-a',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId4,
+        maintainers: [{ maintainerId: t.context.maintainerId4, revenuePercent: 100 }]
+      }
     })
 
     // a pkg that m1 owns and npm will confirm
     const yttriumId = await db.createPackage({
-      name: 'yttrium-server',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId1,
-      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      pkg: {
+        name: 'yttrium-server',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId1,
+        maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      }
     })
     t.context.yttriumId = yttriumId.toHexString()
 
     // a pkg that is in the db that m1 currently maintains and does not own
     // but that npm will say m1 now owns
     const jsDeepEquals = await db.createPackage({
-      name: 'js-deep-equals',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId2,
-      maintainers: [
-        { maintainerId: t.context.maintainerId1, revenuePercent: 50 },
-        { maintainerId: t.context.maintainerId1, revenuePercent: 50 }
-      ]
+      pkg: {
+        name: 'js-deep-equals',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId2,
+        maintainers: [
+          { maintainerId: t.context.maintainerId1, revenuePercent: 50 },
+          { maintainerId: t.context.maintainerId1, revenuePercent: 50 }
+        ]
+      }
     })
     t.context.jsDeepEquals = jsDeepEquals.toHexString()
 
     // a pkg that is in the db that m1 currently owns but that npm
     // will say m1 no longer owns
     const sodium = await db.createPackage({
-      name: 'sodium-native',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId1,
-      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      pkg: {
+        name: 'sodium-native',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId1,
+        maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      }
     })
     t.context.sodium = sodium.toHexString()
 
     // a pkg that is in the db that m1 does not maintain and does not own
     // but that npm will say m1 now owns
     const chive = await db.createPackage({
-      name: 'chive',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId3,
-      maintainers: [{ maintainerId: t.context.maintainerId3, revenuePercent: 100 }]
+      pkg: {
+        name: 'chive',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId3,
+        maintainers: [{ maintainerId: t.context.maintainerId3, revenuePercent: 100 }]
+      }
     })
     t.context.chive = chive.toHexString()
   })
@@ -158,11 +178,14 @@ test('POST `/package/refresh` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const caesar = await t.context.db.getPackageByName('caesar', 'npm')
-  const yttrium = await t.context.db.getPackage(t.context.yttriumId)
-  const jsDeepEquals = await t.context.db.getPackage(t.context.jsDeepEquals)
-  const sodium = await t.context.db.getPackage(t.context.sodium)
-  const chive = await t.context.db.getPackage(t.context.chive)
+  const caesar = await t.context.db.getPackageByName({
+    name: 'caesar',
+    registry: 'npm'
+  })
+  const yttrium = await t.context.db.getPackage({ packageId: t.context.yttriumId })
+  const jsDeepEquals = await t.context.db.getPackage({ packageId: t.context.jsDeepEquals })
+  const sodium = await t.context.db.getPackage({ packageId: t.context.sodium })
+  const chive = await t.context.db.getPackage({ packageId: t.context.chive })
 
   // ownership
   t.deepEqual(caesar.owner, t.context.maintainerId1)

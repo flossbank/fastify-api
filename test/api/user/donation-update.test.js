@@ -8,35 +8,35 @@ test.before(async (t) => {
     sinon.stub(Date, 'now').returns(19991)
     const { id: userId1 } = await db.createUser({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
-    await db.updateUserCustomerId(t.context.userId1, 'honesty-cust-id')
-    await db.updateUserHasCardInfo(t.context.userId1, '2222')
-    await db.setUserDonation(t.context.userId1, 500)
+    await db.updateUserCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
+    await db.updateUserHasCardInfo({ userId: t.context.userId1, last4: '2222' })
+    await db.setUserDonation({ userId: t.context.userId1, amount: 500 })
 
     t.context.sessionWithDonationCurrentlyBelow = await auth.user.createWebSession({ userId: t.context.userId1 })
 
     // User that will have donation updated to below threshold
     const { id: userId4 } = await db.createUser({ email: 'rip@vanwinkle.com' })
     t.context.userId4 = userId4.toHexString()
-    await db.updateUserCustomerId(t.context.userId4, 'honesty-cust-id-4')
-    await db.updateUserHasCardInfo(t.context.userId4, '2222')
-    await db.setUserDonation(t.context.userId4, 1500)
+    await db.updateUserCustomerId({ userId: t.context.userId4, customerId: 'honesty-cust-id-4' })
+    await db.updateUserHasCardInfo({ userId: t.context.userId4, last4: '2222' })
+    await db.setUserDonation({ userId: t.context.userId4, amount: 1500 })
 
     t.context.sessionWithDonationCurrentyAbove = await auth.user.createWebSession({ userId: t.context.userId4 })
 
     // no donation
     const { id: userId2 } = await db.createUser({ email: 'papa@papajohns.com' })
     t.context.userId2 = userId2.toHexString()
-    await db.updateUserCustomerId(t.context.userId2, 'honesty-cust-id-2')
-    await db.updateUserHasCardInfo(t.context.userId2, '2222')
+    await db.updateUserCustomerId({ userId: t.context.userId2, customerId: 'honesty-cust-id-2' })
+    await db.updateUserHasCardInfo({ userId: t.context.userId2, last4: '2222' })
 
     t.context.sessionWithoutDonation = await auth.user.createWebSession({ userId: t.context.userId2 })
 
     // User that receives an error
     const { id: userId3 } = await db.createUser({ email: 'black@pick.com' })
     t.context.userId3 = userId3.toHexString()
-    await db.updateUserCustomerId(t.context.userId3, 'honesty-cust-id-3')
-    await db.updateUserHasCardInfo(t.context.userId3, '2222')
-    await db.setUserDonation(t.context.userId3, 1500)
+    await db.updateUserCustomerId({ userId: t.context.userId3, customerId: 'honesty-cust-id-3' })
+    await db.updateUserHasCardInfo({ userId: t.context.userId3, last4: '2222' })
+    await db.setUserDonation({ userId: t.context.userId3, amount: 1500 })
 
     t.context.sessionWithError = await auth.user.createWebSession({ userId: t.context.userId3 })
   })
@@ -78,7 +78,7 @@ test('PUT `/user/donation` 200 success | threshold below ad threshold', async (t
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.getUserById(t.context.userId4)
+  const user = await t.context.db.getUserById({ userId: t.context.userId4 })
   t.deepEqual(user.optOutOfAds, false)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id-4')
@@ -101,7 +101,7 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.getUserById(t.context.userId1)
+  const user = await t.context.db.getUserById({ userId: t.context.userId1 })
   t.deepEqual(user.optOutOfAds, true)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
@@ -127,7 +127,7 @@ test('PUT `/user/donation` 404 error | donation not found', async (t) => {
   t.deepEqual(res.statusCode, 404)
   t.deepEqual(JSON.parse(res.payload), { success: false, message: 'No donation found' })
 
-  const user = await t.context.db.getUserById(t.context.userId2)
+  const user = await t.context.db.getUserById({ userId: t.context.userId2 })
   t.deepEqual(user.optOutOfAds, undefined)
   t.deepEqual(user.billingInfo.monthlyDonation, undefined)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id-2')

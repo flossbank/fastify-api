@@ -5,27 +5,31 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-    await db.verifyAdvertiser('honey@etsy.com')
-    await db.updateAdvertiserCustomerId(t.context.advertiserId1, 'honesty-cust-id')
-    await db.updateAdvertiserHasCardInfo(t.context.advertiserId1, '2222')
+    await db.verifyAdvertiser({ email: 'honey@etsy.com' })
+    await db.updateAdvertiserCustomerId({ advertiserId: t.context.advertiserId1, customerId: 'honesty-cust-id' })
+    await db.updateAdvertiserHasCardInfo({ advertiserId: t.context.advertiserId1, last4: '2222' })
 
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
     // no billing info
     const advertiserId2 = await db.createAdvertiser({
-      firstName: 'Papa',
-      lastName: 'John',
-      email: 'papa@papajohns.com',
-      password: 'pizza4life'
+      advertiser: {
+        firstName: 'Papa',
+        lastName: 'John',
+        email: 'papa@papajohns.com',
+        password: 'pizza4life'
+      }
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
-    await db.verifyAdvertiser('papa@papajohns.com')
+    await db.verifyAdvertiser({ email: 'papa@papajohns.com' })
 
     t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
   })
@@ -67,7 +71,9 @@ test('POST `/advertiser/update-billing` 200 success | update card on file', asyn
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.getAdvertiser({
+    advertiserId: t.context.advertiserId1
+  })
   t.deepEqual(advertiser.billingInfo.customerId, 'honesty-cust-id')
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 
@@ -86,7 +92,9 @@ test('POST `/advertiser/update-billing` 200 success | first card added', async (
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
+  const advertiser = await t.context.db.getAdvertiser({
+    advertiserId: t.context.advertiserId2
+  })
   t.deepEqual(advertiser.billingInfo.customerId, 'test-stripe-id')
   t.deepEqual(advertiser.billingInfo.last4, '1234')
 

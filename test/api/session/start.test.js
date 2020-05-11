@@ -4,43 +4,61 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    t.context.adId1 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #1',
-      title: 'Teacher Fund',
-      body: 'You donate, we donate.',
-      url: 'teacherfund.com'
+    t.context.adId1 = await db.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #1',
+        title: 'Teacher Fund',
+        body: 'You donate, we donate.',
+        url: 'teacherfund.com'
+      }
     })
-    t.context.adId2 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #2',
-      title: 'Teacher Fund 2',
-      body: 'You donate, we donate. 2',
-      url: 'teacherfund.com 2'
+    t.context.adId2 = await db.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #2',
+        title: 'Teacher Fund 2',
+        body: 'You donate, we donate. 2',
+        url: 'teacherfund.com 2'
+      }
     })
 
     // active campaign
-    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [],
-      maxSpend: 100,
-      cpm: 100,
-      name: 'camp pain 1'
-    }, [t.context.adId1, t.context.adId2], true)
-    await db.approveAdCampaign(t.context.advertiserId1, t.context.campaignId1)
-    await db.activateAdCampaign(t.context.advertiserId1, t.context.campaignId1)
-    t.context.adCampaign1 = await db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+    t.context.campaignId1 = await db.createAdCampaign({
+      advertiserId: t.context.advertiserId1,
+      adCampaign: {
+        ads: [],
+        maxSpend: 100,
+        cpm: 100,
+        name: 'camp pain 1'
+      },
+      adIdsFromDrafts: [t.context.adId1, t.context.adId2],
+      keepDrafts: true
+    })
+    await db.approveAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
+    await db.activateAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
+    t.context.adCampaign1 = await db.getAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
 
     // inactive campaign
-    t.context.campaignId2 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [],
-      maxSpend: 100,
-      cpm: 100,
-      name: 'camp pain 2'
-    }, [t.context.adId1, t.context.adId2], true)
+    t.context.campaignId2 = await db.createAdCampaign({
+      advertiserId: t.context.advertiserId1,
+      adCampaign: {
+        ads: [],
+        maxSpend: 100,
+        cpm: 100,
+        name: 'camp pain 2'
+      },
+      adIdsFromDrafts: [t.context.adId1, t.context.adId2],
+      keepDrafts: true
+    })
 
     await auth.user.cacheApiKey({ apiKey: 'the-best-api-key', userId: 'user-id1' })
     await auth.user.cacheApiKey({ apiKey: 'no-ads-key', userId: 'user-id2' })

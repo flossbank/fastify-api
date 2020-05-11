@@ -105,7 +105,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/user/logout', { schema: Schema.user.logout }, (req, res) => logoutUser(req, res, fastify))
   fastify.post('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.createDonation }, (req, res) => createUserDonation(req, res, fastify))
   fastify.put('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.updateDonation }, (req, res) => updateUserDonation(req, res, fastify))
-  fastify.delete('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => deleteUserDonation(req, res, fastify))
+  fastify.delete('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.deleteDonation }, (req, res) => deleteUserDonation(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))

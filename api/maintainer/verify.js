@@ -8,7 +8,7 @@ module.exports = async (req, res, ctx) => {
       res.status(401)
       return res.send()
     }
-    await ctx.db.verifyMaintainer(email)
+    await ctx.db.verifyMaintainer({ email })
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

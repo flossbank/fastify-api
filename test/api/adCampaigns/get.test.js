@@ -5,23 +5,28 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = (await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     }))
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
-      ads: [{
-        name: 'approved ad',
-        body: 'def',
-        title: 'DEF',
-        url: 'https://def.com'
-      }],
-      maxSpend: 100,
-      cpm: 100,
-      name: 'camp pain'
+    t.context.campaignId1 = await db.createAdCampaign({
+      advertiserId: t.context.advertiserId1,
+      adCampaign: {
+        ads: [{
+          name: 'approved ad',
+          body: 'def',
+          title: 'DEF',
+          url: 'https://def.com'
+        }],
+        maxSpend: 100,
+        cpm: 100,
+        name: 'camp pain'
+      }
     })
   })
 })
@@ -65,7 +70,10 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
 
-  const shouldBeReceived = await t.context.db.getAdCampaign(t.context.advertiserId1, t.context.campaignId1)
+  const shouldBeReceived = await t.context.db.getAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    campaignId: t.context.campaignId1
+  })
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     adCampaign: shouldBeReceived
