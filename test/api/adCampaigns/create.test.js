@@ -5,37 +5,50 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
-    t.context.adId1 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #1',
-      title: 'Teacher Fund',
-      body: 'You donate, we donate.',
-      url: 'teacherfund.com'
+    t.context.adId1 = await db.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #1',
+        title: 'Teacher Fund',
+        body: 'You donate, we donate.',
+        url: 'teacherfund.com'
+      }
     })
-    t.context.adId2 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #2',
-      title: 'Teacher Fund 2',
-      body: 'You donate, we donate. 2',
-      url: 'teacherfund.com 2'
+    t.context.adId2 = await db.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #2',
+        title: 'Teacher Fund 2',
+        body: 'You donate, we donate. 2',
+        url: 'teacherfund.com 2'
+      }
     })
 
     const advertiserId2 = await db.createAdvertiser({
-      name: 'Faith Ogler',
-      email: 'fogler@folgers.coffee',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Faith Ogler',
+        email: 'fogler@folgers.coffee',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
     t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
-    t.context.adId3 = await db.createAdDraft(advertiserId2, {
-      name: 'Teacher Fund #5',
-      title: 'Teacher Fund 5',
-      body: 'You donate, we donate. 5',
-      url: 'teacherfund.com 5'
+    t.context.adId3 = await db.createAdDraft({
+      advertiserId: advertiserId2,
+      draft: {
+        name: 'Teacher Fund #5',
+        title: 'Teacher Fund 5',
+        body: 'You donate, we donate. 5',
+        url: 'teacherfund.com 5'
+      }
     })
   })
 })
@@ -95,7 +108,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   // Should have kept advertiser drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -130,7 +143,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
+  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId2 })
   // Should have deleted advertiser draft
   t.deepEqual(advertiser.adDrafts.length, 0)
 
@@ -165,7 +178,10 @@ test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, id)
+  const campaign = await t.context.db.getAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    campaignId: id
+  })
   t.deepEqual(campaign.name, campaignToCreate.name)
 })
 
@@ -198,7 +214,10 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, id)
+  const campaign = await t.context.db.getAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    campaignId: id
+  })
   t.deepEqual(campaign.name, campaignToCreate.name)
   t.deepEqual(campaign.ads[0].name, adToCreate.name)
   t.deepEqual(campaign.ads.length, 1)
@@ -235,7 +254,7 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   // should preserve ad drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 

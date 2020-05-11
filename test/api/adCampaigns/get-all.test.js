@@ -5,17 +5,22 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = (await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     }))
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.campaignId1 = await db.createAdCampaign(t.context.advertiserId1, {
-      maxSpend: 100,
-      cpm: 100,
-      name: 'camp pain'
+    t.context.campaignId1 = await db.createAdCampaign({
+      advertiserId: t.context.advertiserId1,
+      adCampaign: {
+        maxSpend: 100,
+        cpm: 100,
+        name: 'camp pain'
+      }
     })
   })
 })

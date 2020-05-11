@@ -5,19 +5,23 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 test.before(async (t) => {
   await before(t, async ({ db }) => {
     const advertiserId1 = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper',
-      organization: 'elf-world'
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper',
+        organization: 'elf-world'
+      }
     })
     t.context.advertiserId = advertiserId1.toHexString()
-    await db.verifyAdvertiser('honey@etsy.com')
+    await db.verifyAdvertiser({ email: 'honey@etsy.com' })
     await db.createAdvertiser({
-      firstName: 'Faith',
-      lastName: ' Ogler',
-      email: 'fogler@folgers.coffee',
-      password: 'coffeesnobdoorknob'
+      advertiser: {
+        firstName: 'Faith',
+        lastName: ' Ogler',
+        email: 'fogler@folgers.coffee',
+        password: 'coffeesnobdoorknob'
+      }
     })
   })
 })
@@ -67,7 +71,7 @@ test('POST `/advertiser/login` 200 success', async (t) => {
     url: '/advertiser/login',
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
-  const advertiserRetrieved = await t.context.db.getAdvertiser(t.context.advertiserId)
+  const advertiserRetrieved = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId })
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
@@ -81,7 +85,7 @@ test('POST `/advertiser/login` 200 success | email case does not matter', async 
     url: '/advertiser/login',
     body: { email: 'HONEY@ETSY.cOm', password: 'beekeeperbookkeeper' }
   })
-  const advertiserRetrieved = await t.context.db.getAdvertiser(t.context.advertiserId)
+  const advertiserRetrieved = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId })
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })

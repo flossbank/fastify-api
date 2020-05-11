@@ -36,7 +36,9 @@ test('POST `/advertiser/register` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   // email has been lowercased in db
-  const advertiser = await t.context.db.getAdvertiserByEmail('advertiser@ads.com')
+  const advertiser = await t.context.db.getAdvertiserByEmail({
+    email: 'advertiser@ads.com'
+  })
   t.is(advertiser.firstName, 'advertiser')
   t.is(advertiser.lastName, 'captain')
 })

@@ -5,19 +5,23 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
-      name: 'Pete',
-      email: 'pete@flossbank.com',
-      password: 'petespass'
+      maintainer: {
+        name: 'Pete',
+        email: 'pete@flossbank.com',
+        password: 'petespass'
+      }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const pkgId1 = await db.createPackage({
-      name: 'yttrium-server',
-      registry: 'npm',
-      totalRevenue: 10,
-      owner: t.context.maintainerId1,
-      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      pkg: {
+        name: 'yttrium-server',
+        registry: 'npm',
+        totalRevenue: 10,
+        owner: t.context.maintainerId1,
+        maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+      }
     })
     t.context.pkgId1 = pkgId1.toHexString()
   })

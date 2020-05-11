@@ -5,22 +5,26 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
-      firstName: 'Honesty',
-      lastName: 'Honor',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper',
-      payoutInfo: 'honey@booboo.com'
+      maintainer: {
+        firstName: 'Honesty',
+        lastName: 'Honor',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper',
+        payoutInfo: 'honey@booboo.com'
+      }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
-    await db.verifyMaintainer('honey@etsy.com')
+    await db.verifyMaintainer({ email: 'honey@etsy.com' })
 
     const unverifiedMaintainerId = await db.createMaintainer({
-      firstName: 'Honesty2',
-      lastName: 'Honor',
-      email: 'honey2@etsy.com',
-      password: 'beekeeperbookkeeper',
-      payoutInfo: 'honey2@booboo.com'
+      maintainer: {
+        firstName: 'Honesty2',
+        lastName: 'Honor',
+        email: 'honey2@etsy.com',
+        password: 'beekeeperbookkeeper',
+        payoutInfo: 'honey2@booboo.com'
+      }
     })
     t.context.unverifiedMaintainerId = unverifiedMaintainerId.toHexString()
     t.context.unverifiedSession = await auth.maintainer.createWebSession({ maintainerId: t.context.unverifiedMaintainerId })

@@ -7,7 +7,7 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('registering new maintainer with email %s', email)
     let id
     try {
-      id = await ctx.db.createMaintainer({ firstName, lastName, email, password, payoutInfo })
+      id = await ctx.db.createMaintainer({ maintainer: { firstName, lastName, email, password, payoutInfo } })
     } catch (e) {
       if (e.code === 11000) { // Dupe key mongo error code is 11000
         ctx.log.warn('attempt to create maintainer with existing email, rejecting %s', email)

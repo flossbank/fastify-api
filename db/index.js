@@ -20,7 +20,7 @@ Db.prototype.connect = async function connect () {
   this.db = this.client.db('flossbank_db')
 }
 
-Db.prototype.getUserByEmail = async function getUserByEmail (email) {
+Db.prototype.getUserByEmail = async function getUserByEmail ({ email }) {
   const user = await this.db.collection('users').findOne({ email })
 
   if (!user) return user
@@ -29,7 +29,7 @@ Db.prototype.getUserByEmail = async function getUserByEmail (email) {
   return { id, ...rest }
 }
 
-Db.prototype.getUserById = async function getUserById (userId) {
+Db.prototype.getUserById = async function getUserById ({ userId }) {
   const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
   if (!user) return user
@@ -49,60 +49,60 @@ Db.prototype.createUser = async function createUser ({ email }) {
   return { id: insertedId, apiKey }
 }
 
-Db.prototype.updateUserHasCardInfo = async function updateUserHasCardInfo (id, last4) {
+Db.prototype.updateUserHasCardInfo = async function updateUserHasCardInfo ({ userId, last4 }) {
   return this.db.collection('users').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(userId)
   }, {
     $set: { 'billingInfo.last4': last4 }
   })
 }
 
-Db.prototype.updateUserCustomerId = async function updateUserCustomerId (id, customerId) {
+Db.prototype.updateUserCustomerId = async function updateUserCustomerId ({ userId, customerId }) {
   return this.db.collection('users').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(userId)
   }, {
     $set: { 'billingInfo.customerId': customerId }
   })
 }
 
-Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysRequested (email) {
+Db.prototype.updateUserApiKeysRequested = async function updateUserApiKeysRequested ({ email }) {
   return this.db.collection('users').updateOne(
     { email },
     { $push: { apiKeysRequested: { timestamp: Date.now() } } })
 }
 
-Db.prototype.setUserDonation = async function setUserDonation (id, amount) {
+Db.prototype.setUserDonation = async function setUserDonation ({ userId, amount }) {
   // Amount in this case is passed in as cents so need to convert to mc
   const donationInMc = amount * 1000
   return this.db.collection('users').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(userId)
   }, {
-    $set: { 'billingInfo.monthlyDonation': donationInMc === 0 ? false : true },
+    $set: { 'billingInfo.monthlyDonation': donationInMc !== 0 },
     $push: { 'billingInfo.donationChanges': { timestamp: Date.now(), donationAmount: donationInMc } }
   })
 }
 
-Db.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting (userId, optOutOfAds) {
+Db.prototype.updateUserOptOutSetting = async function updateUserOptOutSetting ({ userId, optOutOfAds }) {
   return this.db.collection('users').updateOne(
     { _id: ObjectId(userId) },
     { $set: { optOutOfAds } }
   )
 }
 
-Db.prototype.approveAdCampaign = async function approveAdCampaign (advertiserId, adCampaignId) {
+Db.prototype.approveAdCampaign = async function approveAdCampaign ({ advertiserId, campaignId }) {
   return this.db.collection('advertisers').updateOne(
-    { _id: ObjectId(advertiserId), 'adCampaigns.id': adCampaignId },
+    { _id: ObjectId(advertiserId), 'adCampaigns.id': campaignId },
     { $set: { 'adCampaigns.$.approved': true } }
   )
 }
 
-Db.prototype.betaSubscribe = async function betaSubscribe (email) {
+Db.prototype.betaSubscribe = async function betaSubscribe ({ email }) {
   const token = crypto.randomBytes(32).toString('hex')
   await this.db.collection('betaSubscribers').insertOne({ email, token })
   return token
 }
 
-Db.prototype.betaUnsubscribe = async function betaUnsubscribe (token) {
+Db.prototype.betaUnsubscribe = async function betaUnsubscribe ({ token }) {
   return this.db.collection('betaSubscribers').deleteOne({ token })
 }
 
@@ -157,7 +157,7 @@ Db.prototype.getAdBatch = async function getAdBatch () {
     }), [])
 }
 
-Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
+Db.prototype.createAdvertiser = async function createAdvertiser ({ advertiser }) {
   const advertiserWithDefaults = Object.assign({}, advertiser, {
     adCampaigns: [],
     verified: false,
@@ -170,23 +170,23 @@ Db.prototype.createAdvertiser = async function createAdvertiser (advertiser) {
   return insertedId
 }
 
-Db.prototype.updateAdvertiserCustomerId = async function updateAdvertiserCustomerId (id, customerId) {
+Db.prototype.updateAdvertiserCustomerId = async function updateAdvertiserCustomerId ({ advertiserId, customerId }) {
   return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(advertiserId)
   }, {
     $set: { 'billingInfo.customerId': customerId }
   })
 }
 
-Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo (id, last4) {
+Db.prototype.updateAdvertiserHasCardInfo = async function updateAdvertiserHasCardInfo ({ advertiserId, last4 }) {
   return this.db.collection('advertisers').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(advertiserId)
   }, {
     $set: { 'billingInfo.last4': last4 }
   })
 }
 
-Db.prototype.verifyAdvertiser = async function verifyAdvertiser (email) {
+Db.prototype.verifyAdvertiser = async function verifyAdvertiser ({ email }) {
   return this.db.collection('advertisers').updateOne({
     email
   }, {
@@ -194,7 +194,7 @@ Db.prototype.verifyAdvertiser = async function verifyAdvertiser (email) {
   })
 }
 
-Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
+Db.prototype.getAdvertiser = async function getAdvertiser ({ advertiserId }) {
   const advertiser = await this.db.collection('advertisers')
     .findOne({ _id: ObjectId(advertiserId) })
 
@@ -205,7 +205,7 @@ Db.prototype.getAdvertiser = async function getAdvertiser (advertiserId) {
   return { id, ...rest }
 }
 
-Db.prototype.getAdvertiserByEmail = async function getAdvertiserByEmail (email) {
+Db.prototype.getAdvertiserByEmail = async function getAdvertiserByEmail ({ email }) {
   const advertiser = await this.db.collection('advertisers')
     .findOne({ email })
 
@@ -216,7 +216,7 @@ Db.prototype.getAdvertiserByEmail = async function getAdvertiserByEmail (email) 
   return { id, ...rest }
 }
 
-Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (email, password) {
+Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser ({ email, password }) {
   const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
   if (!foundAdvertiser) return null
   if (!foundAdvertiser.verified) return null
@@ -227,7 +227,7 @@ Db.prototype.authenticateAdvertiser = async function authenticateAdvertiser (ema
   return { id, ...rest }
 }
 
-Db.prototype.createAdDraft = async function createAdDraft (advertiserId, draft) {
+Db.prototype.createAdDraft = async function createAdDraft ({ advertiserId, draft }) {
   if (!Cleaner.isAdClean(draft)) {
     const e = new Error(AD_NOT_CLEAN_MSG)
     e.code = AD_NOT_CLEAN
@@ -241,10 +241,12 @@ Db.prototype.createAdDraft = async function createAdDraft (advertiserId, draft) 
 }
 
 Db.prototype.createAdCampaign = async function createAdCampaign (
-  advertiserId,
-  adCampaign,
-  adIdsFromDrafts = [],
-  keepDrafts = false) {
+  {
+    advertiserId,
+    adCampaign,
+    adIdsFromDrafts = [],
+    keepDrafts = false
+  }) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
 
   // Construct default campaign
@@ -303,7 +305,7 @@ Db.prototype.createAdCampaign = async function createAdCampaign (
   return adCampaignWithDefaults.id
 }
 
-Db.prototype.getAdCampaign = async function getAdCampaign (advertiserId, campaignId) {
+Db.prototype.getAdCampaign = async function getAdCampaign ({ advertiserId, campaignId }) {
   const advertiser = await this.db.collection('advertisers').findOne({
     _id: ObjectId(advertiserId)
   })
@@ -312,16 +314,18 @@ Db.prototype.getAdCampaign = async function getAdCampaign (advertiserId, campaig
   return advertiser.adCampaigns.find(c => c.id === campaignId)
 }
 
-Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser (advertiserId) {
+Db.prototype.getAdCampaignsForAdvertiser = async function getAdCampaignsForAdvertiser ({ advertiserId }) {
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   return advertiser.adCampaigns
 }
 
 Db.prototype.updateAdCampaign = async function updateAdCampaign (
-  advertiserId,
-  updatedAdCampaign,
-  adIdsFromDrafts = [],
-  keepDrafts = false) {
+  {
+    advertiserId,
+    updatedAdCampaign,
+    adIdsFromDrafts = [],
+    keepDrafts = false
+  }) {
   const { id: adCampaignId } = updatedAdCampaign
   const advertiser = await this.db.collection('advertisers').findOne({ _id: ObjectId(advertiserId) })
   const previousCampaign = advertiser.adCampaigns.find((camp) => camp.id === adCampaignId)
@@ -389,7 +393,7 @@ Db.prototype.updateAdCampaign = async function updateAdCampaign (
   }
 }
 
-Db.prototype.activateAdCampaign = async function activateAdCampaign (advertiserId, campaignId) {
+Db.prototype.activateAdCampaign = async function activateAdCampaign ({ advertiserId, campaignId }) {
   await this.db.collection('advertisers').updateOne({
     _id: ObjectId(advertiserId),
     'adCampaigns.id': campaignId
@@ -398,7 +402,7 @@ Db.prototype.activateAdCampaign = async function activateAdCampaign (advertiserI
   })
 }
 
-Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
+Db.prototype.getOwnedPackages = async function getOwnedPackages ({ maintainerId }) {
   const pkgs = await this.db.collection('packages').find({
     owner: maintainerId
   }).toArray()
@@ -406,12 +410,12 @@ Db.prototype.getOwnedPackages = async function getOwnedPackages (maintainerId) {
   return pkgs.map(({ _id: id, ...rest }) => ({ id, ...rest }))
 }
 
-Db.prototype.createPackage = async function createPackage (pkg) {
+Db.prototype.createPackage = async function createPackage ({ pkg }) {
   const { insertedId } = await this.db.collection('packages').insertOne(pkg)
   return insertedId
 }
 
-Db.prototype.getPackage = async function getPackage (packageId) {
+Db.prototype.getPackage = async function getPackage ({ packageId }) {
   const pkg = await this.db.collection('packages').findOne({
     _id: ObjectId(packageId)
   })
@@ -422,7 +426,7 @@ Db.prototype.getPackage = async function getPackage (packageId) {
   return { id, ...rest }
 }
 
-Db.prototype.getPackageByName = async function getPackageByName (name, registry) {
+Db.prototype.getPackageByName = async function getPackageByName ({ name, registry }) {
   const pkg = await this.db.collection('packages').findOne({
     name, registry
   })
@@ -433,7 +437,7 @@ Db.prototype.getPackageByName = async function getPackageByName (name, registry)
   return { id, ...rest }
 }
 
-Db.prototype.updatePackage = async function updatePackage (packageId, { maintainers, owner }) {
+Db.prototype.updatePackage = async function updatePackage ({ packageId, maintainers, owner }) {
   return this.db.collection('packages').updateOne({
     _id: ObjectId(packageId)
   }, {
@@ -441,7 +445,7 @@ Db.prototype.updatePackage = async function updatePackage (packageId, { maintain
   })
 }
 
-Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (packages, registry, maintainerId) {
+Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership ({ packages, registry, maintainerId }) {
   const existingPackages = await this.db.collection('packages').find({
     $or: [
       { name: { $in: packages } },
@@ -498,7 +502,7 @@ Db.prototype.refreshPackageOwnership = async function refreshPackageOwnership (p
   return bulkPackages.execute()
 }
 
-Db.prototype.getRevenue = async function getRevenue (maintainerId) {
+Db.prototype.getRevenue = async function getRevenue ({ maintainerId }) {
   const packages = await this.db.collection('packages').find({
     maintainers: { $elemMatch: { maintainerId } }
   }).toArray()
@@ -508,7 +512,7 @@ Db.prototype.getRevenue = async function getRevenue (maintainerId) {
   }, 0)
 }
 
-Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
+Db.prototype.createMaintainer = async function createMaintainer ({ maintainer }) {
   const maintainerWithDefaults = Object.assign({}, maintainer, {
     verified: false,
     active: true,
@@ -518,7 +522,7 @@ Db.prototype.createMaintainer = async function createMaintainer (maintainer) {
   return insertedId
 }
 
-Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
+Db.prototype.getMaintainer = async function getMaintainer ({ maintainerId }) {
   const maintainer = await this.db.collection('maintainers')
     .findOne({ _id: ObjectId(maintainerId) })
 
@@ -529,7 +533,7 @@ Db.prototype.getMaintainer = async function getMaintainer (maintainerId) {
   return { id, ...rest }
 }
 
-Db.prototype.getMaintainerByEmail = async function getMaintainerByEmail (email) {
+Db.prototype.getMaintainerByEmail = async function getMaintainerByEmail ({ email }) {
   const maintainer = await this.db.collection('maintainers')
     .findOne({ email })
 
@@ -540,7 +544,7 @@ Db.prototype.getMaintainerByEmail = async function getMaintainerByEmail (email) 
   return { id, ...rest }
 }
 
-Db.prototype.authenticateMaintainer = async function authenticateMaintainer (email, password) {
+Db.prototype.authenticateMaintainer = async function authenticateMaintainer ({ email, password }) {
   const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
   if (!foundMaintainer) return null
   if (!foundMaintainer.verified) return null
@@ -551,7 +555,7 @@ Db.prototype.authenticateMaintainer = async function authenticateMaintainer (ema
   return { id, ...rest }
 }
 
-Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
+Db.prototype.verifyMaintainer = async function verifyMaintainer ({ email }) {
   return this.db.collection('maintainers').updateOne({
     email
   }, {
@@ -559,9 +563,9 @@ Db.prototype.verifyMaintainer = async function verifyMaintainer (email) {
   })
 }
 
-Db.prototype.updateMaintainerPayoutInfo = async function updateMaintainerPayoutInfo (id, payoutInfo) {
+Db.prototype.updateMaintainerPayoutInfo = async function updateMaintainerPayoutInfo ({ maintainerId, payoutInfo }) {
   return this.db.collection('maintainers').updateOne({
-    _id: ObjectId(id)
+    _id: ObjectId(maintainerId)
   }, {
     $set: { payoutInfo }
   })

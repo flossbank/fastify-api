@@ -5,20 +5,24 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-    await db.verifyAdvertiser('honey@etsy.com')
+    await db.verifyAdvertiser({ email: 'honey@etsy.com' })
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
     const unverifiedAdvertiserId = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.unverifiedAdvertiserId = unverifiedAdvertiserId.toHexString()
     t.context.unverifiedSession = await auth.advertiser.createWebSession({ advertiserId: t.context.unverifiedAdvertiserId })

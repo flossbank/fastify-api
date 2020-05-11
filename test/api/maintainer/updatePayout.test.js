@@ -5,9 +5,11 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
-      name: 'Honesty',
-      email: 'honey1@etsy.com',
-      password: 'beekeeperbookkeeper'
+      maintainer: {
+        name: 'Honesty',
+        email: 'honey1@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
@@ -54,7 +56,9 @@ test('POST `/maintainer/update-payout` 200 success', async (t) => {
   t.is(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const maintainer = await t.context.db.getMaintainer(t.context.maintainerId1)
+  const maintainer = await t.context.db.getMaintainer({
+    maintainerId: t.context.maintainerId1
+  })
   t.is(maintainer.payoutInfo, 'help@quo.cc')
 })
 

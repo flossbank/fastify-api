@@ -6,7 +6,7 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('authenticating with email %s', email)
 
-    const user = await ctx.db.getUserByEmail(email)
+    const user = await ctx.db.getUserByEmail({ email })
     if (!user) {
       ctx.log.warn('attempt to login with invalid email %s', email)
       res.status(404)

@@ -6,8 +6,8 @@ test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const { id: userId1 } = await db.createUser({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
-    await db.updateUserCustomerId(t.context.userId1, 'honesty-cust-id')
-    await db.updateUserHasCardInfo(t.context.userId1, '2222')
+    await db.updateUserCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
+    await db.updateUserHasCardInfo({ userId: t.context.userId1, last4: '2222' })
 
     t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
 
@@ -55,7 +55,7 @@ test('POST `/user/update-billing` 200 success | update card on file', async (t) 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.getUserById(t.context.userId1)
+  const user = await t.context.db.getUserById({ userId: t.context.userId1 })
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
   t.deepEqual(user.billingInfo.last4, '1234')
 
@@ -74,7 +74,7 @@ test('POST `/user/update-billing` 200 success | first card added', async (t) => 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.getUserById(t.context.userId2)
+  const user = await t.context.db.getUserById({ userId: t.context.userId2 })
   t.deepEqual(user.billingInfo.customerId, 'test-stripe-id')
   t.deepEqual(user.billingInfo.last4, '1234')
 

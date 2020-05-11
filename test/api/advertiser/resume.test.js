@@ -5,13 +5,15 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper',
-      organization: 'elf-world'
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper',
+        organization: 'elf-world'
+      }
     })
     t.context.advertiserId = advertiserId1.toHexString()
-    await db.verifyAdvertiser('honey@etsy.com')
+    await db.verifyAdvertiser({ email: 'honey@etsy.com' })
 
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId })
   })
@@ -51,7 +53,9 @@ test('GET `/advertiser/resume` 200 | success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
-  const advertiserRetrieved = await t.context.db.getAdvertiser(t.context.advertiserId)
+  const advertiserRetrieved = await t.context.db.getAdvertiser({
+    advertiserId: t.context.advertiserId
+  })
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
 })
 

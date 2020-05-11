@@ -5,17 +5,21 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const maintainerId1 = await db.createMaintainer({
-      name: 'Pete',
-      email: 'pete@flossbank.com',
-      password: 'petespass'
+      maintainer: {
+        name: 'Pete',
+        email: 'pete@flossbank.com',
+        password: 'petespass'
+      }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
     const maintainerId2 = await db.createMaintainer({
-      name: 'Goelle',
-      email: 'goelle@flossbank.com',
-      password: 'cami42069'
+      maintainer: {
+        name: 'Goelle',
+        email: 'goelle@flossbank.com',
+        password: 'cami42069'
+      }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
     t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
@@ -36,11 +40,13 @@ test.after.always(async (t) => {
 
 test('POST `/package/update` 401 unauthorized', async (t) => {
   const pkgId1 = (await t.context.db.createPackage({
-    name: 'yttrium-server',
-    registry: 'npm',
-    totalRevenue: 10,
-    owner: t.context.maintainerId1,
-    maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+    pkg: {
+      name: 'yttrium-server',
+      registry: 'npm',
+      totalRevenue: 10,
+      owner: t.context.maintainerId1,
+      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+    }
   })).toHexString()
 
   const res = await t.context.app.inject({
@@ -63,11 +69,13 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
 
 test('POST `/package/update` 200 success', async (t) => {
   const pkgId1 = (await t.context.db.createPackage({
-    name: 'yttrium-server',
-    registry: 'npm',
-    totalRevenue: 10,
-    owner: t.context.maintainerId1,
-    maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+    pkg: {
+      name: 'yttrium-server',
+      registry: 'npm',
+      totalRevenue: 10,
+      owner: t.context.maintainerId1,
+      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+    }
   })).toHexString()
 
   const res = await t.context.app.inject({
@@ -88,7 +96,7 @@ test('POST `/package/update` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const pkg = await t.context.db.getPackage(pkgId1)
+  const pkg = await t.context.db.getPackage({ packageId: pkgId1 })
   t.deepEqual(pkg.maintainers, [
     { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
     { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
