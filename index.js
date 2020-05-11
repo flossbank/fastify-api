@@ -27,7 +27,7 @@ const { Stripe } = require('./stripe')
   const registry = new Registry()
   const url = new Url({ config, docs })
 
-  await db.connect()
+  await db.setup()
   stripe.init()
 
   const app = await App({ db, auth, sqs, email, stripe, registry, url, config })

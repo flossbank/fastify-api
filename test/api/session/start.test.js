@@ -109,7 +109,7 @@ test('POST `/session/start` 200 success', async (t) => {
 })
 
 test('POST `/session/start` 200 success | no ads available still gets a session', async (t) => {
-  t.context.db.ad.getAdBatch = () => []
+  t.context.db.ad.getBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -165,7 +165,7 @@ test('POST `/session/start` 200 success | no ads', async (t) => {
 })
 
 test('POST `/session/start` 500 server error', async (t) => {
-  t.context.db.ad.getAdBatch = () => { throw new Error() }
+  t.context.db.ad.getBatch = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
