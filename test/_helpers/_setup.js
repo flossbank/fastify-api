@@ -20,7 +20,7 @@ exports.before = async function (t, setup) {
   })
 
   const db = new Db({ config })
-  await db.connect()
+  await db.setup()
 
   const dynamo = new DynamoDBMemoryServer()
   const endpoint = await dynamo.getEndpoint()
@@ -42,7 +42,7 @@ exports.before = async function (t, setup) {
 
 exports.beforeEach = async function (t) {
   t.context.db = new Db({ config: t.context.config })
-  await t.context.db.connect()
+  await t.context.db.setup()
 
   const endpoint = await t.context.dynamo.getEndpoint()
   const docs = new AWS.DynamoDB.DocumentClient({ endpoint })

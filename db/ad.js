@@ -3,7 +3,7 @@ class AdDbController {
     this.db = db
   }
 
-  async getAdBatch () {
+  async getBatch () {
     // more complicated logic and/or caching can come later
     const ads = (await this.db.collection('advertisers').aggregate([
       // project advertiser documents as { _id: advertiserId, campaigns: <active campaigns> }

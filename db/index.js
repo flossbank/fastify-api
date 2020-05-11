@@ -18,7 +18,7 @@ class Db {
     })
   }
 
-  async connect () {
+  async setup () {
     this.client = await this.mongoClient.connect()
     this.db = this.client.db('flossbank_db')
 
