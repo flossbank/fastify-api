@@ -4,7 +4,7 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.advertiser.createAdvertiser({
+    const advertiserId1 = await db.advertiser.create({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -32,7 +32,7 @@ test.before(async (t) => {
       }
     })
 
-    const advertiserId2 = await db.advertiser.createAdvertiser({
+    const advertiserId2 = await db.advertiser.create({
       advertiser: {
         name: 'Faith Ogler',
         email: 'fogler@folgers.coffee',
@@ -108,7 +108,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId1 })
   // Should have kept advertiser drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -143,7 +143,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId2 })
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId2 })
   // Should have deleted advertiser draft
   t.deepEqual(advertiser.adDrafts.length, 0)
 
@@ -254,7 +254,7 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId1 })
   // should preserve ad drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 

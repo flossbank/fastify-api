@@ -1,7 +1,7 @@
 module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('getting advertiser info for %s', req.session.advertiserId)
-    const advertiser = await ctx.db.advertiser.getAdvertiser({ advertiserId: req.session.advertiserId })
+    const advertiser = await ctx.db.advertiser.get({ advertiserId: req.session.advertiserId })
     if (!advertiser || !advertiser.verified) {
       ctx.log.warn(
         'attempt to get advertiser info for non-existent or unverified advertiser, rejecting request from %s',

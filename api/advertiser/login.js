@@ -5,7 +5,7 @@ module.exports = async (req, res, ctx) => {
   const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('logging in as advertiser %s', email)
-    const advertiser = await ctx.db.advertiser.authenticateAdvertiser({ email, password })
+    const advertiser = await ctx.db.advertiser.authenticate({ email, password })
     if (advertiser) {
       res.setCookie(
         ADVERTISER_WEB_SESSION_COOKIE,

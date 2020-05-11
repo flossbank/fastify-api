@@ -16,7 +16,7 @@ class AdvertiserDbController {
     )
   }
 
-  async createAdvertiser ({ advertiser }) {
+  async create ({ advertiser }) {
     const advertiserWithDefaults = Object.assign({}, advertiser, {
       adCampaigns: [],
       verified: false,
@@ -29,7 +29,7 @@ class AdvertiserDbController {
     return insertedId
   }
 
-  async updateAdvertiserCustomerId ({ advertiserId, customerId }) {
+  async updateCustomerId ({ advertiserId, customerId }) {
     return this.db.collection('advertisers').updateOne({
       _id: ObjectId(advertiserId)
     }, {
@@ -37,7 +37,7 @@ class AdvertiserDbController {
     })
   }
 
-  async updateAdvertiserHasCardInfo ({ advertiserId, last4 }) {
+  async updateHasCardInfo ({ advertiserId, last4 }) {
     return this.db.collection('advertisers').updateOne({
       _id: ObjectId(advertiserId)
     }, {
@@ -45,7 +45,7 @@ class AdvertiserDbController {
     })
   }
 
-  async verifyAdvertiser ({ email }) {
+  async verify ({ email }) {
     return this.db.collection('advertisers').updateOne({
       email
     }, {
@@ -53,7 +53,7 @@ class AdvertiserDbController {
     })
   }
 
-  async getAdvertiser ({ advertiserId }) {
+  async get ({ advertiserId }) {
     const advertiser = await this.db.collection('advertisers')
       .findOne({ _id: ObjectId(advertiserId) })
 
@@ -64,7 +64,7 @@ class AdvertiserDbController {
     return { id, ...rest }
   }
 
-  async getAdvertiserByEmail ({ email }) {
+  async getByEmail ({ email }) {
     const advertiser = await this.db.collection('advertisers')
       .findOne({ email })
 
@@ -75,7 +75,7 @@ class AdvertiserDbController {
     return { id, ...rest }
   }
 
-  async authenticateAdvertiser ({ email, password }) {
+  async authenticate ({ email, password }) {
     const foundAdvertiser = await this.db.collection('advertisers').findOne({ email })
     if (!foundAdvertiser) return null
     if (!foundAdvertiser.verified) return null

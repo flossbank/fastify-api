@@ -4,7 +4,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
-    const advertiserId1 = await db.advertiser.createAdvertiser({
+    const advertiserId1 = await db.advertiser.create({
       advertiser: {
         firstName: 'Honesty',
         lastName: 'Empathy',
@@ -14,8 +14,8 @@ test.before(async (t) => {
       }
     })
     t.context.advertiserId = advertiserId1.toHexString()
-    await db.advertiser.verifyAdvertiser({ email: 'honey@etsy.com' })
-    await db.advertiser.createAdvertiser({
+    await db.advertiser.verify({ email: 'honey@etsy.com' })
+    await db.advertiser.create({
       advertiser: {
         firstName: 'Faith',
         lastName: ' Ogler',
@@ -71,7 +71,7 @@ test('POST `/advertiser/login` 200 success', async (t) => {
     url: '/advertiser/login',
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
-  const advertiserRetrieved = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId })
+  const advertiserRetrieved = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId })
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
@@ -85,7 +85,7 @@ test('POST `/advertiser/login` 200 success | email case does not matter', async 
     url: '/advertiser/login',
     body: { email: 'HONEY@ETSY.cOm', password: 'beekeeperbookkeeper' }
   })
-  const advertiserRetrieved = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId })
+  const advertiserRetrieved = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId })
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
@@ -117,7 +117,7 @@ test('POST `/advertiser/login` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/login` 500 server error', async (t) => {
-  t.context.db.advertiser.authenticateAdvertiser = () => { throw new Error() }
+  t.context.db.advertiser.authenticate = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/login',
