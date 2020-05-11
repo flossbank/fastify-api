@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
-    await db.createUser({ email: 'honey@etsy.com' })
+    await db.user.createUser({ email: 'honey@etsy.com' })
   })
 })
 

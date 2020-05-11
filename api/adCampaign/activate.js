@@ -2,7 +2,7 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info(req.body, 'activating campaign for %s', req.session.advertiserId)
     const { adCampaignId } = req.body
-    const campaign = await ctx.db.getAdCampaign({
+    const campaign = await ctx.db.advertiser.getAdCampaign({
       advertiserId: req.session.advertiserId,
       campaignId: adCampaignId
     })
@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
       })
     }
 
-    await ctx.db.activateAdCampaign({
+    await ctx.db.advertiser.activateAdCampaign({
       advertiserId: req.session.advertiserId,
       campaignId: adCampaignId
     })

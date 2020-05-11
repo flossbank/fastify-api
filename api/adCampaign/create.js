@@ -11,7 +11,7 @@ module.exports = async (req, res, ctx) => {
       )
       res.send({
         success: true,
-        id: await ctx.db.createAdCampaign({
+        id: await ctx.db.advertiser.createAdCampaign({
           advertiserId: req.session.advertiserId,
           adCampaign,
           adIdsFromDrafts: adDrafts,

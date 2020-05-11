@@ -6,7 +6,7 @@ module.exports = async (req, res, ctx) => {
       ctx.log.info(req.body, 'creating ad draft for %s', req.session.advertiserId)
       res.send({
         success: true,
-        id: await ctx.db.createAdDraft({
+        id: await ctx.db.advertiser.createAdDraft({
           advertiserId: req.session.advertiserId,
           draft: req.body
         })

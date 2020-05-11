@@ -4,7 +4,7 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -13,7 +13,7 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
-    t.context.adId1 = await db.createAdDraft({
+    t.context.adId1 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #1',
@@ -22,7 +22,7 @@ test.before(async (t) => {
         url: 'teacherfund.com'
       }
     })
-    t.context.adId2 = await db.createAdDraft({
+    t.context.adId2 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #2',
@@ -32,7 +32,7 @@ test.before(async (t) => {
       }
     })
 
-    const advertiserId2 = await db.createAdvertiser({
+    const advertiserId2 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Faith Ogler',
         email: 'fogler@folgers.coffee',
@@ -41,7 +41,7 @@ test.before(async (t) => {
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
     t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
-    t.context.adId3 = await db.createAdDraft({
+    t.context.adId3 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId2,
       draft: {
         name: 'Teacher Fund #5',
@@ -108,7 +108,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   // Should have kept advertiser drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -143,7 +143,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId2 })
+  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId2 })
   // Should have deleted advertiser draft
   t.deepEqual(advertiser.adDrafts.length, 0)
 
@@ -178,7 +178,7 @@ test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign({
+  const campaign = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: id
   })
@@ -214,7 +214,7 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign({
+  const campaign = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: id
   })
@@ -254,7 +254,7 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   // should preserve ad drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -348,7 +348,7 @@ test('POST `/ad-campaign/create` 400 bad request | trash ads', async (t) => {
 })
 
 test('POST `/ad-campaign/create` 500 server error', async (t) => {
-  t.context.db.createAdCampaign = () => { throw new Error() }
+  t.context.db.advertiser.createAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',

@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
       req.session.advertiserId
     )
     try {
-      await ctx.db.updateAdCampaign({
+      await ctx.db.advertiser.updateAdCampaign({
         advertiserId: req.session.advertiserId,
         updatedAdCampaign: adCampaign,
         adIdsFromDrafts: adDrafts,

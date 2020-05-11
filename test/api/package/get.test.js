@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.createMaintainer({
+    const maintainerId1 = await db.maintainer.createMaintainer({
       maintainer: {
         name: 'Pete',
         email: 'pete@flossbank.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
-    const pkgId1 = await db.createPackage({
+    const pkgId1 = await db.package.createPackage({
       pkg: {
         name: 'yttrium-server',
         registry: 'npm',
@@ -77,7 +77,7 @@ test('GET `/package/get` 200 success', async (t) => {
 })
 
 test('GET `/package/get` 500 server error', async (t) => {
-  t.context.db.getOwnedPackages = () => { throw new Error() }
+  t.context.db.maintainer.getOwnedPackages = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/get',
