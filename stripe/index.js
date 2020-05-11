@@ -51,6 +51,16 @@ class Stripe {
     })
   }
 
+  async deleteDonation (customerId) {
+    const customer = await this.stripe.customers.retrieve(customerId)
+    const currentSubscription = customer.subscriptions.data[0]
+
+    if (!currentSubscription) return
+
+    // Delete the customers subscription
+    await this.stripe.subscriptions.del(currentSubscription.id)
+  }
+
   // Amount is in cents
   async findOrCreatePlan (amount) {
     // Fetch all plans to see if we have one that matches the amount already
