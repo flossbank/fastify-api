@@ -19,11 +19,11 @@ const getAdCampaigns = require('../api/adCampaign/get-all')
 
 // Advertiser
 const registerAdvertiser = require('../api/advertiser/register')
-const getAdvertiser = require('../api/advertiser/get')
+const get = require('../api/advertiser/get')
 const loginAdvertiser = require('../api/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
 const updateAdvertiserBilling = require('../api/advertiser/update-billing')
-const verifyAdvertiser = require('../api/advertiser/verify')
+const verify = require('../api/advertiser/verify')
 const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // User
@@ -88,11 +88,11 @@ async function routes (fastify, opts, next) {
 
   // Advertiser
   fastify.post('/advertiser/register', { schema: Schema.advertiser.register }, (req, res) => registerAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => getAdvertiser(req, res, fastify))
+  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => get(req, res, fastify))
   fastify.post('/advertiser/login', { schema: Schema.advertiser.login }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', { schema: Schema.advertiser.logout }, (req, res) => logoutAdvertiser(req, res, fastify))
   fastify.post('/advertiser/update-billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
-  fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verifyAdvertiser(req, res, fastify))
+  fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verify(req, res, fastify))
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User

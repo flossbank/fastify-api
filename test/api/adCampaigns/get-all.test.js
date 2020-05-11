@@ -4,7 +4,7 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = (await db.advertiser.createAdvertiser({
+    const advertiserId1 = (await db.advertiser.create({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',

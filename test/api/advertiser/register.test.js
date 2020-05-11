@@ -36,7 +36,7 @@ test('POST `/advertiser/register` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   // email has been lowercased in db
-  const advertiser = await t.context.db.advertiser.getAdvertiserByEmail({
+  const advertiser = await t.context.db.advertiser.getByEmail({
     email: 'advertiser@ads.com'
   })
   t.is(advertiser.firstName, 'advertiser')
@@ -44,7 +44,7 @@ test('POST `/advertiser/register` 200 success', async (t) => {
 })
 
 test('POST `/advertiser/register` 409 duplicate email', async (t) => {
-  t.context.db.advertiser.createAdvertiser = () => {
+  t.context.db.advertiser.create = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
     throw error
@@ -131,7 +131,7 @@ test('POST `/advertiser/register` 400 bad request', async (t) => {
 })
 
 test('POST `/advertiser/register` 500 server error', async (t) => {
-  t.context.db.advertiser.createAdvertiser = () => { throw new Error() }
+  t.context.db.advertiser.create = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/advertiser/register',

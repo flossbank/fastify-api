@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.advertiser.createAdvertiser({
+    const advertiserId1 = await db.advertiser.create({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
