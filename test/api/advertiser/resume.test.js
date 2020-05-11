@@ -4,7 +4,7 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -13,7 +13,7 @@ test.before(async (t) => {
       }
     })
     t.context.advertiserId = advertiserId1.toHexString()
-    await db.verifyAdvertiser({ email: 'honey@etsy.com' })
+    await db.advertiser.verifyAdvertiser({ email: 'honey@etsy.com' })
 
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId })
   })
@@ -53,14 +53,14 @@ test('GET `/advertiser/resume` 200 | success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
-  const advertiserRetrieved = await t.context.db.getAdvertiser({
+  const advertiserRetrieved = await t.context.db.advertiser.getAdvertiser({
     advertiserId: t.context.advertiserId
   })
   t.deepEqual(payload.advertiser, { ...advertiserRetrieved, id: advertiserRetrieved.id.toHexString() })
 })
 
 test('GET `/advertiser/resume` 400 | no advertiser', async (t) => {
-  t.context.db.getAdvertiser = () => undefined
+  t.context.db.advertiser.getAdvertiser = () => undefined
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/resume',
@@ -72,7 +72,7 @@ test('GET `/advertiser/resume` 400 | no advertiser', async (t) => {
 })
 
 test('GET `/advertiser/resume` 500 | advertiser query error', async (t) => {
-  t.context.db.getAdvertiser = () => { throw new Error() }
+  t.context.db.advertiser.getAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/resume',

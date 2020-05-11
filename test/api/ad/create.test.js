@@ -4,7 +4,7 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -66,7 +66,7 @@ test('POST `/ad/create` 200 success', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
   const createdAd = Object.assign({}, adToCreate, { id })
-  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   t.deepEqual(advertiser.adDrafts.length, 1)
   t.deepEqual(advertiser.adDrafts[0], createdAd)
 })
@@ -148,7 +148,7 @@ test('POST `/ad/create` 400 bad request', async (t) => {
 })
 
 test('POST `/ad/create` 500 server error', async (t) => {
-  t.context.db.createAdDraft = () => { throw new Error() }
+  t.context.db.advertiser.createAdDraft = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad/create',

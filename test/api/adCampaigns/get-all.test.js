@@ -4,7 +4,7 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = (await db.createAdvertiser({
+    const advertiserId1 = (await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.campaignId1 = await db.createAdCampaign({
+    t.context.campaignId1 = await db.advertiser.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         maxSpend: 100,
@@ -74,7 +74,7 @@ test('GET `/ad-campaign/get-all` 200 success', async (t) => {
 })
 
 test('GET `/ad-campaign/get-all` 500 server error', async (t) => {
-  t.context.db.getAdCampaignsForAdvertiser = () => { throw new Error() }
+  t.context.db.advertiser.getAdCampaignsForAdvertiser = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get-all',

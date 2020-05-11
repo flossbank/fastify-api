@@ -2,7 +2,7 @@ module.exports = async (req, res, ctx) => {
   try {
     const { payoutInfo } = req.body
     ctx.log.info('updating maintainer for id %s', req.session.maintainerId)
-    await ctx.db.updateMaintainerPayoutInfo({
+    await ctx.db.maintainer.updateMaintainerPayoutInfo({
       maintainerId: req.session.maintainerId,
       payoutInfo
     })

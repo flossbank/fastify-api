@@ -4,7 +4,7 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.adId1 = await db.createAdDraft({
+    t.context.adId1 = await db.advertiser.createAdDraft({
       advertiserId: t.context.advertiserId1,
       draft: {
         name: 'Teacher Fund #1',
@@ -23,7 +23,7 @@ test.before(async (t) => {
         url: 'teacherfund.com'
       }
     })
-    t.context.adId2 = await db.createAdDraft({
+    t.context.adId2 = await db.advertiser.createAdDraft({
       advertiserId: t.context.advertiserId1,
       draft: {
         name: 'Teacher Fund #2',
@@ -48,7 +48,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -72,7 +72,7 @@ test('POST `/ad-campaign/activate` 401 unauthorized no session', async (t) => {
 })
 
 test('POST `/ad-campaign/activate` 200 success', async (t) => {
-  const adCampaignId1 = await t.context.db.createAdCampaign({
+  const adCampaignId1 = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -83,7 +83,7 @@ test('POST `/ad-campaign/activate` 200 success', async (t) => {
     adDrafts: [t.context.adId2],
     keepDrafts: true
   })
-  await t.context.db.approveAdCampaign({
+  await t.context.db.advertiser.approveAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: adCampaignId1
   })
@@ -99,7 +99,7 @@ test('POST `/ad-campaign/activate` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const campaign = await t.context.db.getAdCampaign({
+  const campaign = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: adCampaignId1
   })
@@ -107,7 +107,7 @@ test('POST `/ad-campaign/activate` 200 success', async (t) => {
 })
 
 test('POST `/ad-campaign/activate` 400 bad request | unapproved campaign', async (t) => {
-  const newAdCampaignId = await t.context.db.createAdCampaign({
+  const newAdCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [{
@@ -146,8 +146,8 @@ test('POST `/ad-campaign/activate` 400 bad request', async (t) => {
 })
 
 test('POST `/ad-campaign/activate` 500 server error', async (t) => {
-  t.context.db.getAdCampaign = () => { throw new Error('poop') }
-  const adCampaignId = await t.context.db.createAdCampaign({
+  t.context.db.advertiser.getAdCampaign = () => { throw new Error('poop') }
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],

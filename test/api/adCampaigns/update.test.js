@@ -4,7 +4,7 @@ const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../he
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.adId1 = await db.createAdDraft({
+    t.context.adId1 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #1',
@@ -23,7 +23,7 @@ test.before(async (t) => {
         url: 'teacherfund.com'
       }
     })
-    t.context.adId2 = await db.createAdDraft({
+    t.context.adId2 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #2',
@@ -33,7 +33,7 @@ test.before(async (t) => {
       }
     })
 
-    const advertiserId2 = await db.createAdvertiser({
+    const advertiserId2 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Faith Ogler',
         email: 'fogler@folgers.coffee',
@@ -42,7 +42,7 @@ test.before(async (t) => {
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
     t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
-    t.context.adId3 = await db.createAdDraft({
+    t.context.adId3 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId2,
       draft: {
         name: 'Teacher Fund #3',
@@ -67,7 +67,7 @@ test.after.always(async (t) => {
 })
 
 test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
-  const adCampaignIdBlah = await t.context.db.createAdCampaign({
+  const adCampaignIdBlah = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       maxSpend: 500000,
@@ -97,7 +97,7 @@ test('POST `/ad-campaign/update` 401 unauthorized | no session', async (t) => {
 })
 
 test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -109,15 +109,15 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
     keepDrafts: true
   })
 
-  await t.context.db.approveAdCampaign({
+  await t.context.db.advertiser.approveAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: adCampaignId
   })
-  await t.context.db.activateAdCampaign({
+  await t.context.db.advertiser.activateAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: adCampaignId
   })
-  const campaign = await t.context.db.getAdCampaign({
+  const campaign = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: adCampaignId
   })
@@ -142,7 +142,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
   t.deepEqual(JSON.parse(res.payload), { success: true })
   t.deepEqual(res.statusCode, 200)
 
-  const advertiser = await t.context.db.getAdvertiser({ advertiserId: t.context.advertiserId1 })
+  const advertiser = await t.context.db.advertiser.getAdvertiser({ advertiserId: t.context.advertiserId1 })
   // Should not have deleted the draft so we should still have 2 that were created in setup
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -155,7 +155,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and keep drafts', asy
 })
 
 test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId2,
     adCampaign: {
       ads: [],
@@ -167,15 +167,15 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
     keepDrafts: true
   })
 
-  await t.context.db.approveAdCampaign({
+  await t.context.db.advertiser.approveAdCampaign({
     advertiserId: t.context.advertiserId2,
     campaignId: adCampaignId
   })
-  await t.context.db.activateAdCampaign({
+  await t.context.db.advertiser.activateAdCampaign({
     advertiserId: t.context.advertiserId2,
     campaignId: adCampaignId
   })
-  const campaign = await t.context.db.getAdCampaign({
+  const campaign = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId2,
     campaignId: adCampaignId
   })
@@ -200,7 +200,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
   t.deepEqual(JSON.parse(res.payload), { success: true })
   t.deepEqual(res.statusCode, 200)
 
-  const advertiser = await t.context.db.getAdvertiser({
+  const advertiser = await t.context.db.advertiser.getAdvertiser({
     advertiserId: t.context.advertiserId2
   })
   // Should have deleted the draft so we should have 0
@@ -215,7 +215,7 @@ test('POST `/ad-campaign/update` 200 success with ad draft and delete drafts', a
 })
 
 test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -244,7 +244,7 @@ test('POST `/ad-campaign/update` 400 bad request | invalid ads', async (t) => {
 })
 
 test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -302,7 +302,7 @@ test('POST `/ad-campaign/update` 400 bad request', async (t) => {
 })
 
 test('POST `/ad-campaign/update` 500 server error', async (t) => {
-  const adCampaignId = await t.context.db.createAdCampaign({
+  const adCampaignId = await t.context.db.advertiser.createAdCampaign({
     advertiserId: t.context.advertiserId1,
     adCampaign: {
       ads: [],
@@ -312,7 +312,7 @@ test('POST `/ad-campaign/update` 500 server error', async (t) => {
     }
   })
 
-  t.context.db.updateAdCampaign = () => { throw new Error() }
+  t.context.db.advertiser.updateAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/update',

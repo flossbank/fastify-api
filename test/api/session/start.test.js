@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = await db.createAdvertiser({
+    const advertiserId1 = await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -12,7 +12,7 @@ test.before(async (t) => {
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
 
-    t.context.adId1 = await db.createAdDraft({
+    t.context.adId1 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #1',
@@ -21,7 +21,7 @@ test.before(async (t) => {
         url: 'teacherfund.com'
       }
     })
-    t.context.adId2 = await db.createAdDraft({
+    t.context.adId2 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
       draft: {
         name: 'Teacher Fund #2',
@@ -32,7 +32,7 @@ test.before(async (t) => {
     })
 
     // active campaign
-    t.context.campaignId1 = await db.createAdCampaign({
+    t.context.campaignId1 = await db.advertiser.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         ads: [],
@@ -43,12 +43,12 @@ test.before(async (t) => {
       adIdsFromDrafts: [t.context.adId1, t.context.adId2],
       keepDrafts: true
     })
-    await db.approveAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
-    await db.activateAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
-    t.context.adCampaign1 = await db.getAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
+    await db.advertiser.approveAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
+    await db.advertiser.activateAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
+    t.context.adCampaign1 = await db.advertiser.getAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId1 })
 
     // inactive campaign
-    t.context.campaignId2 = await db.createAdCampaign({
+    t.context.campaignId2 = await db.advertiser.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         ads: [],
@@ -109,7 +109,7 @@ test('POST `/session/start` 200 success', async (t) => {
 })
 
 test('POST `/session/start` 200 success | no ads available still gets a session', async (t) => {
-  t.context.db.getAdBatch = () => []
+  t.context.db.ad.getAdBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -165,7 +165,7 @@ test('POST `/session/start` 200 success | no ads', async (t) => {
 })
 
 test('POST `/session/start` 500 server error', async (t) => {
-  t.context.db.getAdBatch = () => { throw new Error() }
+  t.context.db.ad.getAdBatch = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',

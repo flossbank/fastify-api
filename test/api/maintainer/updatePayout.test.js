@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.createMaintainer({
+    const maintainerId1 = await db.maintainer.createMaintainer({
       maintainer: {
         name: 'Honesty',
         email: 'honey1@etsy.com',
@@ -56,7 +56,7 @@ test('POST `/maintainer/update-payout` 200 success', async (t) => {
   t.is(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const maintainer = await t.context.db.getMaintainer({
+  const maintainer = await t.context.db.maintainer.getMaintainer({
     maintainerId: t.context.maintainerId1
   })
   t.is(maintainer.payoutInfo, 'help@quo.cc')
@@ -75,7 +75,7 @@ test('POST `/maintainer/update-payout` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/update-payout` 500 server error', async (t) => {
-  t.context.db.updateMaintainerPayoutInfo = () => { throw new Error() }
+  t.context.db.maintainer.updateMaintainerPayoutInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/update-payout',

@@ -3,7 +3,7 @@
 module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('resuming maintainer session for %s', req.session.maintainerId)
-    const maintainer = await ctx.db.getMaintainer({ maintainerId: req.session.maintainerId })
+    const maintainer = await ctx.db.maintainer.getMaintainer({ maintainerId: req.session.maintainerId })
     if (!maintainer || !maintainer.active || !maintainer.verified) {
       ctx.log.warn(
         'attempt to resume session of non-existent, non-verified, or non-active maintainer from %s',

@@ -18,7 +18,7 @@ test.after(async (t) => {
 })
 
 test('POST `/maintainer/verify` 401 unauthorized', async (t) => {
-  await t.context.db.createMaintainer({
+  await t.context.db.maintainer.createMaintainer({
     maintainer: {
       name: 'Honesty',
       email: 'honey1@etsy.com',
@@ -35,7 +35,7 @@ test('POST `/maintainer/verify` 401 unauthorized', async (t) => {
 })
 
 test('POST `/maintainer/verify` 200 success', async (t) => {
-  const maintainerId = (await t.context.db.createMaintainer({
+  const maintainerId = (await t.context.db.maintainer.createMaintainer({
     maintainer: {
       firstName: 'Honesty',
       lastName: 'Jones',
@@ -52,12 +52,12 @@ test('POST `/maintainer/verify` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const maintainer = await t.context.db.getMaintainer({ maintainerId })
+  const maintainer = await t.context.db.maintainer.getMaintainer({ maintainerId })
   t.true(maintainer.verified)
 })
 
 test('POST `/maintainer/verify` 200 success | email case does not matter', async (t) => {
-  const maintainerId = (await t.context.db.createMaintainer({
+  const maintainerId = (await t.context.db.maintainer.createMaintainer({
     maintainer: {
       firstName: 'Papa',
       lastName: 'John',
@@ -74,7 +74,7 @@ test('POST `/maintainer/verify` 200 success | email case does not matter', async
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const maintainer = await t.context.db.getMaintainer({ maintainerId })
+  const maintainer = await t.context.db.maintainer.getMaintainer({ maintainerId })
   t.true(maintainer.verified)
 })
 
@@ -103,7 +103,7 @@ test('POST `/maintainer/verify` 400 bad request', async (t) => {
 
 test('POST `/maintainer/verify` 500 server error', async (t) => {
   const { db, auth } = t.context
-  await db.createMaintainer({
+  await db.maintainer.createMaintainer({
     maintainer: {
       firstName: 'Papa',
       lastName: 'John',
@@ -112,7 +112,7 @@ test('POST `/maintainer/verify` 500 server error', async (t) => {
     }
   })
   const { registrationToken } = await auth.maintainer.beginRegistration({ email: 'papa_113355@papajohns.com' })
-  t.context.db.verifyMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.verifyMaintainer = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/verify',

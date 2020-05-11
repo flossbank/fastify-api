@@ -4,7 +4,7 @@ const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const advertiserId1 = (await db.createAdvertiser({
+    const advertiserId1 = (await db.advertiser.createAdvertiser({
       advertiser: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -14,7 +14,7 @@ test.before(async (t) => {
     t.context.advertiserId1 = advertiserId1.toHexString()
     t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    t.context.campaignId1 = await db.createAdCampaign({
+    t.context.campaignId1 = await db.advertiser.createAdCampaign({
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         ads: [{
@@ -70,7 +70,7 @@ test('GET `/ad-campaign/get` 200 success', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
 
-  const shouldBeReceived = await t.context.db.getAdCampaign({
+  const shouldBeReceived = await t.context.db.advertiser.getAdCampaign({
     advertiserId: t.context.advertiserId1,
     campaignId: t.context.campaignId1
   })
@@ -93,7 +93,7 @@ test('GET `/ad-campaign/get` 400 bad request', async (t) => {
 })
 
 test('GET `/ad-campaign/get` 500 server error campaign get threw', async (t) => {
-  t.context.db.getAdCampaign = () => { throw new Error() }
+  t.context.db.advertiser.getAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/ad-campaign/get',

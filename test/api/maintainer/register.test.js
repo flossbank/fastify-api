@@ -36,7 +36,7 @@ test('POST `/maintainer/register` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   // email has been lowercased in db
-  const maintainer = await t.context.db.getMaintainerByEmail({
+  const maintainer = await t.context.db.maintainer.getMaintainerByEmail({
     email: 'maintainer@ads.com'
   })
   t.is(maintainer.firstName, 'maintainer')
@@ -44,7 +44,7 @@ test('POST `/maintainer/register` 200 success', async (t) => {
 })
 
 test('POST `/maintainer/register` 409 duplicate email', async (t) => {
-  t.context.db.createMaintainer = () => {
+  t.context.db.maintainer.createMaintainer = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
     throw error
@@ -130,7 +130,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/register` 500 server error', async (t) => {
-  t.context.db.createMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.createMaintainer = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/register',

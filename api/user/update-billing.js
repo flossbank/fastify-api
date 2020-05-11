@@ -2,13 +2,13 @@ module.exports = async (req, res, ctx) => {
   try {
     const { billingToken, last4 } = req.body
     ctx.log.info(billingToken, last4, 'updating user billing token for id %s', req.session.userId)
-    const user = await ctx.db.getUserById({ userId: req.session.userId })
+    const user = await ctx.db.user.getUserById({ userId: req.session.userId })
 
     let customerId
     if (!user.billingInfo || !user.billingInfo.customerId) {
       // Create stripe customer, and add the stripe customer id to db
       const stripeCustomer = await ctx.stripe.createStripeCustomer(user.email)
-      await ctx.db.updateUserCustomerId({
+      await ctx.db.user.updateUserCustomerId({
         userId: req.session.userId,
         customerId: stripeCustomer.id
       })
@@ -20,7 +20,7 @@ module.exports = async (req, res, ctx) => {
 
     // Update the stripe user with the new billing token (stripe CC card token) if it exists
     await ctx.stripe.updateStripeCustomer(customerId, billingToken)
-    await ctx.db.updateUserHasCardInfo({
+    await ctx.db.user.updateUserHasCardInfo({
       userId: req.session.userId,
       last4
     })
