@@ -6,27 +6,27 @@ const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     sinon.stub(Date, 'now').returns(123456)
-    const { id: userId1 } = await db.user.createUser({ email: 'honey@etsy.com' })
+    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
-    await db.user.updateUserCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
-    await db.user.updateUserHasCardInfo({ userId: t.context.userId1, last4: '2222' })
+    await db.user.updateCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
+    await db.user.updateHasCardInfo({ userId: t.context.userId1, last4: '2222' })
 
     t.context.sessionWithBillingInfo = await auth.user.createWebSession({ userId: t.context.userId1 })
 
     // no billing info
-    const { id: userId2 } = await db.user.createUser({ email: 'papa@papajohns.com' })
+    const { id: userId2 } = await db.user.create({ email: 'papa@papajohns.com' })
     t.context.userId2 = userId2.toHexString()
 
     t.context.sessionWithoutBillingInfo = await auth.user.createWebSession({ userId: t.context.userId2 })
 
     // User that wont opt out of ads with donation
-    const { id: userId3 } = await db.user.createUser({ email: 'first@pick.com' })
+    const { id: userId3 } = await db.user.create({ email: 'first@pick.com' })
     t.context.userId3 = userId3.toHexString()
 
     t.context.sessionThatWontBuyNoAds = await auth.user.createWebSession({ userId: t.context.userId3 })
 
     // User that receives an error
-    const { id: userId4 } = await db.user.createUser({ email: 'black@pick.com' })
+    const { id: userId4 } = await db.user.create({ email: 'black@pick.com' })
     t.context.userId4 = userId4.toHexString()
 
     t.context.sessionWithError = await auth.user.createWebSession({ userId: t.context.userId4 })
@@ -69,7 +69,7 @@ test('POST `/user/donation` 200 success | update card on file', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.user.getUserById({ userId: t.context.userId1 })
+  const user = await t.context.db.user.get({ userId: t.context.userId1 })
   t.deepEqual(user.optOutOfAds, true)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
@@ -105,7 +105,7 @@ test('POST `/user/donation` 200 success | first card added and above disable ads
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.user.getUserById({ userId: t.context.userId2 })
+  const user = await t.context.db.user.get({ userId: t.context.userId2 })
   t.deepEqual(user.optOutOfAds, true)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'test-stripe-id')
@@ -133,7 +133,7 @@ test('POST `/user/donation` 200 success | donation below threshold to disable ad
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const user = await t.context.db.user.getUserById({ userId: t.context.userId3 })
+  const user = await t.context.db.user.get({ userId: t.context.userId3 })
   t.deepEqual(user.optOutOfAds, undefined)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'test-stripe-id')
@@ -151,7 +151,7 @@ test('POST `/user/donation` 200 success | donation below threshold to disable ad
 })
 
 test('POST `/user/donation` 500 server error', async (t) => {
-  t.context.db.user.updateUserHasCardInfo = () => { throw new Error() }
+  t.context.db.user.updateHasCardInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/donation',

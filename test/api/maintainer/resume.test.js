@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.maintainer.createMaintainer({
+    const maintainerId1 = await db.maintainer.create({
       maintainer: {
         name: 'Honesty',
         email: 'honey@etsy.com',
@@ -13,7 +13,7 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId = maintainerId1.toHexString()
-    await db.maintainer.verifyMaintainer({ email: 'honey@etsy.com' })
+    await db.maintainer.verify({ email: 'honey@etsy.com' })
     t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId })
   })
 })
@@ -52,14 +52,14 @@ test('GET `/maintainer/resume` 200 | success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.deepEqual(payload.success, true)
-  const maintainerRetrieved = await t.context.db.maintainer.getMaintainer({
+  const maintainerRetrieved = await t.context.db.maintainer.get({
     maintainerId: t.context.maintainerId
   })
   t.deepEqual(payload.maintainer, { ...maintainerRetrieved, id: maintainerRetrieved.id.toHexString() })
 })
 
 test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
-  t.context.db.maintainer.getMaintainer = () => undefined
+  t.context.db.maintainer.get = () => undefined
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/resume',
@@ -71,7 +71,7 @@ test('GET `/maintainer/resume` 400 | no maintainer', async (t) => {
 })
 
 test('GET `/maintainer/resume` 500 | maintainer query error', async (t) => {
-  t.context.db.maintainer.getMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.get = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/resume',

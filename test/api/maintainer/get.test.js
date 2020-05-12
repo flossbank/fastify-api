@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.maintainer.createMaintainer({
+    const maintainerId1 = await db.maintainer.create({
       maintainer: {
         firstName: 'Honesty',
         lastName: 'Honor',
@@ -15,9 +15,9 @@ test.before(async (t) => {
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
-    await db.maintainer.verifyMaintainer({ email: 'honey@etsy.com' })
+    await db.maintainer.verify({ email: 'honey@etsy.com' })
 
-    const unverifiedMaintainerId = await db.maintainer.createMaintainer({
+    const unverifiedMaintainerId = await db.maintainer.create({
       maintainer: {
         firstName: 'Honesty2',
         lastName: 'Honor',
@@ -89,7 +89,7 @@ test('GET `/maintainer/get` 200 success', async (t) => {
 })
 
 test('GET `/maintainer/get` 500 server error', async (t) => {
-  t.context.db.maintainer.getMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.get = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/get',

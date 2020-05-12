@@ -4,7 +4,7 @@ module.exports = async (req, res, ctx) => {
     const email = rawEmail.toLowerCase()
     ctx.log.info('login requested for user %s', email)
 
-    const user = await ctx.db.user.getUserByEmail({ email })
+    const user = await ctx.db.user.getByEmail({ email })
     if (!user) {
       ctx.log.warn('attempt to login with invalid email %s', email)
       res.status(404)

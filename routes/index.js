@@ -19,11 +19,11 @@ const getAdCampaigns = require('../api/adCampaign/get-all')
 
 // Advertiser
 const registerAdvertiser = require('../api/advertiser/register')
-const get = require('../api/advertiser/get')
+const getAdvertiser = require('../api/advertiser/get')
 const loginAdvertiser = require('../api/advertiser/login')
 const logoutAdvertiser = require('../api/advertiser/logout')
 const updateAdvertiserBilling = require('../api/advertiser/update-billing')
-const verify = require('../api/advertiser/verify')
+const verifyAdvertiser = require('../api/advertiser/verify')
 const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // User
@@ -88,11 +88,11 @@ async function routes (fastify, opts, next) {
 
   // Advertiser
   fastify.post('/advertiser/register', { schema: Schema.advertiser.register }, (req, res) => registerAdvertiser(req, res, fastify))
-  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => get(req, res, fastify))
+  fastify.get('/advertiser/get', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.get }, (req, res) => getAdvertiser(req, res, fastify))
   fastify.post('/advertiser/login', { schema: Schema.advertiser.login }, (req, res) => loginAdvertiser(req, res, fastify))
   fastify.post('/advertiser/logout', { schema: Schema.advertiser.logout }, (req, res) => logoutAdvertiser(req, res, fastify))
   fastify.post('/advertiser/update-billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
-  fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verify(req, res, fastify))
+  fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verifyAdvertiser(req, res, fastify))
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User
@@ -110,7 +110,7 @@ async function routes (fastify, opts, next) {
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
   fastify.post('/maintainer/login', { schema: Schema.maintainer.login }, (req, res) => loginMaintainer(req, res, fastify))
-  fastify.post('/maintainer/logout', (req, res) => logoutMaintainer(req, res, fastify))
+  fastify.post('/maintainer/logout', { schema: Schema.maintainer.logout }, (req, res) => logoutMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: Schema.maintainer.register }, (req, res) => registerMaintainer(req, res, fastify))
   fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.revenue }, (req, res) => maintainerRevenue(req, res, fastify))
   fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))

@@ -5,7 +5,7 @@ module.exports = async (req, res, ctx) => {
   const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('logging in as maintainer %s', email)
-    const maintainer = await ctx.db.maintainer.authenticateMaintainer({ email, password })
+    const maintainer = await ctx.db.maintainer.authenticate({ email, password })
     if (maintainer) {
       res.setCookie(
         MAINTAINER_WEB_SESSION_COOKIE,

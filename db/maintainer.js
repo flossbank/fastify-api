@@ -24,7 +24,7 @@ class MaintainerDbController {
     }, 0)
   }
 
-  async createMaintainer ({ maintainer }) {
+  async create ({ maintainer }) {
     const maintainerWithDefaults = Object.assign({}, maintainer, {
       verified: false,
       active: true,
@@ -34,7 +34,7 @@ class MaintainerDbController {
     return insertedId
   }
 
-  async getMaintainer ({ maintainerId }) {
+  async get ({ maintainerId }) {
     const maintainer = await this.db.collection('maintainers')
       .findOne({ _id: ObjectId(maintainerId) })
 
@@ -45,7 +45,7 @@ class MaintainerDbController {
     return { id, ...rest }
   }
 
-  async getMaintainerByEmail ({ email }) {
+  async getByEmail ({ email }) {
     const maintainer = await this.db.collection('maintainers')
       .findOne({ email })
 
@@ -56,7 +56,7 @@ class MaintainerDbController {
     return { id, ...rest }
   }
 
-  async authenticateMaintainer ({ email, password }) {
+  async authenticate ({ email, password }) {
     const foundMaintainer = await this.db.collection('maintainers').findOne({ email })
     if (!foundMaintainer) return null
     if (!foundMaintainer.verified) return null
@@ -67,7 +67,7 @@ class MaintainerDbController {
     return { id, ...rest }
   }
 
-  async verifyMaintainer ({ email }) {
+  async verify ({ email }) {
     return this.db.collection('maintainers').updateOne({
       email
     }, {
@@ -75,7 +75,7 @@ class MaintainerDbController {
     })
   }
 
-  async updateMaintainerPayoutInfo ({ maintainerId, payoutInfo }) {
+  async updatePayoutInfo ({ maintainerId, payoutInfo }) {
     return this.db.collection('maintainers').updateOne({
       _id: ObjectId(maintainerId)
     }, {

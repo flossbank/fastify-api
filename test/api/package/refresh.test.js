@@ -4,7 +4,7 @@ const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const maintainerId1 = await db.maintainer.createMaintainer({
+    const maintainerId1 = await db.maintainer.create({
       maintainer: {
         name: 'Pete',
         email: 'pete@flossbank.com',
@@ -17,7 +17,7 @@ test.before(async (t) => {
     t.context.maintainerId1 = maintainerId1.toHexString()
     t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
 
-    const maintainerId2 = await db.maintainer.createMaintainer({
+    const maintainerId2 = await db.maintainer.create({
       maintainer: {
         name: 'Goelle',
         email: 'goelle@flossbank.com',
@@ -30,7 +30,7 @@ test.before(async (t) => {
     t.context.maintainerId2 = maintainerId2.toHexString()
     t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
 
-    const maintainerId3 = await db.maintainer.createMaintainer({
+    const maintainerId3 = await db.maintainer.create({
       maintainer: {
         name: 'Kelvin Moore Lando Calrissian',
         email: 'kmoorlando7@gmail.com',
@@ -43,7 +43,7 @@ test.before(async (t) => {
     t.context.maintainerId3 = maintainerId3.toHexString()
     t.context.sessionId3 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId3 })
 
-    const maintainerId4 = await db.maintainer.createMaintainer({
+    const maintainerId4 = await db.maintainer.create({
       maintainer: {
         name: 'Steffen Dodges',
         email: 'dodgeball@hotmail.com',
@@ -56,7 +56,7 @@ test.before(async (t) => {
     t.context.maintainerId4 = maintainerId4.toHexString()
     t.context.sessionId4 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId4 })
 
-    const maintainerId5 = await db.maintainer.createMaintainer({
+    const maintainerId5 = await db.maintainer.create({
       maintainer: {
         name: 'Hickory Dickory',
         email: 'dock@mouse.com',
@@ -68,7 +68,7 @@ test.before(async (t) => {
     t.context.sessionId5 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId5 })
 
     // a pkg that m4 owns that will not be changed
-    await db.package.createPackage({
+    await db.package.create({
       pkg: {
         name: 'unc-bootcamp-project-a',
         registry: 'npm',
@@ -79,7 +79,7 @@ test.before(async (t) => {
     })
 
     // a pkg that m1 owns and npm will confirm
-    const yttriumId = await db.package.createPackage({
+    const yttriumId = await db.package.create({
       pkg: {
         name: 'yttrium-server',
         registry: 'npm',
@@ -92,7 +92,7 @@ test.before(async (t) => {
 
     // a pkg that is in the db that m1 currently maintains and does not own
     // but that npm will say m1 now owns
-    const jsDeepEquals = await db.package.createPackage({
+    const jsDeepEquals = await db.package.create({
       pkg: {
         name: 'js-deep-equals',
         registry: 'npm',
@@ -108,7 +108,7 @@ test.before(async (t) => {
 
     // a pkg that is in the db that m1 currently owns but that npm
     // will say m1 no longer owns
-    const sodium = await db.package.createPackage({
+    const sodium = await db.package.create({
       pkg: {
         name: 'sodium-native',
         registry: 'npm',
@@ -121,7 +121,7 @@ test.before(async (t) => {
 
     // a pkg that is in the db that m1 does not maintain and does not own
     // but that npm will say m1 now owns
-    const chive = await db.package.createPackage({
+    const chive = await db.package.create({
       pkg: {
         name: 'chive',
         registry: 'npm',
@@ -178,14 +178,14 @@ test('POST `/package/refresh` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-  const caesar = await t.context.db.package.getPackageByName({
+  const caesar = await t.context.db.package.getByName({
     name: 'caesar',
     registry: 'npm'
   })
-  const yttrium = await t.context.db.package.getPackage({ packageId: t.context.yttriumId })
-  const jsDeepEquals = await t.context.db.package.getPackage({ packageId: t.context.jsDeepEquals })
-  const sodium = await t.context.db.package.getPackage({ packageId: t.context.sodium })
-  const chive = await t.context.db.package.getPackage({ packageId: t.context.chive })
+  const yttrium = await t.context.db.package.get({ packageId: t.context.yttriumId })
+  const jsDeepEquals = await t.context.db.package.get({ packageId: t.context.jsDeepEquals })
+  const sodium = await t.context.db.package.get({ packageId: t.context.sodium })
+  const chive = await t.context.db.package.get({ packageId: t.context.chive })
 
   // ownership
   t.deepEqual(caesar.owner, t.context.maintainerId1)
@@ -261,7 +261,7 @@ test('POST `/package/refresh` 400 bad request', async (t) => {
 })
 
 test('POST `/package/refresh` 500 server error', async (t) => {
-  t.context.db.package.refreshPackageOwnership = () => { throw new Error() }
+  t.context.db.package.refreshOwnership = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',

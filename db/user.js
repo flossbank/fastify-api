@@ -6,7 +6,7 @@ class UserDbController {
     this.db = db
   }
 
-  async getUserByEmail ({ email }) {
+  async getByEmail ({ email }) {
     const user = await this.db.collection('users').findOne({ email })
 
     if (!user) return user
@@ -15,7 +15,7 @@ class UserDbController {
     return { id, ...rest }
   }
 
-  async getUserById ({ userId }) {
+  async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
     if (!user) return user
@@ -24,7 +24,7 @@ class UserDbController {
     return { id, ...rest }
   }
 
-  async createUser ({ email }) {
+  async create ({ email }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
     const { insertedId } = await this.db.collection('users').insertOne({
       email,
@@ -35,7 +35,7 @@ class UserDbController {
     return { id: insertedId, apiKey }
   }
 
-  async updateUserHasCardInfo ({ userId, last4 }) {
+  async updateHasCardInfo ({ userId, last4 }) {
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
     }, {
@@ -43,7 +43,7 @@ class UserDbController {
     })
   }
 
-  async updateUserCustomerId ({ userId, customerId }) {
+  async updateCustomerId ({ userId, customerId }) {
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
     }, {
@@ -51,13 +51,13 @@ class UserDbController {
     })
   }
 
-  async updateUserApiKeysRequested ({ email }) {
+  async updateApiKeysRequested ({ email }) {
     return this.db.collection('users').updateOne(
       { email },
       { $push: { apiKeysRequested: { timestamp: Date.now() } } })
   }
 
-  async setUserDonation ({ userId, amount }) {
+  async setDonation ({ userId, amount }) {
     // Amount in this case is passed in as cents so need to convert to mc
     const donationInMc = amount * 1000
     return this.db.collection('users').updateOne({
@@ -68,7 +68,7 @@ class UserDbController {
     })
   }
 
-  async updateUserOptOutSetting ({ userId, optOutOfAds }) {
+  async updateOptOutSetting ({ userId, optOutOfAds }) {
     return this.db.collection('users').updateOne(
       { _id: ObjectId(userId) },
       { $set: { optOutOfAds } }
