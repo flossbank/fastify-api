@@ -1,6 +1,11 @@
 module.exports = async (req, res, ctx) => {
   try {
     const signature = req.headers['stripe-signature']
+    if (!signature) {
+      ctx.log.warn('Webhook requested without a stripe signature')
+      res.status(403)
+      return res.send()
+    }
     const endpointSecret = ctx.config.getStripeWebhookSecret()
     let event
     try {
