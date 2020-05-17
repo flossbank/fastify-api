@@ -24,6 +24,10 @@ class Stripe {
     })
   }
 
+  async constructWebhookEvent (body, signature, secret) {
+    return this.stripe.webhooks.constructEvent(body, signature, secret)
+  }
+
   // Amount is in cents
   async createDonation (customerId, amount) {
     const plan = await this.findOrCreatePlan(amount)

@@ -1,14 +1,27 @@
 const fastifyPlugin = require('fastify-plugin')
-function Sqs ({ config, sqs }) {
-  this.config = config
-  this.sqs = sqs
-}
 
-Sqs.prototype.sendMessage = async function sendMessage (payload) {
-  return this.sqs.sendMessage({
-    QueueUrl: this.config.getQueueUrl(),
-    MessageBody: JSON.stringify(payload)
-  }).promise()
+class Sqs {
+  constructor ({ config, sqs }) {
+    this.config = config
+    this.sqs = sqs
+  }
+
+  async sendSessionCompleteMessage (payload) {
+    const url = this.config.getSessionCompleteQueueUrl()
+    return this.sendMessage(url, payload)
+  }
+
+  async sendDistributeDonationMessage (payload) {
+    const url = this.config.getDistributeDonationQueueUrl()
+    return this.sendMessage(url, payload)
+  }
+
+  async sendMessage (url, payload) {
+    return this.sqs.sendMessage({
+      QueueUrl: url,
+      MessageBody: JSON.stringify(payload)
+    }).promise()
+  }
 }
 
 exports.Sqs = Sqs

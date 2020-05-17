@@ -9,7 +9,8 @@ module.exports = {
     this.sendUserMagicLinkEmail = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
-    this.sendMessage = sinon.stub().resolves()
+    this.sendSessionCompleteMessage = sinon.stub().resolves()
+    this.sendDistributeDonationMessage = sinon.stub().resolves()
   },
   Registry: function Registry () {
     this.npm = {

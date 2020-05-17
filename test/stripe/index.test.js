@@ -16,6 +16,9 @@ test.beforeEach((t) => {
       customers: {
         create: sinon.stub().resolves({ id: 'blah' }),
         update: sinon.stub().resolves({ id: 'blah' })
+      },
+      webhooks: {
+        constructEvent: sinon.stub().resolves()
       }
     }),
     config: { getStripeToken: sinon.stub() }
@@ -30,6 +33,15 @@ test('stripe | create customer', async (t) => {
     email: 'winney@thepoo.com',
     metadata: { updatedAt: Date.now() }
   }])
+})
+
+test('stripe | decrypt webhook event', async (t) => {
+  await t.context.stripe.constructWebhookEvent({ some: 'body' }, 'signature', 'some secret')
+  t.deepEqual(t.context.stripe.stripe.webhooks.constructEvent.lastCall.args, [
+    { some: 'body' },
+    'signature',
+    'some secret'
+  ])
 })
 
 test('stripe | update customer', async (t) => {

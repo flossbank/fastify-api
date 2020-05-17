@@ -71,7 +71,7 @@ test('POST `/session/complete` 200 success', async (t) => {
 })
 
 test('POST `/session/complete` 500 server error', async (t) => {
-  t.context.sqs.sendMessage.throws()
+  t.context.sqs.sendSessionCompleteMessage.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',

@@ -63,8 +63,12 @@ class Config {
     return this.env.recaptcha_secret
   }
 
-  getQueueUrl () {
-    return this.env.queue_url
+  getDistributeDonationQueueUrl () {
+    return this.env.distribute_donation_queue_url
+  }
+
+  getSessionCompleteQueueUrl () {
+    return this.env.session_complete_queue_url
   }
 
   getUrlConfig () {
@@ -79,6 +83,10 @@ class Config {
 
   getStripeToken () {
     return this.env.stripe_token
+  }
+
+  getStripeWebhookSecret () {
+    return this.env.stripe_webhook_secret
   }
 
   // Current no ad threshold is $10 bucks
