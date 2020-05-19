@@ -1,5 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { INTEG_TEST_KEY } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -32,6 +33,16 @@ test('POST `/user/complete-install` 401 unauthorized', async (t) => {
     payload: { token: 'not a valid token' }
   })
   t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/user/complete-install` integ test', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/complete-install',
+    payload: { token: INTEG_TEST_KEY }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true, apiKey: INTEG_TEST_KEY })
 })
 
 test('POST `/user/complete-install` 400 bad request', async (t) => {
