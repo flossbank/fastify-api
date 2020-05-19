@@ -1,18 +1,3 @@
-const isRegistrationItemValid = (item) => {
-  if (!item) {
-    return false
-  }
-  const { email, registrationToken, pollingToken, expiration } = item
-  if (!email || !registrationToken || !pollingToken || !expiration) {
-    return false
-  }
-  if (expiration * 1000 < Date.now()) {
-    return false
-  }
-
-  return true
-}
-
 class UserAuthController {
   constructor ({ docs, config, common }) {
     this.constants = config.getAuthConfig().User
@@ -97,71 +82,70 @@ class UserAuthController {
   /* <registration> */
   async beginRegistration ({ email }) {
     const registrationToken = this.common.generateRandomToken()
-    const pollingToken = this.common.generateRandomToken()
     const expiration = this.common.getUnixTimestampPlus(this.constants.USER_REGISTRATION_TIMEOUT)
 
     await this.docs.put({
       TableName: this.constants.USER_REGISTRATION_TABLE,
-      Item: { email, registrationToken, pollingToken, expiration }
+      Item: { email, registrationToken, expiration }
     }).promise()
 
-    return { registrationToken, pollingToken }
+    return { registrationToken }
   }
 
   async validateRegistration ({ email, registrationToken, recaptchaResponse }) {
-    let registration
     try {
-      const { Item } = await this.docs.get({
+      await this.docs.delete({
         TableName: this.constants.USER_REGISTRATION_TABLE,
-        Key: { email }
+        Key: { email },
+        ConditionExpression: 'registrationToken = :registrationToken',
+        ExpressionAttributeValues: { ':registrationToken': registrationToken }
       }).promise()
-      registration = Item
     } catch (e) {
-      console.error(e)
-      return false
+      if (e.code === 'ConditionalCheckFailedException') {
+        // this means the reg token didn't match
+        return false
+      }
+      throw e
     }
 
-    if (!isRegistrationItemValid(registration)) {
-      return false
-    }
-    if (!this.common.areTokensEqual(registration.registrationToken, registrationToken)) {
-      return false
-    }
     if (!await this.common.isRecaptchaResponseValid({ recaptchaResponse })) {
       return false
     }
 
     return true
   }
+  /* </registration> */
 
-  async updateRegistrationApiKey ({ email, apiKey }) {
-    return this.docs.update({
-      TableName: this.constants.USER_REGISTRATION_TABLE,
-      Key: { email },
-      UpdateExpression: 'SET apiKey = :apiKey',
-      ExpressionAttributeValues: { ':apiKey': apiKey }
+  /* <install tokens> */
+  async setInstallApiKey ({ apiKey }) {
+    const token = this.common.generateRandomToken()
+    const expiration = this.common.getUnixTimestampPlus(this.constants.USER_INSTALL_TIMEOUT)
+    await this.docs.put({
+      TableName: this.constants.USER_INSTALL_TABLE,
+      Item: { token, apiKey, expiration }
     }).promise()
+
+    return token
   }
 
-  async completeRegistration ({ email, pollingToken }) {
+  async getInstallApiKey ({ token }) {
     try {
       const { Attributes } = await this.docs.delete({
-        TableName: this.constants.USER_REGISTRATION_TABLE,
-        Key: { email },
-        ConditionExpression: 'pollingToken = :pollingToken AND attribute_exists (apiKey)',
-        ExpressionAttributeValues: { ':pollingToken': pollingToken },
+        TableName: this.constants.USER_INSTALL_TABLE,
+        Key: { token },
+        ConditionExpression: 'expiration >= :now',
+        ExpressionAttributeValues: { ':now': Date.now() / 1000 },
         ReturnValues: 'ALL_OLD'
       }).promise()
       return Attributes && Attributes.apiKey
     } catch (e) {
       if (e.code === 'ConditionalCheckFailedException') {
-        // this means the polling token didn't match or the api key isn't ready
-        return
+        return null
       }
       throw e
     }
   }
-  /* </registration> */
+  /* </install tokens> */
 
   /* <authentication> */
   async beginAuthentication ({ userId }) {
