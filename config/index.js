@@ -40,6 +40,7 @@ class Config {
           { TableName: 'UserApiKeys', KeyAttribute: { AttributeName: 'apiKey', AttributeType: 'S' } },
           { TableName: 'UserWebSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } },
           { TableName: 'UserRegistrationTokens', KeyAttribute: { AttributeName: 'email', AttributeType: 'S' } },
+          { TableName: 'UserInstallTokens', KeyAttribute: { AttributeName: 'token', AttributeType: 'S' } },
           { TableName: 'UserLoginTokens', KeyAttribute: { AttributeName: 'token', AttributeType: 'S' } },
           { TableName: 'UserCliSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } }
         ],
@@ -47,9 +48,11 @@ class Config {
         USER_CLI_SESSION_TABLE: 'UserCliSessions',
         USER_WEB_SESSION_TABLE: 'UserWebSessions',
         USER_REGISTRATION_TABLE: 'UserRegistrationTokens',
+        USER_INSTALL_TABLE: 'UserInstallTokens',
         USER_LOGIN_TOKEN_TABLE: 'UserLoginTokens',
         USER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
         USER_REGISTRATION_TIMEOUT: 15 * 60, // 15 minutes in seconds
+        USER_INSTALL_TIMEOUT: 24 * 60 * 60, // 24 hrs in seconds
         USER_LOGIN_TIMEOUT: 15 * 60 // 15 minutes in seconds
       }
     }

@@ -30,7 +30,7 @@ class UserDbController {
       email,
       apiKey,
       billingInfo: {},
-      apiKeysRequested: [{ timestamp: Date.now() }]
+      apiKeysRequested: []
     })
     return { id: insertedId, apiKey }
   }

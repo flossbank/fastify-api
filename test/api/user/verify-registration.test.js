@@ -41,8 +41,10 @@ test('POST `/user/verify-registration` 400 bad request', async (t) => {
 })
 
 test('POST `/user/verify-registration` 200 success', async (t) => {
-  const { registrationToken } = await t.context.auth.user.beginRegistration({ email: 'email@asdf.com' })
-  t.context.auth.isRecaptchaResponseValid = () => true
+  const { db, auth } = t.context
+
+  const { registrationToken } = await auth.user.beginRegistration({ email: 'email@asdf.com' })
+  auth.isRecaptchaResponseValid = () => true
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -51,6 +53,12 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
+
+  const user = await db.user.getByEmail({ email: 'email@asdf.com' })
+  t.true(user.apiKey.length > 0)
+
+  const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
+  t.is(apiKeyInfo.id, user.id.toString())
 })
 
 test('POST `/user/verify-registration` 401 unauthorized', async (t) => {
