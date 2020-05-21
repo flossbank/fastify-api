@@ -64,6 +64,9 @@ const userCliMiddleware = require('../middleware/userCli')
 const advertiserWebMiddleware = require('../middleware/advertiser')
 const maintainerWebMiddleware = require('../middleware/maintainer')
 
+// Stripe webhooks
+const stripeWebhooks = require('../api/stripe/webhook-event')
+
 // URL
 const createUrl = require('../api/url/create')
 const getUrl = require('../api/url/get')
@@ -72,6 +75,9 @@ async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', { logLevel: 'error' }, health)
   fastify.post('/health', { logLevel: 'error' }, health)
+
+  // Stripe webhooks
+  fastify.post('/stripe/webhook/event', { schema: Schema.stripe.webhooks }, (req, res) => stripeWebhooks(req, res, fastify))
 
   // Beta tester email subscriptions
   fastify.post('/beta/subscribe', { schema: Schema.subscribe.betaSubscribe }, (req, res) => betaSubscribe(req, res, fastify))

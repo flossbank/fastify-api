@@ -49,7 +49,10 @@ module.exports = async function buildFastify (deps) {
       if (req.method !== 'POST') {
         return next()
       }
-      if (req.headers['x-requested-with'] !== 'XmlHttpRequest') {
+      // Have to exempt stripe webhooks from csrf protection
+      const headerInvalid = req.headers['x-requested-with'] !== 'XmlHttpRequest'
+      const stripeWebhookEvent = req.url === '/stripe/webhook/event'
+      if (headerInvalid && !stripeWebhookEvent) {
         res.writeHead(403)
         return res.end()
       }
