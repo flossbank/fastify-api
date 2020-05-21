@@ -13,7 +13,11 @@
     "test": "npm run lint && ava -v",
     "ci-tests": "nyc --reporter=cobertura ava -t | tap-xunit > TEST_RESULTS.xml"
   },
-
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm t"
+    }
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -23,6 +27,7 @@
     "b36": "^1.0.0",
     "bcrypt": "^3.0.6",
     "dotenv": "^8.2.0",
+    "eff-diceware-passphrase": "^2.0.1",
     "fastify": "^2.10.0",
     "fastify-cookie": "^3.2.0",
     "fastify-cors": "^3.0.0",
@@ -33,7 +38,6 @@
     "got": "^9.6.0",
     "js-deep-equals": "^2.1.1",
     "mongodb": "^3.3.2",
-    "niceware": "^2.0.0",
     "rfc4648": "^1.3.0",
     "stripe": "^8.14.0",
     "ulid": "^2.3.0"

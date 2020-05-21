@@ -42,7 +42,6 @@ test('POST `/user/register` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.true(payload.success)
-  t.true(payload.pollingToken.length > 0)
 })
 
 test('POST `/user/register` 500 server error', async (t) => {

@@ -10,15 +10,9 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
-    let user = await ctx.db.user.getByEmail({ email })
-    if (user) {
-      await ctx.db.user.updateApiKeysRequested({ email })
-    } else {
-      user = await ctx.db.user.create({ email })
-      await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
-    }
+    const user = await ctx.db.user.create({ email })
+    await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
 
-    await ctx.auth.user.updateRegistrationApiKey({ email, apiKey: user.apiKey })
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

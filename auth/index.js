@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const got = require('got')
 const FormData = require('form-data')
 const fastifyPlugin = require('fastify-plugin')
-const niceware = require('niceware')
+const niceware = require('eff-diceware-passphrase')
 
 const UserAuth = require('./user')
 const AdvertiserAuth = require('./advertiser')
@@ -64,7 +64,7 @@ class Auth {
 
   generateMagicLinkParams () {
     const token = this.generateRandomToken()
-    const code = this.niceware.generatePassphrase(4) // 2 words pls
+    const code = this.niceware(2) // 2 words pls
       .map(([first, ...rest]) => `${first.toUpperCase()}${rest.join('')}`) // title case pls
       .join(' ') // as a string pls
     return { token, code }
