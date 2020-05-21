@@ -13,15 +13,11 @@
     "test": "npm run lint && ava -v",
     "ci-tests": "nyc --reporter=cobertura ava -t | tap-xunit > TEST_RESULTS.xml"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm t"
-    }
-  },
+
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@flossbank/schema": "^1.11.0",
+    "@flossbank/schema": "^1.13.0",
     "ajv": "^6.10.2",
     "aws-sdk": "^2.543.0",
     "b36": "^1.0.0",

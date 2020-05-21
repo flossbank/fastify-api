@@ -21,7 +21,10 @@ test.beforeEach((t) => {
         constructEvent: sinon.stub().resolves()
       }
     }),
-    config: { getStripeToken: sinon.stub() }
+    config: {
+      getStripeToken: sinon.stub(),
+      getStripeWebhookSecret: sinon.stub().returns('some secret')
+    }
   })
 
   t.context.stripe.init()
@@ -36,12 +39,17 @@ test('stripe | create customer', async (t) => {
 })
 
 test('stripe | decrypt webhook event', async (t) => {
-  await t.context.stripe.constructWebhookEvent({ some: 'body' }, 'signature', 'some secret')
+  await t.context.stripe.constructWebhookEvent({ body: { some: 'body' }, signature: 'signature' })
   t.deepEqual(t.context.stripe.stripe.webhooks.constructEvent.lastCall.args, [
     { some: 'body' },
     'signature',
     'some secret'
   ])
+})
+
+test('stripe | decrypt webhook event fetching secret throws', async (t) => {
+  t.context.stripe.config.getStripeWebhookSecret.throws()
+  await t.throwsAsync(t.context.stripe.constructWebhookEvent({ body: { some: 'body' }, signature: 'signature' }))
 })
 
 test('stripe | update customer', async (t) => {

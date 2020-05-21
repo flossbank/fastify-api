@@ -24,7 +24,8 @@ class Stripe {
     })
   }
 
-  async constructWebhookEvent (body, signature, secret) {
+  async constructWebhookEvent ({ body, signature }) {
+    const secret = this.config.getStripeWebhookSecret()
     if (!body || !signature || !secret) throw new Error('Invalid webhook params')
     return this.stripe.webhooks.constructEvent(body, signature, secret)
   }
