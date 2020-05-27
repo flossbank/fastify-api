@@ -1,9 +1,5 @@
 const fastifyPlugin = require('fastify-plugin')
-const AWS = require('aws-sdk')
 const b36 = require('b36')
-const { config } = require('../config')
-
-AWS.config.update(config.getAwsConfig())
 
 const FLOSSBANK_ADMIN = 'Flossbank <admin@flossbank.com>'
 const FLOSSBANK_JOEL = 'Flossbank <joel@flossbank.com>'
@@ -17,8 +13,8 @@ const MAINTAINER_ACTIVATION_TEMPLATE = 'MaintainerActivation'
 const BETA_SUBSCRIBE_TEMPLATE = 'BetaSubscribe'
 
 class Email {
-  constructor () {
-    this.ses = new AWS.SES()
+  constructor ({ ses }) {
+    this.ses = ses
   }
 
   async sendUserActivationEmail (email, token) {
@@ -65,7 +61,7 @@ class Email {
     }).promise()
   }
 
-  async sendUserMagicLinkEmail (email, token, code) {
+  async sendUserMagicLinkEmail (email, { token, code }) {
     const loginUrl = this.createLoginUrl(email, token, 'user')
     return this.ses.sendTemplatedEmail({
       Destination: { ToAddresses: [email] },

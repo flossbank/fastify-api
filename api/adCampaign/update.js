@@ -9,12 +9,12 @@ module.exports = async (req, res, ctx) => {
       req.session.advertiserId
     )
     try {
-      await ctx.db.updateAdCampaign(
-        req.session.advertiserId,
-        adCampaign,
-        adDrafts,
+      await ctx.db.advertiser.updateAdCampaign({
+        advertiserId: req.session.advertiserId,
+        updatedAdCampaign: adCampaign,
+        adIdsFromDrafts: adDrafts,
         keepDrafts
-      )
+      })
       res.send({ success: true })
     } catch (e) {
       if (e.code === AD_NOT_CLEAN) {

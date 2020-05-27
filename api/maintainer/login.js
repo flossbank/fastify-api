@@ -1,15 +1,15 @@
-const { MAINTAINER_SESSION_KEY } = require('../../helpers/constants')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, password } = req.body
   const email = rawEmail.toLowerCase()
   try {
     ctx.log.info('logging in as maintainer %s', email)
-    const maintainer = await ctx.db.authenticateMaintainer(email, password)
+    const maintainer = await ctx.db.maintainer.authenticate({ email, password })
     if (maintainer) {
       res.setCookie(
-        MAINTAINER_SESSION_KEY,
-        await ctx.auth.createMaintainerSession(maintainer.id),
+        MAINTAINER_WEB_SESSION_COOKIE,
+        await ctx.auth.maintainer.createWebSession({ maintainerId: maintainer.id.toString() }),
         { path: '/' }
       )
       res.send({ success: true, maintainer })

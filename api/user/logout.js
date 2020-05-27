@@ -1,14 +1,11 @@
-const { USER_SESSION_KEY } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[USER_SESSION_KEY]
+  const sessionId = (req.cookies || {})[USER_WEB_SESSION_COOKIE]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
-    await ctx.auth.deleteUserSession(sessionId)
-    res.clearCookie(
-      USER_SESSION_KEY,
-      { path: '/' }
-    )
+    await ctx.auth.user.deleteWebSession({ sessionId })
+    res.clearCookie(USER_WEB_SESSION_COOKIE, { path: '/' })
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

@@ -1,13 +1,13 @@
 module.exports = async (req, res, ctx) => {
-  const { packageId: id, maintainers, owner } = req.body
+  const { packageId, maintainers, owner } = req.body
   try {
-    ctx.log.info('updating package information for package %s', id)
+    ctx.log.info('updating package information for package %s', packageId)
     // Only the owner can make a change to a package
     // Fetch package to check if maintainer making request is the owner
-    const pkg = await ctx.db.getPackage(req.body.packageId)
+    const pkg = await ctx.db.package.get({ packageId })
 
     if (!pkg || !pkg.id) {
-      ctx.log.warn('attempt to update package information for non-existent package id %s', id)
+      ctx.log.warn('attempt to update package information for non-existent package id %s', packageId)
       res.status(400)
       return res.send()
     }
@@ -17,7 +17,7 @@ module.exports = async (req, res, ctx) => {
       return res.send()
     }
 
-    await ctx.db.updatePackage(id, { maintainers, owner })
+    await ctx.db.package.update({ packageId, maintainers, owner })
     res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)

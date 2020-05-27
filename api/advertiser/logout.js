@@ -1,12 +1,12 @@
-const { ADVERTISER_SESSION_KEY } = require('../../helpers/constants')
+const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[ADVERTISER_SESSION_KEY]
+  const sessionId = (req.cookies || {})[ADVERTISER_WEB_SESSION_COOKIE]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
-    await ctx.auth.deleteAdvertiserSession(sessionId)
+    await ctx.auth.advertiser.deleteWebSession({ sessionId })
     res.clearCookie(
-      ADVERTISER_SESSION_KEY,
+      ADVERTISER_WEB_SESSION_COOKIE,
       { path: '/' }
     )
     res.send({ success: true })

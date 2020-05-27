@@ -3,7 +3,7 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('getting owned packages for maintainer %s', req.session.maintainerId)
     res.send({
       success: true,
-      packages: await ctx.db.getOwnedPackages(req.session.maintainerId)
+      packages: await ctx.db.maintainer.getOwnedPackages({ maintainerId: req.session.maintainerId })
     })
   } catch (e) {
     ctx.log.error(e)

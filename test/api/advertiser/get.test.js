@@ -1,32 +1,36 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
-    const advertiserId1 = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+  await before(t, async ({ db, auth }) => {
+    const advertiserId1 = await db.advertiser.create({
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-    await db.verifyAdvertiser('honey@etsy.com')
+    await db.advertiser.verify({ email: 'honey@etsy.com' })
+    t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
 
-    const unverifiedAdvertiserId = await db.createAdvertiser({
-      firstName: 'Honesty',
-      lastName: 'Empathy',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+    const unverifiedAdvertiserId = await db.advertiser.create({
+      advertiser: {
+        firstName: 'Honesty',
+        lastName: 'Empathy',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.unverifiedAdvertiserId = unverifiedAdvertiserId.toHexString()
+    t.context.unverifiedSession = await auth.advertiser.createWebSession({ advertiserId: t.context.unverifiedAdvertiserId })
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.getUISession.resolves({
-    advertiserId: t.context.advertiserId1
-  })
 })
 
 test.afterEach(async (t) => {
@@ -38,33 +42,23 @@ test.after(async (t) => {
 })
 
 test('GET `/advertiser/get` 401 unauthorized', async (t) => {
-  t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    headers: { authorization: 'invalid token' }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/advertiser/get` 401 unauthorized middleware failure', async (t) => {
-  t.context.auth.getUISession.rejects(new Error())
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/advertiser/get',
-    headers: { authorization: 'invalid token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
 
 test('GET `/advertiser/get` 400 | unverified', async (t) => {
-  t.context.auth.getUISession.resolves({
-    advertiserId: t.context.unverifiedAdvertiserId
-  })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    headers: { authorization: 'invalid token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.unverifiedSession}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -73,7 +67,9 @@ test('GET `/advertiser/get` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -93,11 +89,13 @@ test('GET `/advertiser/get` 200 success', async (t) => {
 })
 
 test('GET `/advertiser/get` 500 server error', async (t) => {
-  t.context.db.getAdvertiser = () => { throw new Error() }
+  t.context.db.advertiser.get = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/advertiser/get',
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

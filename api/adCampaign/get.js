@@ -3,7 +3,10 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('getting ad campaign %s for %s', req.query.adCampaignId, req.session.advertiserId)
     res.send({
       success: true,
-      adCampaign: await ctx.db.getAdCampaign(req.session.advertiserId, req.query.adCampaignId)
+      adCampaign: await ctx.db.advertiser.getAdCampaign({
+        advertiserId: req.session.advertiserId,
+        campaignId: req.query.adCampaignId
+      })
     })
   } catch (e) {
     ctx.log.error(e)

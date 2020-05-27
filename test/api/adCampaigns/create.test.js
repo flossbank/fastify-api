@@ -1,48 +1,60 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { AD_NOT_CLEAN_MSG } = require('../../../helpers/constants')
+const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
-    const advertiserId1 = await db.createAdvertiser({
-      name: 'Honesty',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+  await before(t, async ({ db, auth }) => {
+    const advertiserId1 = await db.advertiser.create({
+      advertiser: {
+        name: 'Honesty',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-    t.context.adId1 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #1',
-      title: 'Teacher Fund',
-      body: 'You donate, we donate.',
-      url: 'teacherfund.com'
+    t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+    t.context.adId1 = await db.advertiser.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #1',
+        title: 'Teacher Fund',
+        body: 'You donate, we donate.',
+        url: 'teacherfund.com'
+      }
     })
-    t.context.adId2 = await db.createAdDraft(advertiserId1, {
-      name: 'Teacher Fund #2',
-      title: 'Teacher Fund 2',
-      body: 'You donate, we donate. 2',
-      url: 'teacherfund.com 2'
+    t.context.adId2 = await db.advertiser.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Teacher Fund #2',
+        title: 'Teacher Fund 2',
+        body: 'You donate, we donate. 2',
+        url: 'teacherfund.com 2'
+      }
     })
 
-    const advertiserId2 = await db.createAdvertiser({
-      name: 'Faith Ogler',
-      email: 'fogler@folgers.coffee',
-      password: 'beekeeperbookkeeper'
+    const advertiserId2 = await db.advertiser.create({
+      advertiser: {
+        name: 'Faith Ogler',
+        email: 'fogler@folgers.coffee',
+        password: 'beekeeperbookkeeper'
+      }
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
-    t.context.adId3 = await db.createAdDraft(advertiserId2, {
-      name: 'Teacher Fund #5',
-      title: 'Teacher Fund 5',
-      body: 'You donate, we donate. 5',
-      url: 'teacherfund.com 5'
+    t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
+    t.context.adId3 = await db.advertiser.createAdDraft({
+      advertiserId: advertiserId2,
+      draft: {
+        name: 'Teacher Fund #5',
+        title: 'Teacher Fund 5',
+        body: 'You donate, we donate. 5',
+        url: 'teacherfund.com 5'
+      }
     })
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
-  t.context.auth.getUISession.resolves({
-    advertiserId: t.context.advertiserId1
-  })
 })
 
 test.afterEach(async (t) => {
@@ -54,7 +66,6 @@ test.after.always(async (t) => {
 })
 
 test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
-  t.context.auth.getUISession.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
@@ -66,7 +77,9 @@ test('POST `/ad-campaign/create` 401 unauthorized | no session', async (t) => {
         name: 'camp pain 1'
       }
     },
-    headers: { authorization: 'not a valid token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -85,7 +98,9 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
       adDrafts: [t.context.adId1, t.context.adId2],
       keepDrafts: true
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -93,7 +108,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId1 })
   // Should have kept advertiser drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -106,9 +121,6 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and keeping drafts',
 })
 
 test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts', async (t) => {
-  t.context.auth.getUISession.resolves({
-    advertiserId: t.context.advertiserId2
-  })
   const campaignToCreate = {
     maxSpend: 500000,
     cpm: 500000,
@@ -121,7 +133,9 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
       adCampaign: campaignToCreate,
       adDrafts: [t.context.adId3]
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -129,7 +143,7 @@ test('POST `/ad-campaign/create` 200 success with ad drafts and removing drafts'
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId2)
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId2 })
   // Should have deleted advertiser draft
   t.deepEqual(advertiser.adDrafts.length, 0)
 
@@ -154,7 +168,9 @@ test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
     payload: {
       adCampaign: campaignToCreate
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -162,7 +178,10 @@ test('POST `/ad-campaign/create` 200 success without ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, id)
+  const campaign = await t.context.db.advertiser.getAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    campaignId: id
+  })
   t.deepEqual(campaign.name, campaignToCreate.name)
 })
 
@@ -185,7 +204,9 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
     payload: {
       adCampaign: campaignToCreate
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -193,7 +214,10 @@ test('POST `/ad-campaign/create` 200 success with just new ads', async (t) => {
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const campaign = await t.context.db.getAdCampaign(t.context.advertiserId1, id)
+  const campaign = await t.context.db.advertiser.getAdCampaign({
+    advertiserId: t.context.advertiserId1,
+    campaignId: id
+  })
   t.deepEqual(campaign.name, campaignToCreate.name)
   t.deepEqual(campaign.ads[0].name, adToCreate.name)
   t.deepEqual(campaign.ads.length, 1)
@@ -220,7 +244,9 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
       adDrafts: [t.context.adId1],
       keepDrafts: true
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
@@ -228,7 +254,7 @@ test('POST `/ad-campaign/create` 200 success with new ads and ad drafts where dr
   t.deepEqual(payload.success, true)
   const { id } = payload
 
-  const advertiser = await t.context.db.getAdvertiser(t.context.advertiserId1)
+  const advertiser = await t.context.db.advertiser.get({ advertiserId: t.context.advertiserId1 })
   // should preserve ad drafts
   t.deepEqual(advertiser.adDrafts.length, 2)
 
@@ -249,7 +275,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -262,7 +290,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -275,7 +305,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
         cpm: 500000
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -283,7 +315,9 @@ test('POST `/ad-campaign/create` 400 bad request', async (t) => {
     method: 'POST',
     url: '/ad-campaign/create',
     payload: {},
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -305,14 +339,16 @@ test('POST `/ad-campaign/create` 400 bad request | trash ads', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 400)
   t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
 })
 
 test('POST `/ad-campaign/create` 500 server error', async (t) => {
-  t.context.db.createAdCampaign = () => { throw new Error() }
+  t.context.db.advertiser.createAdCampaign = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/ad-campaign/create',
@@ -324,7 +360,9 @@ test('POST `/ad-campaign/create` 500 server error', async (t) => {
         name: 'camp pain'
       }
     },
-    headers: { authorization: 'valid-session-token' }
+    headers: {
+      cookie: `${ADVERTISER_WEB_SESSION_COOKIE}=${t.context.sessionId1}`
+    }
   })
   t.deepEqual(res.statusCode, 500)
 })

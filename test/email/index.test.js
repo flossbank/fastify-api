@@ -3,11 +3,12 @@ const sinon = require('sinon')
 const { Email } = require('../../email')
 
 test.beforeEach((t) => {
-  t.context.email = new Email()
-  t.context.email.ses = {
-    sendTemplatedEmail: sinon.stub().returns({ promise: sinon.stub() }),
-    sendEmail: sinon.stub().returns({ promise: sinon.stub() })
-  }
+  t.context.email = new Email({
+    ses: {
+      sendTemplatedEmail: sinon.stub().returns({ promise: sinon.stub() }),
+      sendEmail: sinon.stub().returns({ promise: sinon.stub() })
+    }
+  })
 })
 
 test('sendUserActivationEmail creates proper url', async (t) => {
@@ -48,7 +49,7 @@ test('sendBetaSubscriptionEmail creates proper url', async (t) => {
 
 test('sendUserMagicLinkEmail creates proper url', async (t) => {
   const { email } = t.context
-  await email.sendUserMagicLinkEmail('foo', 'bar', 'Code Words')
+  await email.sendUserMagicLinkEmail('foo', { token: 'bar', code: 'Code Words' })
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
     code: 'Code Words',

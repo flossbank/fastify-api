@@ -4,13 +4,14 @@ const routes = require('./routes')
 const { authPlugin } = require('./auth')
 const { dbPlugin } = require('./db')
 const { sqsPlugin } = require('./sqs')
+const { configPlugin } = require('./config')
 const { stripePlugin } = require('./stripe')
 const { registryPlugin } = require('./registry')
 const { emailPlugin } = require('./email')
 const { urlPlugin } = require('./url')
 
 module.exports = async function buildFastify (deps) {
-  const { db, auth, sqs, email, registry, stripe, url, logger = true, csrf = true } = deps
+  const { db, auth, sqs, email, registry, stripe, url, config, logger = true, csrf = true } = deps
   const fastify = Fastify({ logger })
   // Create custom ajv schema declaration to remove _all_ additional fields by default
   const ajv = new Ajv({
@@ -48,7 +49,10 @@ module.exports = async function buildFastify (deps) {
       if (req.method !== 'POST') {
         return next()
       }
-      if (req.headers['x-requested-with'] !== 'XmlHttpRequest') {
+      // Have to exempt stripe webhooks from csrf protection
+      const headerInvalid = req.headers['x-requested-with'] !== 'XmlHttpRequest'
+      const stripeWebhookEvent = req.url === '/stripe/webhook/event'
+      if (headerInvalid && !stripeWebhookEvent) {
         res.writeHead(403)
         return res.end()
       }
@@ -65,6 +69,7 @@ module.exports = async function buildFastify (deps) {
   fastify.register(sqsPlugin(sqs))
   fastify.register(registryPlugin(registry))
   fastify.register(urlPlugin(url))
+  fastify.register(configPlugin(config))
 
   return fastify
 }

@@ -1,9 +1,9 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { alreadyExistsMessage } = require('../../../helpers/constants')
+const { ALREADY_EXISTS_MSG } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -36,13 +36,15 @@ test('POST `/maintainer/register` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   // email has been lowercased in db
-  const maintainer = await t.context.db.getMaintainerByEmail('maintainer@ads.com')
+  const maintainer = await t.context.db.maintainer.getByEmail({
+    email: 'maintainer@ads.com'
+  })
   t.is(maintainer.firstName, 'maintainer')
   t.is(maintainer.lastName, 'captain')
 })
 
 test('POST `/maintainer/register` 409 duplicate email', async (t) => {
-  t.context.db.createMaintainer = () => {
+  t.context.db.maintainer.create = () => {
     const error = new Error()
     error.code = 11000 // Dupe key mongo error
     throw error
@@ -65,7 +67,7 @@ test('POST `/maintainer/register` 409 duplicate email', async (t) => {
 
   t.is(payload.success, false)
   const { message } = payload
-  t.is(message, alreadyExistsMessage)
+  t.is(message, ALREADY_EXISTS_MSG)
 })
 
 test('POST `/maintainer/register` 400 bad request', async (t) => {
@@ -128,7 +130,7 @@ test('POST `/maintainer/register` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/register` 500 server error', async (t) => {
-  t.context.db.createMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.create = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/register',

@@ -1,6 +1,10 @@
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   try {
-    const session = await ctx.auth.getUISession(req, ctx.auth.authKinds.MAINTAINER)
+    const session = await ctx.auth.maintainer.getWebSession({
+      sessionId: (req.cookies || {})[MAINTAINER_WEB_SESSION_COOKIE]
+    })
     if (!session) {
       ctx.log.warn('attempt to access authenticated maintainer route without valid session')
       res.status(401)
@@ -8,7 +12,8 @@ module.exports = async (req, res, ctx) => {
     }
     req.session = session
   } catch (e) {
-    res.status(401)
+    ctx.log.error(e)
+    res.status(500)
     return res.send()
   }
 }

@@ -9,7 +9,8 @@ test.beforeEach((t) => {
       region: 'region',
       mongo_uri: 'mongo_uri',
       recaptcha_secret: 'recaptcha_secret',
-      queue_url: 'queue_url',
+      session_complete_queue_url: 'queue_url',
+      distribute_donation_queue_url: 'dd_queue_url',
       url_host: 'url_host',
       stripe_token: 'test_stripe_token'
     }
@@ -32,12 +33,16 @@ test('config | getRecaptchaSecret', (t) => {
   t.deepEqual(t.context.config.getRecaptchaSecret(), 'recaptcha_secret')
 })
 
-test('config | getQueueUrl', (t) => {
-  t.deepEqual(t.context.config.getQueueUrl(), 'queue_url')
+test('config | getSessionCompleteQueueUrl', (t) => {
+  t.deepEqual(t.context.config.getSessionCompleteQueueUrl(), 'queue_url')
+})
+
+test('config | getDistributeDonationQueueUrl', (t) => {
+  t.deepEqual(t.context.config.getDistributeDonationQueueUrl(), 'dd_queue_url')
 })
 
 test('config | getUrlHost', (t) => {
-  t.deepEqual(t.context.config.getUrlHost(), 'url_host')
+  t.deepEqual(t.context.config.getUrlConfig().URL_HOST, 'url_host')
 })
 
 test('config | getStripeToken', (t) => {
@@ -46,5 +51,5 @@ test('config | getStripeToken', (t) => {
 
 test('config | getUrlHost fallback', (t) => {
   t.context.config.env = {}
-  t.deepEqual(t.context.config.getUrlHost(), 'api.flossbank.io')
+  t.deepEqual(t.context.config.getUrlConfig().URL_HOST, 'api.flossbank.io')
 })

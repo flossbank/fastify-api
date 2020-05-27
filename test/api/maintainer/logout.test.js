@@ -1,9 +1,9 @@
 const test = require('ava')
-const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -23,7 +23,7 @@ test('POST `/maintainer/logout` 200 success', async (t) => {
     method: 'POST',
     url: '/maintainer/logout',
     headers: {
-      cookie: `${MAINTAINER_SESSION_KEY}=maintainer-session`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=maintainer-session`
     }
   })
   t.deepEqual(res.statusCode, 200)
@@ -37,7 +37,7 @@ test('POST `/maintainer/logout` 200 success', async (t) => {
 })
 
 test('POST `/maintainer/logout` 500 server error', async (t) => {
-  t.context.auth.deleteMaintainerSession.throws()
+  t.context.auth.maintainer.deleteWebSession = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/logout'

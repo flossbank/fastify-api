@@ -2,7 +2,9 @@ const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t, async ({ auth }) => {
+    await auth.user.cacheApiKey({ apiKey: 'the-best-api-key', userId: 'user-id1' })
+  })
 })
 
 test.beforeEach(async (t) => {
@@ -18,7 +20,6 @@ test.after(async (t) => {
 })
 
 test('POST `/session/complete` 401 unauthorized', async (t) => {
-  t.context.auth.getAdSessionApiKey.resolves(null)
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',
@@ -29,7 +30,7 @@ test('POST `/session/complete` 401 unauthorized', async (t) => {
       registry: 'https://registry.npmjs.org/',
       packages: ['yttrium-server@latest']
     },
-    headers: { authorization: 'not a valid token' }
+    headers: { authorization: 'Bearer not_a_valid_token' }
   })
   t.deepEqual(res.statusCode, 401)
 })
@@ -40,7 +41,7 @@ test('POST `/session/complete` 400 bad request', async (t) => {
     method: 'POST',
     url: '/session/complete',
     payload: { sessionId: 'session-id' }, // no seen
-    headers: { authorization: 'valid-api-key' }
+    headers: { authorization: 'Bearer the-best-api-key' }
   })
   t.deepEqual(res.statusCode, 400)
 
@@ -48,7 +49,7 @@ test('POST `/session/complete` 400 bad request', async (t) => {
     method: 'POST',
     url: '/session/complete',
     payload: { seen: [] }, // no session id
-    headers: { authorization: 'valid-api-key' }
+    headers: { authorization: 'Bearer the-best-api-key' }
   })
   t.deepEqual(res.statusCode, 400)
 })
@@ -64,13 +65,13 @@ test('POST `/session/complete` 200 success', async (t) => {
       registry: 'https://registry.npmjs.org/',
       packages: ['yttrium-server@latest']
     },
-    headers: { authorization: 'valid-api-key' }
+    headers: { authorization: 'Bearer the-best-api-key' }
   })
   t.deepEqual(res.statusCode, 200)
 })
 
 test('POST `/session/complete` 500 server error', async (t) => {
-  t.context.sqs.sendMessage.throws()
+  t.context.sqs.sendSessionCompleteMessage.throws()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',
@@ -81,7 +82,7 @@ test('POST `/session/complete` 500 server error', async (t) => {
       registry: 'https://registry.npmjs.org/',
       packages: ['yttrium-server@latest']
     },
-    headers: { authorization: 'valid-api-key' }
+    headers: { authorization: 'Bearer the-best-api-key' }
   })
   t.deepEqual(res.statusCode, 500)
 })

@@ -1,18 +1,27 @@
 const fastifyPlugin = require('fastify-plugin')
-const AWS = require('aws-sdk')
-const { config } = require('../config')
 
-AWS.config.update(config.getAwsConfig())
+class Sqs {
+  constructor ({ config, sqs }) {
+    this.config = config
+    this.sqs = sqs
+  }
 
-function Sqs () {
-  this.sqs = new AWS.SQS()
-}
+  async sendSessionCompleteMessage (payload) {
+    const url = this.config.getSessionCompleteQueueUrl()
+    return this.sendMessage(url, payload)
+  }
 
-Sqs.prototype.sendMessage = async function sendMessage (payload) {
-  return this.sqs.sendMessage({
-    QueueUrl: config.getQueueUrl(),
-    MessageBody: JSON.stringify(payload)
-  }).promise()
+  async sendDistributeDonationMessage (payload) {
+    const url = this.config.getDistributeDonationQueueUrl()
+    return this.sendMessage(url, payload)
+  }
+
+  async sendMessage (url, payload) {
+    return this.sqs.sendMessage({
+      QueueUrl: url,
+      MessageBody: JSON.stringify(payload)
+    }).promise()
+  }
 }
 
 exports.Sqs = Sqs

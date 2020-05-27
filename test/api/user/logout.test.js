@@ -3,7 +3,7 @@ const { USER_SESSION_KEY } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, () => {})
+  await before(t)
 })
 
 test.beforeEach(async (t) => {
@@ -37,7 +37,7 @@ test('POST `/user/logout` 200 success', async (t) => {
 })
 
 test('POST `/user/logout` 500 server error', async (t) => {
-  t.context.auth.deleteUserSession.throws()
+  t.context.auth.user.deleteWebSession = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/logout'

@@ -1,21 +1,25 @@
 const test = require('ava')
-const { MAINTAINER_SESSION_KEY } = require('../../../helpers/constants')
+const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
-  await before(t, async (t, db) => {
-    await db.createMaintainer({
-      firstName: 'Honesty',
-      lastName: 'Honor',
-      email: 'honey@etsy.com',
-      password: 'beekeeperbookkeeper'
+  await before(t, async ({ db }) => {
+    await db.maintainer.create({
+      maintainer: {
+        firstName: 'Honesty',
+        lastName: 'Honor',
+        email: 'honey@etsy.com',
+        password: 'beekeeperbookkeeper'
+      }
     })
-    await db.verifyMaintainer('honey@etsy.com')
-    await db.createMaintainer({
-      firstName: 'Faith',
-      lastName: 'Ogler',
-      email: 'fogler@folgers.coffee',
-      password: 'coffeesnobdoorknob'
+    await db.maintainer.verify({ email: 'honey@etsy.com' })
+    await db.maintainer.create({
+      maintainer: {
+        firstName: 'Faith',
+        lastName: 'Ogler',
+        email: 'fogler@folgers.coffee',
+        password: 'coffeesnobdoorknob'
+      }
     })
   })
 })
@@ -66,7 +70,7 @@ test('POST `/maintainer/login` 200 success', async (t) => {
     body: { email: 'honey@etsy.com', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
+  t.true(res.headers['set-cookie'].includes(MAINTAINER_WEB_SESSION_COOKIE))
 })
 
 test('POST `/maintainer/login` 200 success | email case does not matter', async (t) => {
@@ -76,7 +80,7 @@ test('POST `/maintainer/login` 200 success | email case does not matter', async 
     body: { email: 'HOney@ETSY.coM', password: 'beekeeperbookkeeper' }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(res.headers['set-cookie'], `${MAINTAINER_SESSION_KEY}=maintainer-session; Path=/`)
+  t.true(res.headers['set-cookie'].includes(MAINTAINER_WEB_SESSION_COOKIE))
 })
 
 test('POST `/maintainer/login` 400 bad request', async (t) => {
@@ -103,7 +107,7 @@ test('POST `/maintainer/login` 400 bad request', async (t) => {
 })
 
 test('POST `/maintainer/login` 500 server error', async (t) => {
-  t.context.db.authenticateMaintainer = () => { throw new Error() }
+  t.context.db.maintainer.authenticate = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/maintainer/login',

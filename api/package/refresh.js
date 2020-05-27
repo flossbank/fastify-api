@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
     const { packageRegistry } = req.body
     ctx.log.info('refreshing packages in %s for maintainer %s', packageRegistry, req.session.maintainerId)
 
-    const maintainer = await ctx.db.getMaintainer(req.session.maintainerId)
+    const maintainer = await ctx.db.maintainer.get({ maintainerId: req.session.maintainerId })
 
     if (!maintainer || !maintainer.id) {
       ctx.log.warn('attempt to refresh packages for non-existent maintainer from id %s', req.session.maintainerId)
@@ -27,7 +27,11 @@ module.exports = async (req, res, ctx) => {
       maintainer.tokens[packageRegistry]
     )
 
-    await ctx.db.refreshPackageOwnership(packages, packageRegistry, req.session.maintainerId)
+    await ctx.db.package.refreshOwnership({
+      packages,
+      registry: packageRegistry,
+      maintainerId: req.session.maintainerId
+    })
 
     res.send({ success: true })
   } catch (e) {
