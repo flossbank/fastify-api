@@ -62,6 +62,13 @@ class Auth {
     return crypto.randomBytes(32).toString('hex')
   }
 
+  // generates magic wormhole style tokens, e.g. 8-papa-champagne
+  generateEasyTokenString () {
+    const words = this.niceware(2)
+    const number = [...crypto.randomBytes(1)].pop()
+    return [number, ...words].join('-')
+  }
+
   generateMagicLinkParams () {
     const token = this.generateRandomToken()
     const code = this.niceware(2) // 2 words pls
