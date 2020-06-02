@@ -118,7 +118,7 @@ class UserAuthController {
 
   /* <install tokens> */
   async setInstallApiKey ({ apiKey }) {
-    const token = this.common.generateRandomToken()
+    const token = this.common.generateEasyTokenString()
     const expiration = this.common.getUnixTimestampPlus(this.constants.USER_INSTALL_TIMEOUT)
     await this.docs.put({
       TableName: this.constants.USER_INSTALL_TABLE,
