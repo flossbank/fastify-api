@@ -76,14 +76,14 @@ class Email {
     return b36.encode(Buffer.from(email))
   }
 
-  createActivationUrl (email, token, kind) {
+  createActivationUrl (email, token) {
     const e = this.encodeEmail(email)
-    return `https://verification.flossbank.com/?e=${e}&token=${token}&kind=${kind}`
+    return `https://flossbank.com/verify?e=${e}&token=${token}`
   }
 
-  createLoginUrl (email, token, kind) {
+  createLoginUrl (email, token) {
     const e = this.encodeEmail(email)
-    return `https://login.flossbank.com/?e=${e}&token=${token}&kind=${kind}`
+    return `https://flossbank.com/complete-login?e=${e}&token=${token}`
   }
 
   createUnsubscribeUrl (email, token) {

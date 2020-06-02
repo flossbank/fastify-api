@@ -33,6 +33,21 @@ test('POST `/user/register` 400 bad request', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
+test('POST `/user/register` 409 conflict', async (t) => {
+  const { db } = t.context
+  await db.user.create({ email: 'honeyyy@etsy.com' })
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/register',
+    payload: { email: 'honeyyy@etsy.com' }
+  })
+
+  t.deepEqual(res.statusCode, 409)
+  const payload = JSON.parse(res.payload)
+  t.false(payload.success)
+})
+
 test('POST `/user/register` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',

@@ -16,7 +16,7 @@ test('sendUserActivationEmail creates proper url', async (t) => {
   await email.sendUserActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
-    activationUrl: 'https://verification.flossbank.com/?e=3zvxr&token=bar&kind=user'
+    activationUrl: 'https://flossbank.com/verify?e=3zvxr&token=bar'
   }))
 })
 
@@ -25,7 +25,7 @@ test('sendAdvertiserActivationEmail creates proper url', async (t) => {
   await email.sendAdvertiserActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
-    activationUrl: 'https://verification.flossbank.com/?e=3zvxr&token=bar&kind=advertiser'
+    activationUrl: 'https://flossbank.com/verify?e=3zvxr&token=bar'
   }))
 })
 
@@ -34,7 +34,7 @@ test('sendMaintainerActivationEmail creates proper url', async (t) => {
   await email.sendMaintainerActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
-    activationUrl: 'https://verification.flossbank.com/?e=3zvxr&token=bar&kind=maintainer'
+    activationUrl: 'https://flossbank.com/verify?e=3zvxr&token=bar'
   }))
 })
 
@@ -53,6 +53,6 @@ test('sendUserMagicLinkEmail creates proper url', async (t) => {
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
     code: 'Code Words',
-    loginUrl: 'https://login.flossbank.com/?e=3zvxr&token=bar&kind=user'
+    loginUrl: 'https://flossbank.com/complete-login?e=3zvxr&token=bar'
   }))
 })
