@@ -19,7 +19,7 @@ class Email {
   }
 
   async sendContactUsEmail ({ email, body, name, topic }) {
-    return this.ses.sendTemplatedEmail({
+    return this.ses.sendEmail({
       Destination: { ToAddresses: [FLOSSBANK_ADMIN] },
       Source: FLOSSBANK_CUSTOMER_FEEDBACK,
       ConfigurationSetName: DEFAULT_CONFIG_SET,
@@ -27,7 +27,7 @@ class Email {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: `${topic} from: ${name}, ${email},</h1><p>${body}</p>`
+            Data: `<h1>${topic} from: ${name}, ${email},</h1><p>${body}</p>`
           },
           Text: {
             Charset: 'UTF-8',
