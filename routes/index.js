@@ -10,6 +10,9 @@ const betaUnSubscribe = require('../api/subscribe/beta-unsubscribe')
 // Ad
 const createAd = require('../api/ad/create')
 
+// Customer feedback
+const sendFeedback = require('../api/support/feedback')
+
 // Ad Campaigns
 const createAdCampaign = require('../api/adCampaign/create')
 const updateAdCampaign = require('../api/adCampaign/update')
@@ -75,6 +78,9 @@ async function routes (fastify, opts, next) {
   // Health
   fastify.get('/health', { logLevel: 'error' }, health)
   fastify.post('/health', { logLevel: 'error' }, health)
+
+  // Contact us
+  fastify.post('/support/feedback', { schema: Schema.support.feedback }, (req, res) => sendFeedback(req, res, fastify))
 
   // Stripe webhooks
   fastify.post('/stripe/webhook/event', { schema: Schema.stripe.webhooks }, (req, res) => stripeWebhooks(req, res, fastify))
