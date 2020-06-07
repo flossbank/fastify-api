@@ -1,4 +1,5 @@
 const test = require('ava')
+const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
@@ -51,6 +52,7 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
     url: '/user/verify-registration',
     payload: { email: 'email@asdf.com', token: registrationToken, recaptchaResponse: 'big messy' }
   })
+  t.true(res.headers['set-cookie'].includes(USER_WEB_SESSION_COOKIE))
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
