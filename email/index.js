@@ -3,6 +3,7 @@ const b36 = require('b36')
 
 const FLOSSBANK_ADMIN = 'Flossbank <admin@flossbank.com>'
 const FLOSSBANK_JOEL = 'Flossbank <joel@flossbank.com>'
+const FLOSSBANK_CUSTOMER_FEEDBACK = 'Customer Feedback <feedback@flossbank.com>'
 const DEFAULT_CONFIG_SET = 'default-config-set'
 
 // templates
@@ -15,6 +16,30 @@ const BETA_SUBSCRIBE_TEMPLATE = 'BetaSubscribe'
 class Email {
   constructor ({ ses }) {
     this.ses = ses
+  }
+
+  async sendContactUsEmail ({ email, body, name, topic }) {
+    return this.ses.sendTemplatedEmail({
+      Destination: { ToAddresses: [FLOSSBANK_ADMIN] },
+      Source: FLOSSBANK_CUSTOMER_FEEDBACK,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `${topic} from: ${name}, ${email},</h1><p>${body}</p>`
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: `${topic} from: ${name}, ${email},\r\n${body}`
+          }
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: `Customer feedback ${topic}`
+        }
+      }
+    }).promise()
   }
 
   async sendUserActivationEmail (email, token) {
