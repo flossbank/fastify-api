@@ -20,6 +20,16 @@ test('sendUserActivationEmail creates proper url', async (t) => {
   }))
 })
 
+test('sendContactUsEmail sends proper contact us email', async (t) => {
+  const { email } = t.context
+  const topic = 'foo'
+  const name = 'bar'
+  const body = 'helpz'
+  await email.sendContactUsEmail({ email, topic, name, body })
+  const sesArgs = email.ses.sendEmail.lastCall.args
+  t.deepEqual(sesArgs[0].Message.Body.Text.Data, `${topic} from: ${name}, ${email},\r\n${body}`)
+})
+
 test('sendAdvertiserActivationEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendAdvertiserActivationEmail('foo', 'bar')
