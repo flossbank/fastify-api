@@ -21,3 +21,5 @@ jobs:
       env:
         FLOSSBANK_NPM_TOKEN: ${{ secrets.FLOSSBANK_NPM_TOKEN }}
     - run: npm run ci-tests
+      env:
+        FLOSSBANK_NPM_TOKEN: ${{ secrets.FLOSSBANK_NPM_TOKEN }}
