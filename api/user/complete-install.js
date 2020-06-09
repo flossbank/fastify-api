@@ -12,12 +12,12 @@ module.exports = async (req, res, ctx) => {
     const apiKey = await ctx.auth.user.getInstallApiKey({ token })
     if (!apiKey) {
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: 'Unauthorized' })
     }
     res.send({ success: true, apiKey })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }

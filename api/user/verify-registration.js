@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
     if (!await ctx.auth.user.validateRegistration({ email, registrationToken, recaptchaResponse })) {
       ctx.log.warn('attempt to verify user with invalid email or token from %s', email)
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: 'Invalid email or token' })
     }
 
     const user = await ctx.db.user.create({ email })
@@ -25,6 +25,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }

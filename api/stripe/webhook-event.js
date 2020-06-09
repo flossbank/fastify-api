@@ -8,7 +8,7 @@ module.exports = async (req, res, ctx) => {
       })
     } catch (e) {
       res.status(403)
-      return res.send()
+      return res.send({ success: false, message: 'Invalid event or signature' })
     }
 
     switch (event.type) {
@@ -36,6 +36,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }

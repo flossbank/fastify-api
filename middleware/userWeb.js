@@ -8,12 +8,12 @@ module.exports = async (req, res, ctx) => {
     if (!session) {
       ctx.log.warn('attempt to access authenticated user route without valid session')
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: 'Invalid session' })
     }
     req.session = session
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    return res.send()
+    return res.send({ success: false, message: 'Internal server error' })
   }
 }

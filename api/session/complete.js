@@ -12,10 +12,10 @@ module.exports = async (req, res, ctx) => {
       timestamp: Date.now()
     })
     res.status(200)
-    res.send()
+    res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }

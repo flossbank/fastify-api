@@ -6,12 +6,12 @@ module.exports = async (req, res, ctx) => {
     if (!apiKeyInfo) {
       ctx.log.warn('attempt to access authenticated CLI route without valid API Key %s', apiKey)
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: 'Invalid API key' })
     }
     req.apiKeyInfo = apiKeyInfo
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    return res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }

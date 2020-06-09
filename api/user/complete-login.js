@@ -17,7 +17,7 @@ module.exports = async (req, res, ctx) => {
     if (!authResult.success) {
       ctx.log.warn(authResult, 'authentication failed for user %s', email)
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: 'Invalid email or token' })
     }
 
     res.setCookie(
@@ -29,6 +29,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: 'Internal server error' })
   }
 }
