@@ -1,16 +1,12 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ master, staging ]
   pull_request:
     branches: [ master, staging ]
 
 jobs:
-  build:
-
+  build_and_test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
@@ -23,3 +19,13 @@ jobs:
     - run: npm run ci-tests
       env:
         FLOSSBANK_NPM_TOKEN: ${{ secrets.FLOSSBANK_NPM_TOKEN }}
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: coverage/cobertura-coverage.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          show_line: true
+          show_branch: true
+          minimum_coverage: 85
