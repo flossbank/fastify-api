@@ -1,4 +1,4 @@
-const { emailAlreadySubscribed } = require('../../helpers/constants')
+const { MSGS: { ALREADY_SUBSCRIBED, INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail } = req.body
@@ -16,7 +16,7 @@ module.exports = async (req, res, ctx) => {
         res.status(409)
         return res.send({
           success: false,
-          message: emailAlreadySubscribed
+          message: ALREADY_SUBSCRIBED
         })
       }
       throw e
@@ -24,6 +24,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

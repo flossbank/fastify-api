@@ -1,4 +1,4 @@
-const { INTEG_TEST_KEY } = require('../../helpers/constants')
+const { INTEG_TEST_KEY, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -12,12 +12,12 @@ module.exports = async (req, res, ctx) => {
     const apiKey = await ctx.auth.user.getInstallApiKey({ token })
     if (!apiKey) {
       res.status(401)
-      return res.send()
+      return res.send({ success: false })
     }
     res.send({ success: true, apiKey })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

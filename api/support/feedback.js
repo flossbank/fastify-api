@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, topic, name, body } = req.body
   const email = rawEmail.toLowerCase()
@@ -8,6 +10,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

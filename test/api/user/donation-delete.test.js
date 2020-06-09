@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION } } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -99,7 +99,7 @@ test('DELETE `/user/donation` 404 error | donation not found', async (t) => {
     }
   })
   t.deepEqual(res.statusCode, 404)
-  t.deepEqual(JSON.parse(res.payload), { success: false, message: 'No donation found' })
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: NO_DONATION })
 
   const user = await t.context.db.user.get({ userId: t.context.userId2 })
   const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })

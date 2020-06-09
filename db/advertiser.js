@@ -2,7 +2,7 @@ const { ulid } = require('ulid')
 const { ObjectId } = require('mongodb')
 const bcrypt = require('bcrypt')
 const Cleaner = require('../helpers/clean')
-const { AD_NOT_CLEAN, AD_NOT_CLEAN_MSG } = require('../helpers/constants')
+const { CODES, MSGS } = require('../helpers/constants')
 
 class AdvertiserDbController {
   constructor ({ db }) {
@@ -88,8 +88,8 @@ class AdvertiserDbController {
 
   async createAdDraft ({ advertiserId, draft }) {
     if (!Cleaner.isAdClean(draft)) {
-      const e = new Error(AD_NOT_CLEAN_MSG)
-      e.code = AD_NOT_CLEAN
+      const e = new Error(MSGS.AD_NOT_CLEAN)
+      e.code = CODES.AD_NOT_CLEAN
       throw e
     }
     const adDraftWithDefaults = Object.assign({}, draft, { id: ulid() })
@@ -117,8 +117,8 @@ class AdvertiserDbController {
 
     // Check if the ads passed in are clean
     if (!adCampaignWithDefaults.ads.every(ad => Cleaner.isAdClean(ad))) {
-      const e = new Error(AD_NOT_CLEAN_MSG)
-      e.code = AD_NOT_CLEAN
+      const e = new Error(MSGS.AD_NOT_CLEAN)
+      e.code = CODES.AD_NOT_CLEAN
       throw e
     }
 
@@ -196,8 +196,8 @@ class AdvertiserDbController {
 
     // Check if the ads passed in are clean
     if (!updatedAdCampaign.ads.every(ad => Cleaner.isAdClean(ad))) {
-      const e = new Error(AD_NOT_CLEAN_MSG)
-      e.code = AD_NOT_CLEAN
+      const e = new Error(MSGS.AD_NOT_CLEAN)
+      e.code = CODES.AD_NOT_CLEAN
       throw e
     }
 

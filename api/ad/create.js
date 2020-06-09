@@ -1,4 +1,4 @@
-const { AD_NOT_CLEAN } = require('../../helpers/constants')
+const { CODES: { AD_NOT_CLEAN }, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -25,6 +25,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

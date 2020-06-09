@@ -1,6 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { ALREADY_EXISTS_MSG } = require('../../../helpers/constants')
+const { MSGS: { ALREADY_EXISTS } } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t)
@@ -67,7 +67,7 @@ test('POST `/maintainer/register` 409 duplicate email', async (t) => {
 
   t.is(payload.success, false)
   const { message } = payload
-  t.is(message, ALREADY_EXISTS_MSG)
+  t.is(message, ALREADY_EXISTS)
 })
 
 test('POST `/maintainer/register` 400 bad request', async (t) => {

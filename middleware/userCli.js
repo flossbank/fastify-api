@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR, INVALID_API_KEY } } = require('../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   try {
     // req.headers: { authorization: 'Bearer token' }
@@ -6,12 +8,12 @@ module.exports = async (req, res, ctx) => {
     if (!apiKeyInfo) {
       ctx.log.warn('attempt to access authenticated CLI route without valid API Key %s', apiKey)
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: INVALID_API_KEY })
     }
     req.apiKeyInfo = apiKeyInfo
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    return res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }
