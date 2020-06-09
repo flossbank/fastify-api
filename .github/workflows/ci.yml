@@ -19,5 +19,5 @@ jobs:
         node-version: 12.x
     - run: npm install
       env:
-        FLOSSBANK_INSTALL_TOKEN: ${{ secrets.FLOSSBANK_INSTALL_TOKEN }}
+        FLOSSBANK_NPM_TOKEN: ${{ secrets.FLOSSBANK_NPM_TOKEN }}
     - run: npm run ci-tests
