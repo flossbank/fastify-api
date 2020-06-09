@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+
 /** This endpoint will do the following:
  * 1) fetch all packages from the package manager given the stored token
  * 2) remove the requesting maintainer as an owner for any packages they no longer own
@@ -14,13 +16,13 @@ module.exports = async (req, res, ctx) => {
     if (!maintainer || !maintainer.id) {
       ctx.log.warn('attempt to refresh packages for non-existent maintainer from id %s', req.session.maintainerId)
       res.status(400)
-      return res.send()
+      return res.send({ success: false })
     }
 
     if (!maintainer.tokens || !maintainer.tokens[packageRegistry] || !ctx.registry.isSupported(packageRegistry)) {
       ctx.log.warn('attempt to refresh packages for maintainer %s that has no %s token', req.session.maintainerId, packageRegistry)
       res.status(400)
-      return res.send()
+      return res.send({ success: false })
     }
 
     const packages = await ctx.registry[packageRegistry].getOwnedPackages(
@@ -37,6 +39,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

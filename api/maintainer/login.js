@@ -1,4 +1,4 @@
-const { MAINTAINER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
+const { MAINTAINER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR, INVALID_EMAIL_PASSWORD } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, password } = req.body
@@ -16,11 +16,11 @@ module.exports = async (req, res, ctx) => {
     } else {
       ctx.log.warn('attempt to login with invalid credentials with email %s', email)
       res.status(401)
-      res.send({ success: false, message: 'Login failed; Invalid user ID or password' })
+      res.send({ success: false, message: INVALID_EMAIL_PASSWORD })
     }
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

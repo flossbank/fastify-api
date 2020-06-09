@@ -1,4 +1,4 @@
-const { USER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR, INVALID_EMAIL_TOKEN } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, token } = req.body
@@ -17,7 +17,7 @@ module.exports = async (req, res, ctx) => {
     if (!authResult.success) {
       ctx.log.warn(authResult, 'authentication failed for user %s', email)
       res.status(401)
-      return res.send()
+      return res.send({ success: false, message: INVALID_EMAIL_TOKEN })
     }
 
     res.setCookie(
@@ -29,6 +29,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

@@ -1,6 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { AD_NOT_CLEAN_MSG, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
+const { MSGS, ADVERTISER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -275,7 +275,7 @@ test('POST `/ad-campaign/update` 400 bad request | trash ads', async (t) => {
     }
   })
   t.deepEqual(res.statusCode, 400)
-  t.deepEqual(JSON.parse(res.payload), { success: false, message: AD_NOT_CLEAN_MSG })
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: MSGS.AD_NOT_CLEAN })
 })
 
 test('POST `/ad-campaign/update` 400 bad request', async (t) => {

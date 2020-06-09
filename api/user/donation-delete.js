@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR, NO_DONATION } } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('deleting donation for %s', req.session.userId)
@@ -5,7 +7,7 @@ module.exports = async (req, res, ctx) => {
     // If the user doesn't have a donation, return not found
     if (!user.billingInfo.monthlyDonation) {
       res.status(404)
-      return res.send({ success: false, message: 'No donation found' })
+      return res.send({ success: false, message: NO_DONATION })
     }
 
     if (!user.billingInfo.customerId) throw new Error('No customer id for user wanting to delete donation')
@@ -29,6 +31,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

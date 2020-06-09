@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+
 // Resume should effectively "login" the user using just their auth token from their cookie
 // and supply the same return values that login does.
 module.exports = async (req, res, ctx) => {
@@ -16,6 +18,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send()
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }
