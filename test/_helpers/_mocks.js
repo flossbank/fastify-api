@@ -7,6 +7,7 @@ module.exports = {
     this.sendAdvertiserActivationEmail = sinon.stub().resolves()
     this.sendMaintainerActivationEmail = sinon.stub().resolves()
     this.sendUserMagicLinkEmail = sinon.stub().resolves()
+    this.sendContactUsEmail = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
     this.sendSessionCompleteMessage = sinon.stub().resolves()
