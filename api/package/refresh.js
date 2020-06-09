@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+
 /** This endpoint will do the following:
  * 1) fetch all packages from the package manager given the stored token
  * 2) remove the requesting maintainer as an owner for any packages they no longer own
@@ -37,6 +39,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send({ success: false, message: 'Internal server error' })
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

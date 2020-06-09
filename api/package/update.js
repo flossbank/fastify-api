@@ -1,3 +1,5 @@
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+
 module.exports = async (req, res, ctx) => {
   const { packageId, maintainers, owner } = req.body
   try {
@@ -14,7 +16,7 @@ module.exports = async (req, res, ctx) => {
     if (pkg.owner !== req.session.maintainerId) {
       ctx.log.warn('attempt to update package information from non-owner: %s', req.session.maintainerId)
       res.status(401)
-      return res.send({ success: false, message: 'Internal server error' })
+      return res.send({ success: false })
     }
 
     await ctx.db.package.update({ packageId, maintainers, owner })
@@ -22,6 +24,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send({ success: false, message: 'Internal server error' })
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

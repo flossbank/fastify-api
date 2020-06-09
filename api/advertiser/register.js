@@ -1,4 +1,4 @@
-const { ALREADY_EXISTS_MSG } = require('../../helpers/constants')
+const { MSGS: { ALREADY_EXISTS, INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { advertiser: { firstName, lastName, organization, email: rawEmail, password } } = req.body
@@ -11,7 +11,7 @@ module.exports = async (req, res, ctx) => {
       if (e.code === 11000) { // Dupe key mongo error code is 11000
         ctx.log.warn('attempt to create advertiser with existing email, rejecting request from email %s', email)
         res.status(409)
-        return res.send({ success: false, message: ALREADY_EXISTS_MSG })
+        return res.send({ success: false, message: ALREADY_EXISTS })
       }
       throw e
     }
@@ -21,6 +21,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send({ success: false, message: 'Internal server error' })
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }

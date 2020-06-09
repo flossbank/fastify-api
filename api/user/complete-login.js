@@ -1,4 +1,4 @@
-const { USER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   const { email: rawEmail, token } = req.body
@@ -29,6 +29,6 @@ module.exports = async (req, res, ctx) => {
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
-    res.send({ success: false, message: 'Internal server error' })
+    res.send({ success: false, message: INTERNAL_SERVER_ERROR })
   }
 }
