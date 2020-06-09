@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, URL_NOT_FOUND } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -7,7 +7,7 @@ module.exports = async (req, res, ctx) => {
     if (!location) {
       ctx.log.warn('attempt to access non-existent url alias %s', req.params.id)
       res.status(404)
-      return res.send({ success: false, message: 'URL identifier not found' })
+      return res.send({ success: false, message: URL_NOT_FOUND })
     }
 
     res.redirect(301, location)

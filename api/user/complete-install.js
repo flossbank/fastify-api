@@ -12,7 +12,7 @@ module.exports = async (req, res, ctx) => {
     const apiKey = await ctx.auth.user.getInstallApiKey({ token })
     if (!apiKey) {
       res.status(401)
-      return res.send({ success: false, message: 'Unauthorized' })
+      return res.send({ success: false })
     }
     res.send({ success: true, apiKey })
   } catch (e) {

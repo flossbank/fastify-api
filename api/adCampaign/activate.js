@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, UNAPPROVED_CAMPAIGN } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -13,7 +13,7 @@ module.exports = async (req, res, ctx) => {
       res.status(400)
       return res.send({
         success: false,
-        message: 'Campaign must be approved before activating'
+        message: UNAPPROVED_CAMPAIGN
       })
     }
 

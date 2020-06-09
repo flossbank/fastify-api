@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -8,7 +8,7 @@ module.exports = async (req, res, ctx) => {
     // If the user already has a donation, return conflict
     if (user.billingInfo.monthlyDonation) {
       res.status(409)
-      return res.send({ success: false, message: 'Donation already exists' })
+      return res.send({ success: false, message: DONATION_ALREADY_EXISTS })
     }
 
     let customerId

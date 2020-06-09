@@ -3,7 +3,16 @@ module.exports = {
     AD_NOT_CLEAN: 'String must be plain ASCII text. No Unicode, emojis, or control characters allowed.',
     ALREADY_EXISTS: 'An account with this email already exists',
     ALREADY_SUBSCRIBED: 'This email is already subscribed to Flossbank updates',
-    INTERNAL_SERVER_ERROR: 'Internal server error'
+    UNAPPROVED_CAMPAIGN: 'Campaign must be approved before activating',
+    INTERNAL_SERVER_ERROR: 'Internal server error',
+    INVALID_EMAIL_TOKEN: 'Invalid email or token',
+    INVALID_EMAIL_PASSWORD: 'Invalid email or password',
+    INVALID_SESSION: 'Invalid session',
+    INVALID_EVENT_SIG: 'Invalid event or signature',
+    INVALID_API_KEY: 'Invalid API key',
+    NO_DONATION: 'No donation found',
+    DONATION_ALREADY_EXISTS: 'Donation already exists',
+    URL_NOT_FOUND: 'URL identifier not found'
   },
   CODES: {
     AD_NOT_CLEAN: 273

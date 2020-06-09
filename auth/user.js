@@ -178,7 +178,7 @@ class UserAuthController {
       return { success: true }
     } catch (e) {
       if (e.code === 'ConditionalCheckFailedException') {
-        return { success: false, message: 'user id mismatch or token expired' }
+        return { success: false }
       }
       throw e
     }

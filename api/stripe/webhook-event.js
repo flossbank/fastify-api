@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, INVALID_EVENT_SIG } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -10,7 +10,7 @@ module.exports = async (req, res, ctx) => {
       })
     } catch (e) {
       res.status(403)
-      return res.send({ success: false, message: 'Invalid event or signature' })
+      return res.send({ success: false, message: INVALID_EVENT_SIG })
     }
 
     switch (event.type) {
