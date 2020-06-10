@@ -31,10 +31,13 @@ module.exports = async function buildFastify (deps) {
     'https://flossbank.com',
     'https://advertiser.flossbank.com',
     'https://maintainer.flossbank.com',
-    'https://verification.flossbank.com'
+    'https://user.flossbank.com'
   ]
   if (process.env.NODE_ENV !== 'production') {
-    allowedOrigins.push('http://localhost:3000')
+    allowedOrigins.push(
+      'http://localhost:3000',
+      /preview\.flossbank\.now\.sh$/
+    )
   }
 
   fastify.register(require('fastify-cors'), {
