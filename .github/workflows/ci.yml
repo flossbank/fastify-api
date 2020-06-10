@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   pull_request:
-    branches: [ master, staging ]
+    branches: [ production, staging ]
 
 jobs:
   build_and_test:
