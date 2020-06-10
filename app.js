@@ -31,7 +31,9 @@ module.exports = async function buildFastify (deps) {
     'https://flossbank.com',
     'https://advertiser.flossbank.com',
     'https://maintainer.flossbank.com',
-    'https://verification.flossbank.com'
+    'https://verification.flossbank.com',
+    'https://user.flossbank.com',
+    /preview\.flossbank\.now\.sh$/,
   ]
   if (process.env.NODE_ENV !== 'production') {
     allowedOrigins.push('http://localhost:3000')
