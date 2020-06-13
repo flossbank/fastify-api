@@ -6,6 +6,7 @@ module.exports = async (req, res, ctx) => {
     try {
       event = req.body
       // TODO: UNCOMMENT BEFORE RELEASE, WAITING ON NEXT FASTIFY RELEASE TO PASS IN RAWBODY
+      // https://github.com/fastify/fastify/issues/707
       // event = await ctx.stripe.constructWebhookEvent({
       //   body: req.rawBody,
       //   signature: req.headers['stripe-signature']

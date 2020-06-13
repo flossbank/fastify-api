@@ -35,6 +35,7 @@ test.after(async (t) => {
 })
 
 // TODO: THIS SHOULD PASS DONT LAUNCH UNTIL THEN
+// https://github.com/fastify/fastify/issues/707
 // test('POST `/stripe/webhook/event` 403 unauthorized no stripe signature in header', async (t) => {
 //   t.context.stripe.constructWebhookEvent.throws()
 //   const res = await t.context.app.inject({
@@ -47,6 +48,7 @@ test.after(async (t) => {
 // })
 
 // TODO: THIS SHOULD PASS DONT LAUNCH UNTIL THEN
+// https://github.com/fastify/fastify/issues/707
 // test('POST `/stripe/webhook/event` 403 unauthorized stripe signature verification failed', async (t) => {
 //   t.context.stripe.constructWebhookEvent.throws()
 //   const res = await t.context.app.inject({
