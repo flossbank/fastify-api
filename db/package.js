@@ -40,6 +40,36 @@ class PackageDbController {
     })
   }
 
+  async getUserInstalledPackages ({ userId }) {
+    const installedPackages = await this.db.collection('packages').aggregate([
+      {
+        $match: { 'installs.userId': userId.toString() }
+      }, {
+        $unwind: { path: '$installs' }
+      }, {
+        $match: { 'installs.userId': userId.toString() }
+      }, {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          language: { $first: '$language' },
+          registry: { $first: '$registry' },
+          installCount: { $sum: 1 }
+        }
+      }, {
+        $project: {
+          _id: 0,
+          name: 1,
+          language: 1,
+          registry: 1,
+          installCount: 1
+        }
+      }
+    ]).toArray()
+
+    return installedPackages
+  }
+
   async refreshOwnership ({ packages, registry, maintainerId }) {
     const existingPackages = await this.db.collection('packages').find({
       $or: [

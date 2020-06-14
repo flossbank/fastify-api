@@ -18,7 +18,6 @@ test.before(async (t) => {
       pkg: {
         name: 'yttrium-server',
         registry: 'npm',
-        totalRevenue: 10,
         owner: t.context.maintainerId1,
         maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
       }
@@ -68,7 +67,6 @@ test('GET `/package/get` 200 success', async (t) => {
         id: t.context.pkgId1,
         name: 'yttrium-server',
         registry: 'npm',
-        totalRevenue: 10,
         owner: t.context.maintainerId1,
         maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
       }
