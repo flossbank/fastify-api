@@ -23,8 +23,14 @@ module.exports = {
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.getStripeCustomer = sinon.stub().resolves({
       id: 'test-stripe-id',
+      sources: {
+        data: [{
+          last4: '4242'
+        }]
+      },
       subscriptions: {
         data: [{
+          current_period_end: 1595197107,
           plan: { amount: 1000 }
         }]
       }
