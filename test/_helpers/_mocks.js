@@ -21,6 +21,14 @@ module.exports = {
   },
   Stripe: function Stripe () {
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
+    this.getStripeCustomer = sinon.stub().resolves({
+      id: 'test-stripe-id',
+      subscriptions: {
+        data: [{
+          plan: { amount: 1000 }
+        }]
+      }
+    })
     this.updateStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.createDonation = sinon.stub().resolves()
     this.updateDonation = sinon.stub().resolves()

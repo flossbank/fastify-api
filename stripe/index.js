@@ -17,6 +17,10 @@ class Stripe {
     })
   }
 
+  async getStripeCustomer (customerId) {
+    return this.stripe.customers.retrieve(customerId)
+  }
+
   async updateStripeCustomer (customerId, sourceId) {
     return this.stripe.customers.update(customerId, {
       source: sourceId,
