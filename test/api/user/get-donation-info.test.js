@@ -74,7 +74,7 @@ test('GET `/user/get-donation-info` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), { success: true, amount: 1000, last4: '4242', renewal: 1595197107000 })
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.true(t.context.stripe.getStripeCustomer.calledWith(user.billingInfo.customerId))
+  t.true(t.context.stripe.getStripeCustomerDonationInfo.calledWith(user.billingInfo.customerId))
 })
 
 test('GET `/user/get-donation-info` 404 error | donation not found', async (t) => {
@@ -87,7 +87,7 @@ test('GET `/user/get-donation-info` 404 error | donation not found', async (t) =
   })
   t.deepEqual(res.statusCode, 404)
   t.deepEqual(JSON.parse(res.payload), { success: false, message: NO_DONATION })
-  t.true(t.context.stripe.getStripeCustomer.notCalled)
+  t.true(t.context.stripe.getStripeCustomerDonationInfo.notCalled)
 })
 
 test('GET `/user/get-donation-info` Error thrown when no customer id', async (t) => {
@@ -102,7 +102,7 @@ test('GET `/user/get-donation-info` Error thrown when no customer id', async (t)
 })
 
 test('GET `/user/get-donation-info` 500 server error', async (t) => {
-  t.context.stripe.getStripeCustomer = () => { throw new Error() }
+  t.context.stripe.getStripeCustomerDonationInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/user/get-donation-info',
