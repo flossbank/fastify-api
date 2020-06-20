@@ -14,19 +14,12 @@ module.exports = async (req, res, ctx) => {
 
     const customerId = user.billingInfo.customerId
 
-    // Fetch donation data from stripe
-    let donationInfo = {
-      last4: undefined,
-      renewal: undefined,
-      amount: 0
-    }
     try {
-      donationInfo = await ctx.stripe.getStripeCustomerDonationInfo(customerId)
+      const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo(customerId)
+      res.send({ success: true, donationInfo })
     } catch (e) {
       throw new Error('Unable to retrieve customer stripe donation amount even though mongo said they have donation')
     }
-
-    res.send({ success: true, donationInfo })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
