@@ -69,23 +69,30 @@ const userCliMiddleware = require('../middleware/userCli')
 const advertiserWebMiddleware = require('../middleware/advertiser')
 const maintainerWebMiddleware = require('../middleware/maintainer')
 
-// Stripe webhooks
-const stripeWebhooks = require('../api/stripe/webhook-event')
-
 // URL
 const createUrl = require('../api/url/create')
 const getUrl = require('../api/url/get')
 
-async function routes (fastify, opts, next) {
+async function routes (fastify, opts, done) {
+  if (opts.csrf) {
+    fastify.use((req, res, next) => {
+      if (req.method !== 'POST') {
+        return next()
+      }
+      if (req.headers['x-requested-with'] !== 'XmlHttpRequest') {
+        res.writeHead(403)
+        return res.end()
+      }
+      return next()
+    })
+  }
+
   // Health
   fastify.get('/health', { logLevel: 'error' }, health)
   fastify.post('/health', { logLevel: 'error' }, health)
 
   // Contact us
   fastify.post('/support/feedback', { schema: Schema.support.feedback }, (req, res) => sendFeedback(req, res, fastify))
-
-  // Stripe webhooks
-  fastify.post('/stripe/webhook/event', { schema: Schema.stripe.webhooks }, (req, res) => stripeWebhooks(req, res, fastify))
 
   // Beta tester email subscriptions
   fastify.post('/beta/subscribe', { schema: Schema.subscribe.betaSubscribe }, (req, res) => betaSubscribe(req, res, fastify))
@@ -148,7 +155,7 @@ async function routes (fastify, opts, next) {
   fastify.post('/url/create', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.url.create }, (req, res) => createUrl(req, res, fastify))
   fastify.get('/u/:id', (req, res) => getUrl(req, res, fastify))
 
-  next()
+  done()
 }
 
 module.exports = routes

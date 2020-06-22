@@ -15,7 +15,8 @@ exports.before = async function (t, setup) {
   const config = new Config({
     env: {
       mongo_uri: mongoUri,
-      url_host: 'api.flossbank.io'
+      url_host: 'api.flossbank.io',
+      stripe_webhook_secret: 'whsec_QKhjn6Qhds46oInS0rBo7TYCjqHEug9D'
     }
   })
 
@@ -51,7 +52,7 @@ exports.beforeEach = async function (t) {
   t.context.url = new Url({ docs, config: t.context.config })
   t.context.sqs = new mocks.Sqs()
   t.context.email = new mocks.Email()
-  t.context.stripe = new mocks.Stripe()
+  t.context.stripe = new mocks.Stripe({ config: t.context.config })
   t.context.registry = new mocks.Registry()
   t.context.app = await App({
     db: t.context.db,
