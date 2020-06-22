@@ -1,6 +1,7 @@
 const Ajv = require('ajv')
 const Fastify = require('fastify')
 const routes = require('./routes')
+const stripeRoutes = require('./routes/stripe')
 const { authPlugin } = require('./auth')
 const { dbPlugin } = require('./db')
 const { sqsPlugin } = require('./sqs')
@@ -27,6 +28,8 @@ module.exports = async function buildFastify (deps) {
   fastify.register(require('fastify-helmet'))
   fastify.register(require('fastify-cookie'))
 
+  fastify.register(stripeRoutes)
+
   const allowedOrigins = [
     'https://flossbank.com',
     'https://advertiser.flossbank.com',
@@ -47,23 +50,7 @@ module.exports = async function buildFastify (deps) {
     credentials: true
   })
 
-  if (csrf) {
-    fastify.use((req, res, next) => {
-      if (req.method !== 'POST') {
-        return next()
-      }
-      // Have to exempt stripe webhooks from csrf protection
-      const headerInvalid = req.headers['x-requested-with'] !== 'XmlHttpRequest'
-      const stripeWebhookEvent = req.url === '/stripe/webhook/event'
-      if (headerInvalid && !stripeWebhookEvent) {
-        res.writeHead(403)
-        return res.end()
-      }
-      return next()
-    })
-  }
-
-  fastify.register(routes)
+  fastify.register(routes, { csrf })
 
   fastify.register(dbPlugin(db))
   fastify.register(authPlugin(auth))

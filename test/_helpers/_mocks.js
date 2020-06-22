@@ -1,3 +1,4 @@
+const { Stripe: StripeController } = require('../../stripe')
 const sinon = require('sinon')
 
 module.exports = {
@@ -19,7 +20,8 @@ module.exports = {
     }
     this.isSupported = sinon.stub().resolves(true)
   },
-  Stripe: function Stripe () {
+  Stripe: function Stripe ({ config }) {
+    const stripe = new StripeController({ stripe: require('stripe'), config })
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.getStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
     this.getStripeCustomerDonationInfo = sinon.stub().resolves({
@@ -31,6 +33,6 @@ module.exports = {
     this.createDonation = sinon.stub().resolves()
     this.updateDonation = sinon.stub().resolves()
     this.deleteDonation = sinon.stub().resolves()
-    this.constructWebhookEvent = sinon.stub().resolves()
+    this.constructWebhookEvent = stripe.constructWebhookEvent.bind(stripe)
   }
 }

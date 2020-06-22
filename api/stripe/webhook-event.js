@@ -18,10 +18,17 @@ module.exports = async (req, res, ctx) => {
 
     switch (event.type) {
       case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object
-        const amount = paymentIntent.amount
-        const customerId = paymentIntent.customer.id
-        const description = paymentIntent.description
+        const {
+          data: {
+            object: {
+              amount,
+              description,
+              customer
+            }
+          }
+        } = event
+
+        const customerId = (customer || {}).id
 
         await ctx.sqs.sendDistributeDonationMessage({
           customerId,
