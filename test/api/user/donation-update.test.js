@@ -14,6 +14,14 @@ test.before(async (t) => {
 
     t.context.sessionWithDonationCurrentlyBelow = await auth.user.createWebSession({ userId: t.context.userId1 })
 
+    const { id: userId5 } = await db.user.create({ email: 'honeybooboo@etsy.com' })
+    t.context.userId5 = userId5.toHexString()
+    await db.user.updateCustomerId({ userId: t.context.userId5, customerId: 'honesty-cust-id' })
+    await db.user.updateHasCardInfo({ userId: t.context.userId5, last4: '2222' })
+    await db.user.setDonation({ userId: t.context.userId5, amount: 500 })
+
+    t.context.sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId5 })
+
     // User that will have donation updated to below threshold
     const { id: userId4 } = await db.user.create({ email: 'rip@vanwinkle.com' })
     t.context.userId4 = userId4.toHexString()
@@ -109,6 +117,32 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t
 
   const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
   t.deepEqual(userApiKey.noAds, true)
+
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
+  t.true(donationLedgerAddition.timestamp === 19991)
+  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, 1500))
+})
+
+test('PUT `/user/donation` 200 success | threshold above ad threshold but choose to see ads', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/user/donation',
+    payload: { amount: 1500, seeAds: true },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true })
+
+  const user = await t.context.db.user.get({ userId: t.context.userId5 })
+  t.deepEqual(user.optOutOfAds, false)
+  t.deepEqual(user.billingInfo.monthlyDonation, true)
+  t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
+  t.deepEqual(user.billingInfo.last4, '2222')
+
+  const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
+  t.deepEqual(userApiKey.noAds, false)
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
   t.true(donationLedgerAddition.timestamp === 19991)

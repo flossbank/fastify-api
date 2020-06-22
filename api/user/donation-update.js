@@ -2,7 +2,7 @@ const { MSGS: { INTERNAL_SERVER_ERROR, NO_DONATION } } = require('../../helpers/
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { amount } = req.body
+    const { amount, seeAds } = req.body
     ctx.log.info('updating donation for %s to amount %s', req.session.userId, amount)
     const user = await ctx.db.user.get({ userId: req.session.userId })
     // If the user doesn't already have a donation, return not found
@@ -22,7 +22,7 @@ module.exports = async (req, res, ctx) => {
 
     // If the amount of is 10 dollars or above (in cents), opt out of ads in mongo and dynamo
     const noAdThresholdInCents = ctx.config.getNoAdThreshold()
-    if (amount >= noAdThresholdInCents) {
+    if (amount >= noAdThresholdInCents && !seeAds) {
       await ctx.db.user.updateOptOutSetting({
         userId: req.session.userId,
         optOutOfAds: true

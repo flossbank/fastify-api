@@ -17,6 +17,20 @@ class Stripe {
     })
   }
 
+  async getStripeCustomer (customerId) {
+    return this.stripe.customers.retrieve(customerId)
+  }
+
+  async getStripeCustomerDonationInfo (customerId) {
+    const customer = await this.getStripeCustomer(customerId)
+    return {
+      amount: customer.subscriptions.data[0].plan.amount,
+      // Stripe gives us subscription period end in seconds for some reason
+      renewal: customer.subscriptions.data[0].current_period_end * 1000,
+      last4: customer.sources.data[0].last4
+    }
+  }
+
   async updateStripeCustomer (customerId, sourceId) {
     return this.stripe.customers.update(customerId, {
       source: sourceId,
@@ -26,7 +40,9 @@ class Stripe {
 
   async constructWebhookEvent ({ body, signature }) {
     const secret = this.config.getStripeWebhookSecret()
-    if (!body || !signature || !secret) throw new Error('Invalid webhook params')
+    if (!body || !signature || !secret) {
+      throw new Error('Invalid webhook params')
+    }
     return this.stripe.webhooks.constructEvent(body, signature, secret)
   }
 

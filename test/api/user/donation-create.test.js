@@ -57,11 +57,11 @@ test('POST `/user/donation` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/user/donation` 200 success | update card on file', async (t) => {
+test('POST `/user/donation` 200 success | update card on file and choose to see ads', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/donation',
-    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: 1000 },
+    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: 1500, seeAds: true },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithBillingInfo}`
     }
@@ -70,16 +70,16 @@ test('POST `/user/donation` 200 success | update card on file', async (t) => {
   t.deepEqual(JSON.parse(res.payload), { success: true })
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.deepEqual(user.optOutOfAds, true)
+  t.deepEqual(user.optOutOfAds, undefined)
   t.deepEqual(user.billingInfo.monthlyDonation, true)
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
   t.deepEqual(user.billingInfo.last4, '1234')
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1000000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.notCalled)
   t.true(t.context.stripe.updateStripeCustomer.calledWith('honesty-cust-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, 1000))
+  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, 1500))
 
   // Should return 409 for same sessions attempt at creating a donation
   const res2 = await t.context.app.inject({
