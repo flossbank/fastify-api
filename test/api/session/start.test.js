@@ -85,7 +85,24 @@ test('POST `/session/start` 401 unauthorized', async (t) => {
     payload: {},
     headers: { authorization: 'Bearer Dov' }
   })
-  t.deepEqual(res.statusCode, 401)
+  t.is(res.statusCode, 401)
+})
+
+test('POST `/session/start` 401 unauthorized | no header', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/session/start',
+    payload: {}
+  })
+  t.is(res.statusCode, 401)
+
+  const res2 = await t.context.app.inject({
+    method: 'POST',
+    url: '/session/start',
+    payload: {},
+    headers: {}
+  })
+  t.is(res2.statusCode, 401)
 })
 
 test('POST `/session/start` 200 success', async (t) => {
