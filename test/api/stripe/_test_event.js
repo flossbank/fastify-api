@@ -1,3 +1,5 @@
+// Created with stripe CLI
+
 module.exports = {
   succeeded: {
     body: '{\n' +
@@ -46,7 +48,7 @@ module.exports = {
     '            "captured": true,\n' +
     '            "created": 1592794871,\n' +
     '            "currency": "usd",\n' +
-    '            "customer": null,\n' +
+    '            "customer": "cus_00000000000000",\n' +
     '            "description": "(created by Stripe CLI)",\n' +
     '            "destination": null,\n' +
     '            "dispute": null,\n' +
