@@ -169,7 +169,7 @@ class AdvertiserDbController {
       _id: ObjectId(advertiserId)
     })
 
-    if (!advertiser) return undefined
+    if (!advertiser) return advertiser
     return advertiser.adCampaigns.find(c => c.id === campaignId)
   }
 
