@@ -1,5 +1,3 @@
-// Created with stripe CLI
-
 module.exports = {
   succeeded: {
     body: '{\n' +
@@ -48,7 +46,7 @@ module.exports = {
     '            "captured": true,\n' +
     '            "created": 1592794871,\n' +
     '            "currency": "usd",\n' +
-    '            "customer": "cus_00000000000000",\n' +
+    '            "customer": "cus_HUsI9NcGHli9mq",\n' +
     '            "description": "(created by Stripe CLI)",\n' +
     '            "destination": null,\n' +
     '            "dispute": null,\n' +
@@ -140,7 +138,7 @@ module.exports = {
     '      "confirmation_method": "automatic",\n' +
     '      "created": 1592794871,\n' +
     '      "currency": "usd",\n' +
-    '      "customer": null,\n' +
+    '      "customer": "cus_HUsI9NcGHli9mq",\n' +
     '      "description": "(created by Stripe CLI)",\n' +
     '      "invoice": null,\n' +
     '      "last_payment_error": null,\n' +
@@ -193,7 +191,7 @@ module.exports = {
     '  },\n' +
     '  "type": "payment_intent.succeeded"\n' +
     '}',
-    signature: 't=1592794876,v1=b789da3929121e63ead45d55be1fbdd5efd650c7aed0b70b277f7cf6c8b2ecbe,v0=2d5a8eedbdd59502787d88d71ebd5e08d0fb9f5900aa9b5178c33e9d33c08245'
+    signature: 't=1592794876,v1=b6dca06f7aaaa5d37547b551c0bbf76c7ff99943576c360d7946dbb5beca8972,v0=2d5a8eedbdd59502787d88d71ebd5e08d0fb9f5900aa9b5178c33e9d33c08245'
   },
   created: {
     body: '{\n' +
@@ -226,7 +224,7 @@ module.exports = {
     '      "confirmation_method": "automatic",\n' +
     '      "created": 1592796401,\n' +
     '      "currency": "usd",\n' +
-    '      "customer": null,\n' +
+    '      "customer": "cus_HUsI9NcGHli9mq",\n' +
     '      "description": "(created by Stripe CLI)",\n' +
     '      "invoice": null,\n' +
     '      "last_payment_error": null,\n' +
@@ -279,6 +277,6 @@ module.exports = {
     '  },\n' +
     '  "type": "payment_intent.created"\n' +
     '}',
-    signature: 't=1592796403,v1=0242ee1f5d9003cc070a6e87cac71ec987f2232ea933f412324f4d955d38f806,v0=20e0b918d1a7a1165a77f166a2f1acbc89d59104a2749161ad63e3d0cd1094a5'
+    signature: 't=1592794876,v1=99068c087b7187dbd4a0c1c6e0400361ee5966cdfd70f956969e9c215e450b72,v0=20e0b918d1a7a1165a77f166a2f1acbc89d59104a2749161ad63e3d0cd1094a5'
   }
 }
