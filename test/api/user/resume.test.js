@@ -47,7 +47,7 @@ test('GET `/user/resume` 200 | success', async (t) => {
   const userRetrieved = await t.context.db.user.get({
     userId: t.context.userId
   })
-  t.deepEqual(payload.user, { 
+  t.deepEqual(payload.user, {
     id: userRetrieved.id.toHexString(),
     billingInfo: userRetrieved.billingInfo,
     email: userRetrieved.email
