@@ -25,10 +25,8 @@ module.exports = async (req, res, ctx) => {
           }
         } = event
 
-        const customerId = (customer || {}).id
-
         await ctx.sqs.sendDistributeDonationMessage({
-          customerId,
+          customerId: customer,
           amount,
           description,
           timestamp: Date.now(),

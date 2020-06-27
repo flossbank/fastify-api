@@ -67,6 +67,35 @@ test('POST `/package/update` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
+test('POST `/package/update` 401 unauthorized | non-owner', async (t) => {
+  const pkgId1 = (await t.context.db.package.create({
+    pkg: {
+      name: 'yttrium-cli',
+      registry: 'npm',
+      totalRevenue: 10,
+      owner: t.context.maintainerId1,
+      maintainers: [{ maintainerId: t.context.maintainerId1, revenuePercent: 100 }]
+    }
+  })).toHexString()
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/package/update',
+    payload: {
+      packageId: pkgId1,
+      maintainers: [
+        { maintainerId: t.context.maintainerId1, revenuePercent: 75 },
+        { maintainerId: t.context.maintainerId2, revenuePercent: 15 }
+      ],
+      owner: t.context.maintainerId1
+    },
+    headers: {
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
+    }
+  })
+  t.deepEqual(res.statusCode, 401)
+})
+
 test('POST `/package/update` 200 success', async (t) => {
   const pkgId1 = (await t.context.db.package.create({
     pkg: {

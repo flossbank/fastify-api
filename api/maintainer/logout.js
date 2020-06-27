@@ -1,12 +1,12 @@
-const { MAINTAINER_SESSION_KEY, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MAINTAINER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
-  const sessionId = req.cookies[MAINTAINER_SESSION_KEY]
+  const sessionId = req.cookies[MAINTAINER_WEB_SESSION_COOKIE]
   try {
     ctx.log.info('logging out for session id %s', sessionId)
     await ctx.auth.maintainer.deleteWebSession({ sessionId })
     res.clearCookie(
-      MAINTAINER_SESSION_KEY,
+      MAINTAINER_WEB_SESSION_COOKIE,
       { path: '/' }
     )
     res.send({ success: true })

@@ -60,7 +60,7 @@ test('POST `/stripe/webhook/event` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const expectedPayload = {
     amount: 2000,
-    customerId: undefined,
+    customerId: 'cus_HUsI9NcGHli9mq',
     description: '(created by Stripe CLI)',
     paymentSuccess: true,
     timestamp: 1592794872

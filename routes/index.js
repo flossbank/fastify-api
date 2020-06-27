@@ -30,6 +30,7 @@ const verifyAdvertiser = require('../api/advertiser/verify')
 const resumeAdvertiserSession = require('../api/advertiser/resume')
 
 // User
+const resumeUserSession = require('../api/user/resume')
 const registerUser = require('../api/user/register')
 const verifyUserRegistration = require('../api/user/verify-registration')
 const requestLoginUser = require('../api/user/request-login')
@@ -118,6 +119,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
 
   // User
+  fastify.get('/user/resume', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.resumeSession }, (req, res) => resumeUserSession(req, res, fastify))
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
   fastify.post('/user/verify-registration', { schema: Schema.user.verifyRegistration }, (req, res) => verifyUserRegistration(req, res, fastify))
   fastify.post('/user/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginUser(req, res, fastify))

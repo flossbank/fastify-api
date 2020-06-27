@@ -71,8 +71,7 @@ class Config {
   }
 
   getSessionCompleteQueueUrl () {
-    // The || is for backwards compatibility and should be removed
-    return this.env.session_complete_queue_url || this.env.queue_url
+    return this.env.session_complete_queue_url
   }
 
   getUrlConfig () {
