@@ -25,14 +25,17 @@ class UserDbController {
   }
 
   async getSessions ({ userId }) {
-    const sessions = await this.db.collection('users').aggregate([
-      { $match: { _id: new ObjectId(userId) } },
-      { $project: { sessionCount: { $size: '$sessionActivity' } } }
-    ]).toArray()
-
-    if (!sessions.length) return {}
-
-    return sessions.pop()
+    try {
+      const sessions = await this.db.collection('users').aggregate([
+        { $match: { _id: new ObjectId(userId) } },
+        { $project: { sessionCount: { $size: '$sessionActivity' } } }
+      ]).toArray()
+      return sessions.pop()
+    } catch (e) {
+      // if there is no activity yet, mongo throws 17124 determining size of non-existent array
+      if (e.code === 17124) return { sessionCount: 0 }
+      throw e
+    }
   }
 
   async create ({ email }) {

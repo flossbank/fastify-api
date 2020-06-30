@@ -5,9 +5,12 @@ const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
+    const { id: userId2 } = await db.user.create({ email: 'bunny@etsy.com' })
     t.context.userId1 = userId1.toHexString()
+    t.context.userId2 = userId2.toHexString()
 
     t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionIdWithoutActivity = await auth.user.createWebSession({ userId: t.context.userId2 })
 
     await db.db.collection('users').updateOne({
       _id: userId1
@@ -59,6 +62,19 @@ test('GET `/user/get-sessions` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.is(payload.userSessionData.sessionCount, 3)
+})
+
+test('GET `/user/get-sessions` 200 success | no activity', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/user/get-sessions',
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionIdWithoutActivity}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+  t.is(payload.userSessionData.sessionCount, 0)
 })
 
 test('GET `/user/get-sessions` 500 server error', async (t) => {
