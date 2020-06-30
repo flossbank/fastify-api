@@ -44,6 +44,7 @@ const updateUserDonation = require('../api/user/donation-update')
 const deleteUserDonation = require('../api/user/donation-delete')
 const getInstalledPackages = require('../api/user/get-installed-packages')
 const getUserDonationInfo = require('../api/user/get-donation-info')
+const getUserSessions = require('../api/user/get-sessions')
 
 // Maintainer
 const getMaintainer = require('../api/maintainer/get')
@@ -133,6 +134,7 @@ async function routes (fastify, opts, done) {
   fastify.delete('/user/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.deleteDonation }, (req, res) => deleteUserDonation(req, res, fastify))
   fastify.get('/user/get-installed-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getInstalledPackages }, (req, res) => getInstalledPackages(req, res, fastify))
   fastify.get('/user/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getDonationInfo }, (req, res) => getUserDonationInfo(req, res, fastify))
+  fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
 
   // Maintainer
   fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
