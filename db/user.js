@@ -24,6 +24,17 @@ class UserDbController {
     return { id, ...rest }
   }
 
+  async getSessions ({ userId }) {
+    const sessions = await this.db.collection('users').aggregate([
+      { $match: { _id: new ObjectId(userId) } },
+      { $project: { sessionCount: { $size: '$sessionActivity' } } }
+    ]).toArray()
+
+    if (!sessions.length) return {}
+
+    return sessions.pop()
+  }
+
   async create ({ email }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
     const { insertedId } = await this.db.collection('users').insertOne({
