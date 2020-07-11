@@ -4,13 +4,14 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION } } = require('../../../helpers/constants')
 
 test.before(async (t) => {
+  sinon.stub(Date, 'now').returns(19991)
   await before(t, async ({ db, auth }) => {
-    sinon.stub(Date, 'now').returns(19991)
+    const threshold = t.context.config.getNoAdThreshold()
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
     await db.user.updateCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
     await db.user.updateHasCardInfo({ userId: t.context.userId1, last4: '2222' })
-    await db.user.setDonation({ userId: t.context.userId1, amount: 500 })
+    await db.user.setDonation({ userId: t.context.userId1, amount: threshold - 1 })
 
     t.context.sessionWithDonationCurrentlyBelow = await auth.user.createWebSession({ userId: t.context.userId1 })
 
@@ -18,7 +19,7 @@ test.before(async (t) => {
     t.context.userId5 = userId5.toHexString()
     await db.user.updateCustomerId({ userId: t.context.userId5, customerId: 'honesty-cust-id' })
     await db.user.updateHasCardInfo({ userId: t.context.userId5, last4: '2222' })
-    await db.user.setDonation({ userId: t.context.userId5, amount: 500 })
+    await db.user.setDonation({ userId: t.context.userId5, amount: threshold - 1 })
 
     t.context.sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId5 })
 
@@ -27,7 +28,7 @@ test.before(async (t) => {
     t.context.userId4 = userId4.toHexString()
     await db.user.updateCustomerId({ userId: t.context.userId4, customerId: 'honesty-cust-id-4' })
     await db.user.updateHasCardInfo({ userId: t.context.userId4, last4: '2222' })
-    await db.user.setDonation({ userId: t.context.userId4, amount: 1500 })
+    await db.user.setDonation({ userId: t.context.userId4, amount: threshold + 1 })
 
     t.context.sessionWithDonationCurrentyAbove = await auth.user.createWebSession({ userId: t.context.userId4 })
 
@@ -44,7 +45,7 @@ test.before(async (t) => {
     t.context.userId3 = userId3.toHexString()
     await db.user.updateCustomerId({ userId: t.context.userId3, customerId: 'honesty-cust-id-3' })
     await db.user.updateHasCardInfo({ userId: t.context.userId3, last4: '2222' })
-    await db.user.setDonation({ userId: t.context.userId3, amount: 1500 })
+    await db.user.setDonation({ userId: t.context.userId3, amount: threshold + 1 })
 
     t.context.sessionWithError = await auth.user.createWebSession({ userId: t.context.userId3 })
   })
@@ -75,16 +76,17 @@ test('PUT `/user/donation` 401 unauthorized', async (t) => {
 })
 
 test('PUT `/user/donation` 200 success | threshold below ad threshold', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/user/donation',
-    payload: { amount: 500 },
+    payload: { amount: threshold - 1 },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonationCurrentyAbove}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: false })
 
   const user = await t.context.db.user.get({ userId: t.context.userId4 })
   t.deepEqual(user.optOutOfAds, false)
@@ -92,22 +94,23 @@ test('PUT `/user/donation` 200 success | threshold below ad threshold', async (t
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id-4')
   t.deepEqual(user.billingInfo.last4, '2222')
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 500000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold - 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, 500))
+  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold - 1))
 })
 
 test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/user/donation',
-    payload: { amount: 1500 },
+    payload: { amount: threshold + 1 },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonationCurrentlyBelow}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: true })
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
   t.deepEqual(user.optOutOfAds, true)
@@ -118,22 +121,23 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t
   const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
   t.deepEqual(userApiKey.noAds, true)
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, 1500))
+  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold + 1))
 })
 
 test('PUT `/user/donation` 200 success | threshold above ad threshold but choose to see ads', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/user/donation',
-    payload: { amount: 1500, seeAds: true },
+    payload: { amount: threshold + 1, seeAds: true },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: false })
 
   const user = await t.context.db.user.get({ userId: t.context.userId5 })
   t.deepEqual(user.optOutOfAds, false)
@@ -144,9 +148,9 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold but choose
   const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
   t.deepEqual(userApiKey.noAds, false)
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, 1500))
+  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold + 1))
 })
 
 test('PUT `/user/donation` 404 error | donation not found', async (t) => {
