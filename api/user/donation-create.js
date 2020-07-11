@@ -41,7 +41,7 @@ module.exports = async (req, res, ctx) => {
 
     // If the amount (in cents) is above our threshold, opt out of ads in mongo and dynamo
     const noAdThresholdInCents = ctx.config.getNoAdThreshold()
-    let optOutOfAds
+    let optOutOfAds = false
     if (amount >= noAdThresholdInCents && !seeAds) {
       await ctx.db.user.updateOptOutSetting({
         userId: req.session.userId,
@@ -49,8 +49,6 @@ module.exports = async (req, res, ctx) => {
       })
       await ctx.auth.user.cacheApiKeyNoAdsSetting({ noAds: true, apiKey: user.apiKey })
       optOutOfAds = true
-    } else {
-      optOutOfAds = false
     }
 
     res.send({ success: true, optOutOfAds })
