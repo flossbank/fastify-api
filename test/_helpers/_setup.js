@@ -30,13 +30,13 @@ exports.before = async function (t, setup) {
   const docs = new AWS.DynamoDB.DocumentClient({ endpoint })
   const auth = new Auth({ docs, config })
 
+  t.context.config = config
   if (typeof setup === 'function') {
     await setup({ db, auth })
   }
 
   await db.client.close()
 
-  t.context.config = config
   t.context.mongo = mongo
   t.context.dynamo = dynamo
 }

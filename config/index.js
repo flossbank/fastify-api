@@ -92,9 +92,9 @@ class Config {
     return this.env.stripe_webhook_secret
   }
 
-  // Current no ad threshold is $10 bucks
+  // ad threshold in cents
   getNoAdThreshold () {
-    return 1000
+    return 500
   }
 }
 

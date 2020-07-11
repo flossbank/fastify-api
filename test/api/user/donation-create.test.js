@@ -4,8 +4,8 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
+  sinon.stub(Date, 'now').returns(123456)
   await before(t, async ({ db, auth }) => {
-    sinon.stub(Date, 'now').returns(123456)
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
     await db.user.updateCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
@@ -58,16 +58,17 @@ test('POST `/user/donation` 401 unauthorized', async (t) => {
 })
 
 test('POST `/user/donation` 200 success | update card on file and choose to see ads', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/donation',
-    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: 1500, seeAds: true },
+    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: threshold + 1, seeAds: true },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithBillingInfo}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: false })
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
   t.deepEqual(user.optOutOfAds, undefined)
@@ -75,11 +76,11 @@ test('POST `/user/donation` 200 success | update card on file and choose to see 
   t.deepEqual(user.billingInfo.customerId, 'honesty-cust-id')
   t.deepEqual(user.billingInfo.last4, '1234')
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1500000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.notCalled)
   t.true(t.context.stripe.updateStripeCustomer.calledWith('honesty-cust-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, 1500))
+  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold + 1))
 
   // Should return 409 for same sessions attempt at creating a donation
   const res2 = await t.context.app.inject({
@@ -94,16 +95,17 @@ test('POST `/user/donation` 200 success | update card on file and choose to see 
 })
 
 test('POST `/user/donation` 200 success | first card added and above disable ads threshold', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/donation',
-    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: 1000 },
+    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: threshold + 1 },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutBillingInfo}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: true })
 
   const user = await t.context.db.user.get({ userId: t.context.userId2 })
   t.deepEqual(user.optOutOfAds, true)
@@ -114,24 +116,25 @@ test('POST `/user/donation` 200 success | first card added and above disable ads
   const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
   t.deepEqual(userApiKey.noAds, true)
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 1000000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
   t.true(t.context.stripe.updateStripeCustomer.calledWith('test-stripe-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, 1000))
+  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold + 1))
 })
 
 test('POST `/user/donation` 200 success | donation below threshold to disable ads', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/donation',
-    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: 900 },
+    payload: { billingToken: 'stripe-billing-token', last4: '1234', amount: threshold - 1 },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionThatWontBuyNoAds}`
     }
   })
   t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: false })
 
   const user = await t.context.db.user.get({ userId: t.context.userId3 })
   t.deepEqual(user.optOutOfAds, undefined)
@@ -143,11 +146,11 @@ test('POST `/user/donation` 200 success | donation below threshold to disable ad
   // In this situation the api key hasn't even been cached
   t.deepEqual(userApiKey, undefined)
 
-  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 900000)
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold - 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
   t.true(t.context.stripe.updateStripeCustomer.calledWith('test-stripe-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, 900))
+  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold - 1))
 })
 
 test('POST `/user/donation` 500 server error', async (t) => {
