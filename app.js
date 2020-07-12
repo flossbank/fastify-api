@@ -45,7 +45,7 @@ module.exports = async function buildFastify (deps) {
 
   fastify.register(require('fastify-cors'), {
     origin: allowedOrigins,
-    methods: ['GET', 'OPTIONS', 'POST'],
+    methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
     credentials: true
   })
