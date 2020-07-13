@@ -39,13 +39,14 @@ module.exports = async function buildFastify (deps) {
   if (process.env.NODE_ENV !== 'production') {
     allowedOrigins.push(
       'http://localhost:3000',
+      /\.flossbank\.vercel\.app$/,
       /\.flossbank\.now\.sh$/
     )
   }
 
   fastify.register(require('fastify-cors'), {
     origin: allowedOrigins,
-    methods: ['GET', 'OPTIONS', 'POST'],
+    methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
     credentials: true
   })
