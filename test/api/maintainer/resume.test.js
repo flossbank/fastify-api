@@ -14,7 +14,8 @@ test.before(async (t) => {
     })
     t.context.maintainerId = maintainerId1.toHexString()
     await db.maintainer.verify({ email: 'honey@etsy.com' })
-    t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId })
+    const session = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId })
+    t.context.sessionId = session.sessionId
   })
 })
 

@@ -6,7 +6,8 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ auth }) => {
-    t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: 'advertiser-id' })
+    const session = await auth.advertiser.createWebSession({ advertiserId: 'advertiser-id' })
+    t.context.sessionId = session.sessionId
   })
   sinon.stub(base32, 'stringify').returns('DEADBEEF')
 })

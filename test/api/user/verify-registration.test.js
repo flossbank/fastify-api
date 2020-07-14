@@ -52,11 +52,16 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
     url: '/user/verify-registration',
     payload: { email: 'email@asdf.com', token: registrationToken, recaptchaResponse: 'big messy' }
   })
-  t.true(res.headers['set-cookie'].includes(USER_WEB_SESSION_COOKIE))
-  t.deepEqual(res.statusCode, 200)
-  t.deepEqual(JSON.parse(res.payload), { success: true })
 
   const user = await db.user.getByEmail({ email: 'email@asdf.com' })
+
+  t.true(res.headers['set-cookie'].includes(USER_WEB_SESSION_COOKIE))
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true, user: {
+    billingInfo: user.billingInfo,
+    id: user.id.toString(),
+    email: user.email,
+  }})
   t.true(user.apiKey.length > 0)
 
   const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })

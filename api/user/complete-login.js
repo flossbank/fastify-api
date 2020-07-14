@@ -20,10 +20,11 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: INVALID_EMAIL_TOKEN })
     }
 
+    const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
     res.setCookie(
       USER_WEB_SESSION_COOKIE,
-      await ctx.auth.user.createWebSession({ userId: user.id.toString() }),
-      { path: '/' }
+      sessionId,
+      { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
     )
     res.send({ success: true, user })
   } catch (e) {

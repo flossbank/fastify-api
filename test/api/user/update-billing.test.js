@@ -9,13 +9,15 @@ test.before(async (t) => {
     await db.user.updateCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
     await db.user.updateHasCardInfo({ userId: t.context.userId1, last4: '2222' })
 
-    t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    const session1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionId1 = session1.sessionId
 
     // no billing info
     const { id: userId2 } = await db.user.create({ email: 'papa@papajohns.com' })
     t.context.userId2 = userId2.toHexString()
 
-    t.context.sessionId2 = await auth.user.createWebSession({ userId: t.context.userId2 })
+    const session2 = await auth.user.createWebSession({ userId: t.context.userId2 })
+    t.context.sessionId2 = session2.sessionId
   })
 })
 

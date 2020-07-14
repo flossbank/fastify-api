@@ -60,7 +60,7 @@ class UserAuthController {
       TableName: this.constants.USER_WEB_SESSION_TABLE,
       Item: sessionItem
     }).promise()
-    return sessionId
+    return sessionItem
   }
 
   async getWebSession ({ sessionId }) {

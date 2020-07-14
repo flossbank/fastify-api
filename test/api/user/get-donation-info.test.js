@@ -12,7 +12,8 @@ test.before(async (t) => {
     await db.user.updateHasCardInfo({ userId: t.context.userId1, last4: '2222' })
     await db.user.setDonation({ userId: t.context.userId1, amount: 1000 })
 
-    t.context.sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId1 })
+    const sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionWithDonation = sessionWithDonation.sessionId
 
     // no donation
     const { id: userId2 } = await db.user.create({ email: 'papa@papajohns.com' })
@@ -20,7 +21,8 @@ test.before(async (t) => {
     await db.user.updateCustomerId({ userId: t.context.userId2, customerId: 'honesty-cust-id-2' })
     await db.user.updateHasCardInfo({ userId: t.context.userId2, last4: '2222' })
 
-    t.context.sessionWithoutDonation = await auth.user.createWebSession({ userId: t.context.userId2 })
+    const sessionWithoutDonation = await auth.user.createWebSession({ userId: t.context.userId2 })
+    t.context.sessionWithoutDonation = sessionWithoutDonation.sessionId
 
     // User that receives an error
     const { id: userId3 } = await db.user.create({ email: 'black@pick.com' })
@@ -29,14 +31,16 @@ test.before(async (t) => {
     await db.user.updateHasCardInfo({ userId: t.context.userId3, last4: '2222' })
     await db.user.setDonation({ userId: t.context.userId3, amount: 1500 })
 
-    t.context.sessionWithError = await auth.user.createWebSession({ userId: t.context.userId3 })
+    const sessionWithError = await auth.user.createWebSession({ userId: t.context.userId3 })
+    t.context.sessionWithError = sessionWithError.sessionId
 
     // User with no customer id
     const { id: userId4 } = await db.user.create({ email: 'white@pick.com' })
     t.context.userId4 = userId4.toHexString()
     await db.user.setDonation({ userId: t.context.userId4, amount: 1500 })
 
-    t.context.sessionWithoutCustomerId = await auth.user.createWebSession({ userId: t.context.userId4 })
+    const sessionWithoutCustomerId = await auth.user.createWebSession({ userId: t.context.userId4 })
+    t.context.sessionWithoutCustomerId = sessionWithoutCustomerId.sessionId
   })
 })
 

@@ -12,7 +12,8 @@ test.before(async (t) => {
       }
     }))
     t.context.advertiserId1 = advertiserId1.toHexString()
-    t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+    const session = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+    t.context.sessionId = session.sessionId
 
     t.context.campaignId1 = await db.advertiser.createAdCampaign({
       advertiserId: t.context.advertiserId1,

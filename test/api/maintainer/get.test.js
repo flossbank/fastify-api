@@ -14,7 +14,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
-    t.context.sessionId = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    const session = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    t.context.sessionId = session.sessionId
     await db.maintainer.verify({ email: 'honey@etsy.com' })
 
     const unverifiedMaintainerId = await db.maintainer.create({
@@ -27,7 +28,8 @@ test.before(async (t) => {
       }
     })
     t.context.unverifiedMaintainerId = unverifiedMaintainerId.toHexString()
-    t.context.unverifiedSession = await auth.maintainer.createWebSession({ maintainerId: t.context.unverifiedMaintainerId })
+    const unverifiedSession = await auth.maintainer.createWebSession({ maintainerId: t.context.unverifiedMaintainerId })
+    t.context.unverifiedSession = unverifiedSession.sessionId
   })
 })
 

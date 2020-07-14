@@ -141,17 +141,41 @@ test('update donation | customer has one', async (t) => {
   stripe.stripe.customers.retrieve.resolves({
     subscriptions: {
       data: [
-        { id: 'sub-id' }
+        { id: 'sub-id', items: { data: [{ id: 'item-id' }] } }
       ]
     }
   })
   await stripe.updateDonation('cust-id', 200)
   t.deepEqual(stripe.stripe.subscriptions.update.lastCall.args, [
     'sub-id',
-    { items: [{ plan: 2 }] }
+    { items: [{ id: 'item-id', plan: 2 }] }
   ])
 })
 
+test('update donation | customer has one and new amount is same as existing amount', async (t) => {
+  const { stripe } = t.context
+  stripe.stripe.customers.retrieve.resolves({
+    subscriptions: {
+      data: [
+        {
+          id: 'sub-id',
+          plan: {
+            id: 'plan-id-0',
+            amount: 40
+          },
+          items: {
+            data: [
+              { id: 'item-id' }
+            ]
+          }
+        }
+      ]
+    }
+  })
+  stripe.findOrCreatePlan = () => ({ id: 'plan-id-0' })
+  await stripe.updateDonation('cust-id', 40)
+  t.true(stripe.stripe.subscriptions.update.notCalled)
+})
 test('delete donation | customer has one', async (t) => {
   const { stripe } = t.context
   stripe.stripe.customers.retrieve.resolves({
