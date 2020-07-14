@@ -15,10 +15,11 @@ module.exports = async (req, res, ctx) => {
     const user = await ctx.db.user.create({ email })
     await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
 
+    const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
     res.setCookie(
       USER_WEB_SESSION_COOKIE,
-      await ctx.auth.user.createWebSession({ userId: user.id.toString() }),
-      { path: '/' }
+      sessionId,
+      { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
     )
 
     res.send({ success: true })

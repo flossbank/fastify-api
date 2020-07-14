@@ -12,7 +12,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
-    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    const sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    t.context.sessionId1 = sessionId1.sessionId
 
     const pkgId1 = await db.package.create({
       pkg: {

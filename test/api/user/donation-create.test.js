@@ -11,25 +11,29 @@ test.before(async (t) => {
     await db.user.updateCustomerId({ userId: t.context.userId1, customerId: 'honesty-cust-id' })
     await db.user.updateHasCardInfo({ userId: t.context.userId1, last4: '2222' })
 
-    t.context.sessionWithBillingInfo = await auth.user.createWebSession({ userId: t.context.userId1 })
+    const sessionWithBillingInfo = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionWithBillingInfo = sessionWithBillingInfo.sessionId
 
     // no billing info
     const { id: userId2 } = await db.user.create({ email: 'papa@papajohns.com' })
     t.context.userId2 = userId2.toHexString()
 
-    t.context.sessionWithoutBillingInfo = await auth.user.createWebSession({ userId: t.context.userId2 })
+    const sessionWithoutBillingInfo = await auth.user.createWebSession({ userId: t.context.userId2 })
+    t.context.sessionWithoutBillingInfo = sessionWithoutBillingInfo.sessionId
 
     // User that wont opt out of ads with donation
     const { id: userId3 } = await db.user.create({ email: 'first@pick.com' })
     t.context.userId3 = userId3.toHexString()
 
-    t.context.sessionThatWontBuyNoAds = await auth.user.createWebSession({ userId: t.context.userId3 })
+    const sessionThatWontBuyNoAds = await auth.user.createWebSession({ userId: t.context.userId3 })
+    t.context.sessionThatWontBuyNoAds = sessionThatWontBuyNoAds.sessionId
 
     // User that receives an error
     const { id: userId4 } = await db.user.create({ email: 'black@pick.com' })
     t.context.userId4 = userId4.toHexString()
 
-    t.context.sessionWithError = await auth.user.createWebSession({ userId: t.context.userId4 })
+    const sessionWithError = await auth.user.createWebSession({ userId: t.context.userId4 })
+    t.context.sessionWithError = sessionWithError.sessionId
   })
 })
 

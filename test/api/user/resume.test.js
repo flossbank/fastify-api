@@ -6,7 +6,8 @@ test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId = userId1.toHexString()
-    t.context.sessionId = await auth.user.createWebSession({ userId: t.context.userId })
+    const session = await auth.user.createWebSession({ userId: t.context.userId })
+    t.context.sessionId = session.sessionId
   })
 })
 

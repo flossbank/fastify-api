@@ -7,10 +7,11 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('logging in as advertiser %s', email)
     const advertiser = await ctx.db.advertiser.authenticate({ email, password })
     if (advertiser) {
+      const { sessionId, expiration } = await ctx.auth.advertiser.createWebSession({ advertiserId: advertiser.id.toString() })
       res.setCookie(
         ADVERTISER_WEB_SESSION_COOKIE,
-        await ctx.auth.advertiser.createWebSession({ advertiserId: advertiser.id.toString() }),
-        { path: '/' }
+        sessionId,
+        { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
       )
       res.send({ success: true, advertiser })
     } else {

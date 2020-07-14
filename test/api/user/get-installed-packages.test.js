@@ -104,7 +104,8 @@ test.before(async (t) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
 
-    t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    const session1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionId1 = session1.sessionId
 
     for (const pkg of testPkgs(t.context.userId1)) {
       await db.package.create({ pkg })

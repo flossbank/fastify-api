@@ -12,7 +12,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
-    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    const session1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    t.context.sessionId1 = session1.sessionId
 
     const maintainerId2 = await db.maintainer.create({
       maintainer: {
@@ -22,7 +23,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
-    t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    const session2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    t.context.sessionId2 = session2.sessionId
 
     await db.package.create({
       pkg: {
@@ -104,7 +106,7 @@ test('GET `/maintainer/revenue` 200 success | maint2', async (t) => {
 })
 
 test('GET `/maintainer/revenue` 200 success | nobody', async (t) => {
-  const sessionId = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
+  const { sessionId } = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/revenue',

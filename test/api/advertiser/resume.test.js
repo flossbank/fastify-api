@@ -15,7 +15,8 @@ test.before(async (t) => {
     t.context.advertiserId = advertiserId1.toHexString()
     await db.advertiser.verify({ email: 'honey@etsy.com' })
 
-    t.context.sessionId = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId })
+    const session = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId })
+    t.context.sessionId = session.sessionId
   })
 })
 

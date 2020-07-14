@@ -9,8 +9,10 @@ test.before(async (t) => {
     t.context.userId1 = userId1.toHexString()
     t.context.userId2 = userId2.toHexString()
 
-    t.context.sessionId1 = await auth.user.createWebSession({ userId: t.context.userId1 })
-    t.context.sessionIdWithoutActivity = await auth.user.createWebSession({ userId: t.context.userId2 })
+    const session1 = await auth.user.createWebSession({ userId: t.context.userId1 })
+    const sessionWithoutActivity = await auth.user.createWebSession({ userId: t.context.userId2 })
+    t.context.sessionId1 = session1.sessionId
+    t.context.sessionIdWithoutActivity = sessionWithoutActivity.sessionId
 
     await db.db.collection('users').updateOne({
       _id: userId1

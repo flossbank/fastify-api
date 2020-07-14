@@ -12,7 +12,8 @@ test.before(async (t) => {
       }
     })
     t.context.advertiserId1 = advertiserId1.toHexString()
-    t.context.sessionId1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+    const session1 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId1 })
+    t.context.sessionId1 = session1.sessionId
 
     t.context.adId1 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId1,
@@ -41,7 +42,8 @@ test.before(async (t) => {
       }
     })
     t.context.advertiserId2 = advertiserId2.toHexString()
-    t.context.sessionId2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
+    const session2 = await auth.advertiser.createWebSession({ advertiserId: t.context.advertiserId2 })
+    t.context.sessionId2 = session2.sessionId
     t.context.adId3 = await db.advertiser.createAdDraft({
       advertiserId: advertiserId2,
       draft: {

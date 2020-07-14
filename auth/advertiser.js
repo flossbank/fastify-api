@@ -18,7 +18,7 @@ class AdvertiserAuthController {
       TableName: this.constants.ADVERTISER_WEB_SESSION_TABLE,
       Item: sessionItem
     }).promise()
-    return sessionId
+    return sessionItem
   }
 
   async getWebSession ({ sessionId }) {

@@ -12,7 +12,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
-    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    const session1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    t.context.sessionId1 = session1.sessionId
 
     const maintainerId2 = await db.maintainer.create({
       maintainer: {
@@ -22,7 +23,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
-    t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    const session2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    t.context.sessionId2 = session2.sessionId
   })
 })
 

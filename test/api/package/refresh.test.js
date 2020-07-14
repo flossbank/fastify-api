@@ -15,7 +15,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId1 = maintainerId1.toHexString()
-    t.context.sessionId1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    const session1 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId1 })
+    t.context.sessionId1 = session1.sessionId
 
     const maintainerId2 = await db.maintainer.create({
       maintainer: {
@@ -28,7 +29,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId2 = maintainerId2.toHexString()
-    t.context.sessionId2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    const session2 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId2 })
+    t.context.sessionId2 = session2.sessionId
 
     const maintainerId3 = await db.maintainer.create({
       maintainer: {
@@ -41,7 +43,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId3 = maintainerId3.toHexString()
-    t.context.sessionId3 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId3 })
+    const session3 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId3 })
+    t.context.sessionId3 = session3.sessionId
 
     const maintainerId4 = await db.maintainer.create({
       maintainer: {
@@ -54,7 +57,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId4 = maintainerId4.toHexString()
-    t.context.sessionId4 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId4 })
+    const session4 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId4 })
+    t.context.sessionId4 = session4.sessionId
 
     const maintainerId5 = await db.maintainer.create({
       maintainer: {
@@ -65,7 +69,8 @@ test.before(async (t) => {
       }
     })
     t.context.maintainerId5 = maintainerId5.toHexString()
-    t.context.sessionId5 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId5 })
+    const session5 = await auth.maintainer.createWebSession({ maintainerId: t.context.maintainerId5 })
+    t.context.sessionId5 = session5.sessionId
 
     // a pkg that m4 owns that will not be changed
     await db.package.create({
@@ -213,13 +218,13 @@ test('POST `/package/refresh` 200 success', async (t) => {
 })
 
 test('POST `/package/refresh` 400 bad request | not a maintainer', async (t) => {
-  const sessionId = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
+  const session = await t.context.auth.maintainer.createWebSession({ maintainerId: '000000000000' })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/package/refresh',
     payload: { packageRegistry: 'npm' },
     headers: {
-      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${sessionId}`
+      cookie: `${MAINTAINER_WEB_SESSION_COOKIE}=${session.sessionId}`
     }
   })
   t.deepEqual(res.statusCode, 400)

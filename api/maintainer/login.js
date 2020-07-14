@@ -7,10 +7,11 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('logging in as maintainer %s', email)
     const maintainer = await ctx.db.maintainer.authenticate({ email, password })
     if (maintainer) {
+      const { sessionId, expiration } = await ctx.auth.maintainer.createWebSession({ maintainerId: maintainer.id.toString() })
       res.setCookie(
         MAINTAINER_WEB_SESSION_COOKIE,
-        await ctx.auth.maintainer.createWebSession({ maintainerId: maintainer.id.toString() }),
-        { path: '/' }
+        sessionId,
+        { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
       )
       res.send({ success: true, maintainer })
     } else {
