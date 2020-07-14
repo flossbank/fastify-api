@@ -141,7 +141,7 @@ test('update donation | customer has one', async (t) => {
   stripe.stripe.customers.retrieve.resolves({
     subscriptions: {
       data: [
-        { id: 'sub-id', items: { data: [ { id: 'item-id' } ] } },
+        { id: 'sub-id', items: { data: [{ id: 'item-id' }] } }
       ]
     }
   })
@@ -161,14 +161,14 @@ test('update donation | customer has one and new amount is same as existing amou
           id: 'sub-id',
           plan: {
             id: 'plan-id-0',
-            amount: 40,
+            amount: 40
           },
           items: {
             data: [
               { id: 'item-id' }
             ]
           }
-        },
+        }
       ]
     }
   })

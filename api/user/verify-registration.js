@@ -22,7 +22,8 @@ module.exports = async (req, res, ctx) => {
       { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
     )
 
-    res.send({ success: true })
+    const createdUser = await ctx.db.user.get({ userId: user.id.toString() })
+    res.send({ success: true, user: createdUser })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
