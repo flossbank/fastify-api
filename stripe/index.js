@@ -67,9 +67,19 @@ class Stripe {
       return this.createDonation(customerId, amount)
     }
 
+    const existingPlanId = (customer.subscriptions.data[0].plan || {}).id
+    if (plan.id === existingPlanId) {
+      // donation amount is the same as what the user is already donating; nothing to do
+      return
+    }
+
+    const itemIdToUpdate = currentSubscription.items.data[0].id
     // Update the customers subscription to whichever plans
     await this.stripe.subscriptions.update(currentSubscription.id, {
-      items: [{ plan: plan.id }]
+      items: [{
+        id: itemIdToUpdate,
+        plan: plan.id
+      }]
     })
   }
 

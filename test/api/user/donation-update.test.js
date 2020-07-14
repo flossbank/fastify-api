@@ -53,6 +53,15 @@ test.before(async (t) => {
 
     const sessionWithError = await auth.user.createWebSession({ userId: t.context.userId3 })
     t.context.sessionWithError = sessionWithError.sessionId
+
+    const { id: userId6 } = await db.user.create({ email: 'johngreene@dftba.com' })
+    t.context.userId6 = userId6.toHexString()
+    await db.user.updateCustomerId({ userId: t.context.userId6, customerId: 'john-cust-id' })
+    await db.user.updateHasCardInfo({ userId: t.context.userId6, last4: '2222' })
+    await db.user.setDonation({ userId: t.context.userId6, amount: threshold })
+
+    const sessionWithThresholdDonation = await auth.user.createWebSession({ userId: t.context.userId6 })
+    t.context.sessionWithThresholdDonation = sessionWithThresholdDonation.sessionId
   })
 })
 
@@ -129,6 +138,33 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
   t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold + 1))
+})
+
+test('PUT `/user/donation` 200 success | updating donation to existing amount is a no-op', async (t) => {
+  const threshold = t.context.config.getNoAdThreshold()
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/user/donation',
+    payload: { amount: threshold, seeAds: true },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithThresholdDonation}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: true, optOutOfAds: false })
+
+  const user = await t.context.db.user.get({ userId: t.context.userId6 })
+  t.deepEqual(user.optOutOfAds, false)
+  t.deepEqual(user.billingInfo.monthlyDonation, true)
+  t.deepEqual(user.billingInfo.customerId, 'john-cust-id')
+  t.deepEqual(user.billingInfo.last4, '2222')
+
+  const userApiKey = await t.context.auth.user.getApiKey({ apiKey: user.apiKey })
+  t.deepEqual(userApiKey.noAds, false)
+
+  const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === threshold * 1000)
+  t.true(donationLedgerAddition.timestamp === 19991)
+  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold))
 })
 
 test('PUT `/user/donation` 200 success | threshold above ad threshold but choose to see ads', async (t) => {
