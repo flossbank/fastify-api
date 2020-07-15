@@ -5,9 +5,11 @@ module.exports = async (req, res, ctx) => {
     const { apiKey, noAds } = req.apiKeyInfo
 
     const ads = noAds ? [] : await ctx.db.ad.getBatch()
-    const sessionId = req.body.sessionId || await ctx.auth.user.createCliSession({ apiKey })
+    ctx.log.info({ reqId: req.id, adsLength: ads.length })
 
-    ctx.log.info({ adsLength: ads.length, sessionId, noAds })
+    const sessionId = req.body.sessionId || await ctx.auth.user.createCliSession({ apiKey })
+    ctx.log.info({ reqId: req.id, sessionId, noAds })
+
     res.send({ ads, sessionId })
   } catch (e) {
     ctx.log.error(e)

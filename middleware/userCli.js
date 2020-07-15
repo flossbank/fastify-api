@@ -11,6 +11,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: INVALID_API_KEY })
     }
     req.apiKeyInfo = apiKeyInfo
+    ctx.log.info({ reqId: req.id }, 'authorized cli user starting session')
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
