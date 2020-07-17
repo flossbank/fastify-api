@@ -24,7 +24,7 @@ module.exports = async (req, res, ctx) => {
     res.setCookie(
       USER_WEB_SESSION_COOKIE,
       sessionId,
-      { sameSite: 'none', path: '/', secure: true, expires: new Date(expiration * 1000) }
+      { path: '/', expires: new Date(expiration * 1000) }
     )
     res.send({ success: true, user })
   } catch (e) {
