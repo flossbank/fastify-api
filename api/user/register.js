@@ -2,7 +2,8 @@ const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { email: rawEmail } = req.body
+    const { email: rawEmail, referralCode: rawRefCode } = req.body
+    const referralCode = (rawRefCode || '').toLowerCase()
     const email = rawEmail.toLowerCase()
 
     const existingUser = await ctx.db.user.getByEmail({ email })
@@ -12,8 +13,8 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    ctx.log.info('registering new user with email %s', email)
-    const { registrationToken } = await ctx.auth.user.beginRegistration({ email })
+    ctx.log.info('registering new user with email %s (ref code: %s)', email, referralCode)
+    const { registrationToken } = await ctx.auth.user.beginRegistration({ email, referralCode })
 
     await ctx.email.sendUserActivationEmail(email, registrationToken)
 

@@ -80,39 +80,43 @@ class UserAuthController {
   /* /web session> */
 
   /* <registration> */
-  async beginRegistration ({ email }) {
+  async beginRegistration ({ email, referralCode }) {
     const registrationToken = this.common.generateRandomToken()
     const expiration = this.common.getUnixTimestampPlus(this.constants.USER_REGISTRATION_TIMEOUT)
 
     await this.docs.put({
       TableName: this.constants.USER_REGISTRATION_TABLE,
-      Item: { email, registrationToken, expiration }
+      Item: { email, registrationToken, referralCode: referralCode || undefined, expiration }
     }).promise()
 
     return { registrationToken }
   }
 
   async validateRegistration ({ email, registrationToken, recaptchaResponse }) {
+    let row
     try {
-      await this.docs.delete({
+      const { Attributes } = await this.docs.delete({
         TableName: this.constants.USER_REGISTRATION_TABLE,
         Key: { email },
         ConditionExpression: 'registrationToken = :registrationToken',
-        ExpressionAttributeValues: { ':registrationToken': registrationToken }
+        ExpressionAttributeValues: { ':registrationToken': registrationToken },
+        ReturnValues: 'ALL_OLD'
       }).promise()
+      row = Attributes
     } catch (e) {
       if (e.code === 'ConditionalCheckFailedException') {
         // this means the reg token didn't match
-        return false
+        return { valid: false }
       }
       throw e
     }
 
     if (!await this.common.isRecaptchaResponseValid({ recaptchaResponse })) {
-      return false
+      return { valid: false }
     }
 
-    return true
+    const { referralCode } = row || {}
+    return { valid: true, referralCode }
   }
   /* </registration> */
 
