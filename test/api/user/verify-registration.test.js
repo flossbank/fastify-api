@@ -71,6 +71,37 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
   t.is(apiKeyInfo.id, user.id.toString())
 })
 
+test('POST `/user/verify-registration` 200 success | with referral code', async (t) => {
+  const { db, auth } = t.context
+
+  const { registrationToken } = await auth.user.beginRegistration({ email: 'email_ref@asdf.com', referralCode: 'papajohn' })
+  auth.isRecaptchaResponseValid = () => true
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/verify-registration',
+    payload: { email: 'email_ref@asdf.com', token: registrationToken, recaptchaResponse: 'big messy' }
+  })
+
+  const user = await db.user.getByEmail({ email: 'email_ref@asdf.com' })
+
+  t.true(res.headers['set-cookie'].includes(USER_WEB_SESSION_COOKIE))
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    user: {
+      billingInfo: user.billingInfo,
+      id: user.id.toString(),
+      email: user.email
+    }
+  })
+  t.true(user.apiKey.length > 0)
+  t.is(user.referralCode, 'papajohn')
+
+  const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
+  t.is(apiKeyInfo.id, user.id.toString())
+})
+
 test('POST `/user/verify-registration` 401 unauthorized', async (t) => {
   await t.context.auth.user.beginRegistration({ email: 'email2@asdf.com' })
   const res = await t.context.app.inject({

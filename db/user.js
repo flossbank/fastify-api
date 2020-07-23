@@ -38,11 +38,12 @@ class UserDbController {
     }
   }
 
-  async create ({ email }) {
+  async create ({ email, referralCode }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
     const { insertedId } = await this.db.collection('users').insertOne({
       email,
       apiKey,
+      referralCode,
       billingInfo: {},
       apiKeysRequested: []
     })
