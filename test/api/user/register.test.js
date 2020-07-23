@@ -59,6 +59,17 @@ test('POST `/user/register` 200 success', async (t) => {
   t.true(payload.success)
 })
 
+test('POST `/user/register` 200 success | with referral code', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/register',
+    payload: { email: 'peter2@quo.cc', referralCode: 'asdf' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+  t.true(payload.success)
+})
+
 test('POST `/user/register` 500 server error', async (t) => {
   t.context.auth.user.beginRegistration = () => { throw new Error() }
   const res = await t.context.app.inject({
