@@ -78,7 +78,7 @@ const userCliMiddleware = require('../middleware/userCli')
 async function routes (fastify, opts, done) {
   if (opts.csrf) {
     fastify.use((req, res, next) => {
-      if (req.method !== 'POST') {
+      if (!['POST', 'PUT', 'DELETE'].includes(req.method)) {
         return next()
       }
       if (req.headers['x-requested-with'] !== 'XmlHttpRequest') {
