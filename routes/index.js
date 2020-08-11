@@ -46,6 +46,9 @@ const getInstalledPackages = require('../api/user/get-installed-packages')
 const getUserDonationInfo = require('../api/user/get-donation-info')
 const getUserSessions = require('../api/user/get-sessions')
 
+// Donor
+const completeLoginDonor = require('../api/donor/complete-login')
+
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
 // const loginMaintainer = require('../api/maintainer/login')
@@ -118,6 +121,9 @@ async function routes (fastify, opts, done) {
   // fastify.post('/advertiser/update-billing', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.advertiser.updateBilling }, (req, res) => updateAdvertiserBilling(req, res, fastify))
   // fastify.post('/advertiser/verify', { schema: Schema.advertiser.verify }, (req, res) => verifyAdvertiser(req, res, fastify))
   // fastify.get('/advertiser/resume', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done) }, (req, res) => resumeAdvertiserSession(req, res, fastify))
+
+  // Donor
+  fastify.post('/donor/complete-login', { schema: Schema.donor.completeLogin }, (req, res) => completeLoginDonor(req, res, fastify))
 
   // User
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
