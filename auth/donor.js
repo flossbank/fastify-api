@@ -6,11 +6,11 @@ class DonorAuthController {
     this.config = config
   }
 
-  async createWebSession ({ token }) {
+  async createWebSession ({ token, codeHost }) {
     const sessionId = this.common.generateRandomToken()
     const sessionItem = {
       sessionId,
-      token,
+      token: `${codeHost}:${token}`, // concat codehost and token into token
       expiration: this.common.getUnixTimestampPlus(this.constants.DONOR_WEB_SESSION_TIMEOUT)
     }
     await this.docs.put({

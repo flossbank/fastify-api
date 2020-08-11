@@ -6,6 +6,7 @@ const AdvertiserDb = require('./advertiser')
 const MaintainerDb = require('./maintainer')
 const PackageDb = require('./package')
 const AdDb = require('./ad')
+const DonorDb = require('./donor')
 const SubscribeDb = require('./subscribe')
 
 class Db {
@@ -28,6 +29,7 @@ class Db {
     this.maintainer = new MaintainerDb({ db: this.db })
     this.subscribe = new SubscribeDb({ db: this.db })
     this.package = new PackageDb({ db: this.db })
+    this.donor = new DonorDb({ db: this.db })
   }
 }
 
