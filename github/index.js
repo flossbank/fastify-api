@@ -1,15 +1,16 @@
 const fastifyPlugin = require('fastify-plugin')
-const ghGot = require('gh-got')
+const got = require('got')
 
 class GitHub {
   constructor ({ config }) {
     this.config = config
-    this.ghGot = ghGot
+    this.got = got
   }
 
   async requestAccessToken ({ code, state }) {
-    return this.ghGot('https://github.com/login/oauth/access_token', {
-      searchParams: {
+    return this.got.post('https://github.com/login/oauth/access_token', {
+      responseType: 'json',
+      json: {
         code,
         state,
         client_id: this.config.getGitHubClientId(),
