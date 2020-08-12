@@ -7,7 +7,6 @@ const niceware = require('eff-diceware-passphrase')
 const UserAuth = require('./user')
 const AdvertiserAuth = require('./advertiser')
 const MaintainerAuth = require('./maintainer')
-const DonorAuth = require('./donor')
 
 // General purpose authentication functions with more specific logic nested per usecase
 class Auth {
@@ -15,7 +14,6 @@ class Auth {
     this.user = new UserAuth({ docs, config, common: this })
     this.advertiser = new AdvertiserAuth({ docs, config, common: this })
     this.maintainer = new MaintainerAuth({ docs, config, common: this })
-    this.donor = new DonorAuth({ docs, config, common: this })
 
     this.docs = docs
     this.post = got.post
