@@ -27,7 +27,7 @@ const { GitHub } = require('./github')
   const stripe = new Stripe({ stripe: StripeClient, config })
   const registry = new Registry()
   const url = new Url({ config, docs })
-  const github = new GitHub()
+  const github = new GitHub({ config })
 
   await db.setup()
   stripe.init()

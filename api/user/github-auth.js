@@ -6,6 +6,8 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('github auth requested with code %s and state %s', code, state)
 
     // TODO: do all logic to fetch email from gh
+    const res = await ctx.github.requestAccessToken({ code, state })
+    console.log(res)
 
     res.send({ success: true })
   } catch (e) {
