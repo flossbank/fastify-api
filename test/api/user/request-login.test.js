@@ -55,7 +55,7 @@ test('POST `/user/request-login` 400 bad request', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/advertiser/request-login` 500 server error', async (t) => {
+test('POST `/user/request-login` 500 server error', async (t) => {
   t.context.auth.user.beginAuthentication = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',

@@ -45,6 +45,7 @@ const deleteUserDonation = require('../api/user/donation-delete')
 const getInstalledPackages = require('../api/user/get-installed-packages')
 const getUserDonationInfo = require('../api/user/get-donation-info')
 const getUserSessions = require('../api/user/get-sessions')
+const githubAuthUser = require('../api/user/github-auth')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -121,6 +122,7 @@ async function routes (fastify, opts, done) {
 
   // User
   fastify.post('/user/register', { schema: Schema.user.register }, (req, res) => registerUser(req, res, fastify))
+  fastify.post('/user/github-auth', { schema: Schema.user.githubAuth }, (req, res) => githubAuthUser(req, res, fastify))
   fastify.post('/user/verify-registration', { schema: Schema.user.verifyRegistration }, (req, res) => verifyUserRegistration(req, res, fastify))
   fastify.post('/user/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginUser(req, res, fastify))
   fastify.post('/user/complete-login', { schema: Schema.user.completeLogin }, (req, res) => completeLoginUser(req, res, fastify))
