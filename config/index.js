@@ -96,6 +96,14 @@ class Config {
   getNoAdThreshold () {
     return 500
   }
+
+  getGitHubClientId () {
+    return this.env.github_client_id
+  }
+
+  getGitHubClientSecret () {
+    return this.env.github_client_secret
+  }
 }
 
 const configPlugin = (config) => fastifyPlugin(async (fastify) => {
