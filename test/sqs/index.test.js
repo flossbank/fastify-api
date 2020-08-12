@@ -10,7 +10,7 @@ test.beforeEach((t) => {
       })
     },
     config: {
-      getDistributeDonationQueueUrl: sinon.stub(),
+      getDistributeUserDonationQueueUrl: sinon.stub(),
       getSessionCompleteQueueUrl: sinon.stub()
     }
   })
@@ -24,10 +24,10 @@ test('sqs | send session complete message', async (t) => {
   }])
 })
 
-test('sqs | send distribute donation message', async (t) => {
-  t.context.sqs.sendDistributeDonationMessage({ customerId: 'mary' })
+test('sqs | send distribute user donation message', async (t) => {
+  t.context.sqs.sendDistributeUserDonationMessage({ customerId: 'mary' })
   t.deepEqual(t.context.sqs.sqs.sendMessage.lastCall.args, [{
-    QueueUrl: t.context.sqs.config.getDistributeDonationQueueUrl(),
+    QueueUrl: t.context.sqs.config.getDistributeUserDonationQueueUrl(),
     MessageBody: JSON.stringify({ customerId: 'mary' })
   }])
 })

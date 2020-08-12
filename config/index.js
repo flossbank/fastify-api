@@ -66,7 +66,7 @@ class Config {
     return this.env.recaptcha_secret
   }
 
-  getDistributeDonationQueueUrl () {
+  getDistributeUserDonationQueueUrl () {
     return this.env.distribute_donation_queue_url
   }
 

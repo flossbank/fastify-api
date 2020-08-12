@@ -12,7 +12,7 @@ module.exports = {
   },
   Sqs: function Sqs () {
     this.sendSessionCompleteMessage = sinon.stub().resolves()
-    this.sendDistributeDonationMessage = sinon.stub().resolves()
+    this.sendDistributeUserDonationMessage = sinon.stub().resolves()
   },
   Registry: function Registry () {
     this.npm = {

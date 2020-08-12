@@ -15,6 +15,13 @@ class UserDbController {
     return { id, ...rest }
   }
 
+  async getIdByCustomerId ({ customerId }) {
+    const user = await this.db.collection('users').findOne({
+      'billingInfo.customerId': customerId
+    })
+    return user && user._id
+  }
+
   async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
