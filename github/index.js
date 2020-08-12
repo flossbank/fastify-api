@@ -9,10 +9,12 @@ class GitHub {
 
   async requestAccessToken ({ code, state }) {
     return this.ghGot('https://github.com/login/oauth/access_token', {
-      code,
-      state,
-      client_id: this.config.getGitHubClientId(),
-      client_secret: this.config.getGitHubClientSecret()
+      body: {
+        code,
+        state,
+        client_id: this.config.getGitHubClientId(),
+        client_secret: this.config.getGitHubClientSecret()
+      }
     })
   }
 }
