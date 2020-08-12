@@ -35,13 +35,6 @@ class Config {
         MAINTAINER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
         MAINTAINER_REGISTRATION_TIMEOUT: 15 * 60 // 15 minutes in seconds
       },
-      Donor: {
-        TableAttributes: [
-          { TableName: 'DonorWebSessions', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } }
-        ],
-        DONOR_WEB_SESSION_TABLE: 'DonorWebSessions',
-        DONOR_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60 // 7 days in seconds
-      },
       User: {
         TableAttributes: [
           { TableName: 'UserApiKeys', KeyAttribute: { AttributeName: 'apiKey', AttributeType: 'S' } },

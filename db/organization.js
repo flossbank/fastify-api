@@ -1,7 +1,7 @@
-class DonorDbController {
+class OrganizationDbController {
   constructor ({ db }) {
     this.db = db
   }
 }
 
-module.exports = DonorDbController
+module.exports = OrganizationDbController
