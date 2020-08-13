@@ -25,16 +25,23 @@ module.exports = async (req, res, ctx) => {
           }
         } = event
 
-        await ctx.sqs.sendDistributeDonationMessage({
-          customerId: customer,
-          amount,
-          description,
-          timestamp: Date.now(),
-          paymentSuccess: true
-        })
+        // determine if customerId is attached to a User or an Organization
+        const userId = await ctx.db.user.getIdByCustomerId({ customerId: customer })
+        if (userId) {
+          await ctx.sqs.sendDistributeUserDonationMessage({
+            userId: userId.toString(),
+            amount,
+            description,
+            timestamp: Date.now(),
+            paymentSuccess: true
+          })
+        } else {
+          // TODO look up organization ID from orgranization table
+        }
         break
       }
       default:
+        break
     }
 
     // Return a response to acknowledge receipt of the event, must do this quickly to ensure stripe

@@ -37,8 +37,8 @@ test('config | getSessionCompleteQueueUrl', (t) => {
   t.deepEqual(t.context.config.getSessionCompleteQueueUrl(), 'queue_url')
 })
 
-test('config | getDistributeDonationQueueUrl', (t) => {
-  t.deepEqual(t.context.config.getDistributeDonationQueueUrl(), 'dd_queue_url')
+test('config | getDistributeUserDonationQueueUrl', (t) => {
+  t.deepEqual(t.context.config.getDistributeUserDonationQueueUrl(), 'dd_queue_url')
 })
 
 test('config | getUrlHost', (t) => {
