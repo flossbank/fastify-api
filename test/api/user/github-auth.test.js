@@ -17,7 +17,11 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/user/github-auth` 200 success', async (t) => {
+test('POST `/user/github-auth` 200 success create user', async (t) => {
+  t.true(true)
+})
+
+test('POST `/user/github-auth` 200 success find existing user', async (t) => {
   t.true(true)
 })
 

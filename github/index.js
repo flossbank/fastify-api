@@ -8,7 +8,7 @@ class GitHub {
   }
 
   async requestAccessToken ({ code, state }) {
-    return this.got.post('https://github.com/login/oauth/access_token', {
+    const res = await this.got.post('https://github.com/login/oauth/access_token', {
       responseType: 'json',
       json: {
         code,
@@ -17,6 +17,16 @@ class GitHub {
         client_secret: this.config.getGitHubClientSecret()
       }
     })
+    return res.body
+  }
+
+  async requestUserData ({ accessToken }) {
+    const res = await this.got.get('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    return JSON.parse(res.body)
   }
 }
 
