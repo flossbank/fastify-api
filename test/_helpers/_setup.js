@@ -54,6 +54,7 @@ exports.beforeEach = async function (t) {
   t.context.email = new mocks.Email()
   t.context.stripe = new mocks.Stripe({ config: t.context.config })
   t.context.registry = new mocks.Registry()
+  t.context.github = new mocks.GitHub()
   t.context.app = await App({
     db: t.context.db,
     auth: t.context.auth,
@@ -63,6 +64,7 @@ exports.beforeEach = async function (t) {
     registry: t.context.registry,
     url: t.context.url,
     config: t.context.config,
+    github: t.context.github,
     logger: false,
     csrf: false
   })
