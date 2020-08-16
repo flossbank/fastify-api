@@ -34,5 +34,9 @@ module.exports = {
     this.updateDonation = sinon.stub().resolves()
     this.deleteDonation = sinon.stub().resolves()
     this.constructWebhookEvent = stripe.constructWebhookEvent.bind(stripe)
+  },
+  GitHub: function GitHub () {
+    this.requestAccessToken = sinon.stub().resolves('test_access_token')
+    this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
   }
 }

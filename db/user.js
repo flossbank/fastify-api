@@ -57,6 +57,14 @@ class UserDbController {
     return { id: insertedId, apiKey }
   }
 
+  attachAccessToken ({ userId, accessToken }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $set: { 'codeHost.accessToken': accessToken }
+    })
+  }
+
   async updateHasCardInfo ({ userId, last4 }) {
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
