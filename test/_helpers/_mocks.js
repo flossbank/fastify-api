@@ -38,5 +38,7 @@ module.exports = {
   GitHub: function GitHub () {
     this.requestAccessToken = sinon.stub().resolves('test_access_token')
     this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
+    this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
+    this.setOctokitAuth = sinon.stub()
   }
 }

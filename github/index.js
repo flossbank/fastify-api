@@ -1,10 +1,18 @@
 const fastifyPlugin = require('fastify-plugin')
+const { Octokit } = require('@octokit/rest')
 const got = require('got')
 
 class GitHub {
   constructor ({ config }) {
     this.config = config
     this.got = got
+    this.octokit = new Octokit()
+  }
+
+  setOctokitAuth ({ accessToken }) {
+    this.octokit = new Octokit({
+      auth: accessToken
+    })
   }
 
   async requestAccessToken ({ code, state }) {
@@ -36,6 +44,12 @@ class GitHub {
     } catch (e) {
       throw new Error(`Github request user data threw: ${e.message}`)
     }
+  }
+
+  // https://octokit.github.io/rest.js/#api-Orgs-get
+  async getUserOrgs () {
+    const { data: orgsData } = this.octokit.orgs.listForAuthenticatedUser()
+    return { orgsData }
   }
 }
 
