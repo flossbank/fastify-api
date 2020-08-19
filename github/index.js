@@ -8,43 +8,34 @@ class GitHub {
   }
 
   async requestAccessToken ({ code, state }) {
-    try {
-      const res = await this.got.post('https://github.com/login/oauth/access_token', {
-        responseType: 'json',
-        json: {
-          code,
-          state,
-          client_id: this.config.getGitHubClientId(),
-          client_secret: this.config.getGitHubClientSecret()
-        }
-      })
-      return res.body.access_token
-    } catch (e) {
-      throw new Error(`Github request access token threw: ${e.message}`)
-    }
+    const res = await this.got.post('https://github.com/login/oauth/access_token', {
+      responseType: 'json',
+      json: {
+        code,
+        state,
+        client_id: this.config.getGitHubClientId(),
+        client_secret: this.config.getGitHubClientSecret()
+      }
+    })
+    return res.body.access_token
   }
 
   async requestUserData ({ accessToken }) {
-    try {
-      const res = await this.makeAuthedReq('get', 'https://api.github.com/user', accessToken)
-      const { email } = JSON.parse(res.body)
-      return { email }
-    } catch (e) {
-      throw new Error(`Github request user data threw: ${e.message}`)
-    }
+    const res = await this.makeAuthedReq('get', 'user', accessToken)
+    const { email } = JSON.parse(res.body)
+    return { email }
   }
 
   async getUserOrgs ({ accessToken }) {
-    try {
-      const res = await this.makeAuthedReq('get', 'https://api.github.com/user/orgs', accessToken)
-      return { orgsData: JSON.parse(res.body) }
-    } catch (e) {
-      throw new Error(`Github request user orgs threw: ${e.message}`)
-    }
+    const res = await this.makeAuthedReq('get', 'user/orgs', accessToken)
+    return { orgsData: JSON.parse(res.body) }
   }
 
   async makeAuthedReq (method, endpoint, accessToken) {
-    return this.got[method](endpoint, {
+    const prefixedInstance = this.got.extend({
+      prefixUrl: 'https://api.github.com'
+    })
+    return prefixedInstance[method](endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
