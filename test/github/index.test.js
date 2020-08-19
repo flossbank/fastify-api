@@ -11,7 +11,7 @@ test.beforeEach((t) => {
   })
   t.context.github.got = {
     post: sinon.stub(),
-    get: sinon.stub(),
+    get: sinon.stub()
   }
   t.context.github.got.extend = sinon.stub().returns(t.context.github.got)
 })
