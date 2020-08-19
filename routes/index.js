@@ -48,7 +48,7 @@ const getUserSessions = require('../api/user/get-sessions')
 const githubAuthUser = require('../api/user/github-auth')
 
 // Organization
-const githubAuthOrg = require('../api/organization/github-auth')
+const githubListOrgs = require('../api/organization/github-list-orgs')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -142,7 +142,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
 
   // Organizatoin
-  fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => githubAuthOrg(req, res, fastify))
+  fastify.get('/organization/github-list-orgs', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.githubListOrgs }, (req, res) => githubListOrgs(req, res, fastify))
 
   // Maintainer
   // fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
