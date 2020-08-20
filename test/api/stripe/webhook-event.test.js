@@ -70,4 +70,3 @@ test('POST `/stripe/webhook/event` 200 success', async (t) => {
   }
   t.deepEqual(t.context.sqs.sendDistributeUserDonationMessage.lastCall.args, [expectedPayload])
 })
-

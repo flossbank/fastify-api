@@ -65,7 +65,6 @@ test('POST `/user/github-auth` 200 success | existing user', async (t) => {
 })
 
 test('POST `/user/github-auth` 400 bad request | no state', async (t) => {
-  t.context.github.requestAccessToken.rejects('error!')
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/github-auth',
@@ -77,7 +76,6 @@ test('POST `/user/github-auth` 400 bad request | no state', async (t) => {
 })
 
 test('POST `/user/github-auth` 400 bad request | no code', async (t) => {
-  t.context.github.requestAccessToken.rejects('error!')
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/github-auth',
