@@ -21,21 +21,18 @@ class GitHub {
   }
 
   async requestUserData ({ accessToken }) {
-    const res = await this.makeAuthedReq('get', 'user', accessToken)
+    const res = await this.makeAuthedReq('get', 'https://api.github.com/user', accessToken)
     const { email } = JSON.parse(res.body)
     return { email }
   }
 
   async getUserOrgs ({ accessToken }) {
-    const res = await this.makeAuthedReq('get', 'user/orgs', accessToken)
+    const res = await this.makeAuthedReq('get', 'https://api.github.com/user/orgs', accessToken)
     return { orgsData: JSON.parse(res.body) }
   }
 
   async makeAuthedReq (method, endpoint, accessToken) {
-    const prefixedInstance = this.got.extend({
-      prefixUrl: 'https://api.github.com'
-    })
-    return prefixedInstance[method](endpoint, {
+    return this.got[method](endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
