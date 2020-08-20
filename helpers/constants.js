@@ -20,5 +20,9 @@ module.exports = {
   INTEG_TEST_KEY: 'cf667c9381f7792bfa772025ff8ee93b89d9a757e6732e87611a0c34b48357d1',
   MAINTAINER_WEB_SESSION_COOKIE: 'flossbank_m_sess_id',
   ADVERTISER_WEB_SESSION_COOKIE: 'flossbank_a_sess_id',
-  USER_WEB_SESSION_COOKIE: 'flossbank_u_sess_id'
+  USER_WEB_SESSION_COOKIE: 'flossbank_u_sess_id',
+  ORG_ROLES: {
+    ADMIN: 'ADMIN',
+    READ: 'READ'
+  }
 }

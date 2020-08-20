@@ -21,8 +21,9 @@ module.exports = async (req, res, ctx) => {
     if (!user) {
       created = true
       user = await ctx.db.user.create({ email })
+      user = await ctx.db.user.get({ userId: user.id.toString() })
     }
-    await ctx.db.user.attachAccessToken({ userId: user.id, accessToken })
+    await ctx.db.user.attachAccessToken({ userId: user.id.toString(), accessToken })
 
     const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
     res.setCookie(
