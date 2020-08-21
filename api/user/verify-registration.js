@@ -23,9 +23,7 @@ module.exports = async (req, res, ctx) => {
       sessionId,
       { path: '/', expires: new Date(expiration * 1000) }
     )
-
-    const createdUser = await ctx.db.user.get({ userId: user.id.toString() })
-    res.send({ success: true, user: createdUser })
+    res.send({ success: true, user })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
