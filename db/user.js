@@ -22,6 +22,19 @@ class UserDbController {
     return user && user._id
   }
 
+  async associateOrgWithUser ({ userId, orgId, role }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $push: {
+        organizations: {
+          organizationId: orgId,
+          role
+        }
+      }
+    })
+  }
+
   async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
@@ -47,14 +60,15 @@ class UserDbController {
 
   async create ({ email, referralCode }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
-    const { insertedId } = await this.db.collection('users').insertOne({
+    const userToCreate = {
       email,
       apiKey,
       referralCode,
       billingInfo: {},
       apiKeysRequested: []
-    })
-    return { id: insertedId, apiKey }
+    }
+    const { insertedId } = await this.db.collection('users').insertOne(userToCreate)
+    return { id: insertedId, ...userToCreate }
   }
 
   attachAccessToken ({ userId, accessToken }) {
