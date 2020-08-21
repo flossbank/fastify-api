@@ -25,20 +25,21 @@ class OrganizationDbController {
   }
 
   async create ({ name, host, userId }) {
-    const { insertedId } = await this.db.collection('organizations').insertOne({
+    const orgToInsert = {
       name,
       host,
       email: '',
       users: [{
         userId,
-        role: ORG_ROLES.ADMIN
+        role: ORG_ROLES.WRITE
       }],
       globalDonation: false,
       billingInfo: {},
       donationAmount: 0,
       donationAmountChanges: []
-    })
-    return { id: insertedId }
+    }
+    const { insertedId } = await this.db.collection('organizations').insertOne(orgToInsert)
+    return { id: insertedId, ...orgToInsert }
   }
 }
 

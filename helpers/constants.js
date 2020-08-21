@@ -22,7 +22,7 @@ module.exports = {
   ADVERTISER_WEB_SESSION_COOKIE: 'flossbank_a_sess_id',
   USER_WEB_SESSION_COOKIE: 'flossbank_u_sess_id',
   ORG_ROLES: {
-    ADMIN: 'ADMIN',
+    WRITE: 'WRITE',
     READ: 'READ'
   }
 }

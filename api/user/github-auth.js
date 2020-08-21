@@ -21,7 +21,6 @@ module.exports = async (req, res, ctx) => {
     if (!user) {
       created = true
       user = await ctx.db.user.create({ email })
-      user = await ctx.db.user.get({ userId: user.id.toString() })
     }
     await ctx.db.user.attachAccessToken({ userId: user.id.toString(), accessToken })
 

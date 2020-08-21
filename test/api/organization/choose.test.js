@@ -100,14 +100,14 @@ test('POST `/organization/choose` 200 success', async (t) => {
     email: '',
     users: [{
       userId: t.context.userId1,
-      role: ORG_ROLES.ADMIN
+      role: ORG_ROLES.WRITE
     }]
   })
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
   t.deepEqual(user.organizations, [{
     organizationId: payload.organization.id,
-    role: ORG_ROLES.ADMIN
+    role: ORG_ROLES.WRITE
   }])
 })
 
@@ -133,7 +133,7 @@ test('POST `/organization/choose` 200 success | existing org', async (t) => {
     globalDonation: false,
     users: [{
       userId: t.context.userId2,
-      role: ORG_ROLES.ADMIN
+      role: ORG_ROLES.WRITE
     }]
   })
 })
