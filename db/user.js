@@ -22,6 +22,17 @@ class UserDbController {
     return user && user._id
   }
 
+  async associateOrgWithUser ({ userId, orgId, role }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $push: { organizations: {
+        organizationId: orgId,
+        role 
+      }}
+    })
+  }
+
   async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
