@@ -66,6 +66,7 @@ test('POST `/organization/donation` 401 unauthorized | middleware', async (t) =>
     payload: {
       billingToken: 'new-stripe-token',
       organizationId: t.context.orgId1,
+      globalDonation: false,
       amount: 1000
     },
     headers: {
@@ -75,7 +76,7 @@ test('POST `/organization/donation` 401 unauthorized | middleware', async (t) =>
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/organization/donation` 401 unauthorized | user doesnt have access ', async (t) => {
+test('POST `/organization/donation` 401 unauthorized | user doesnt have access', async (t) => {
   // User two doesn't have perms for org 1, so shouldn't even be able to see it
   const res = await t.context.app.inject({
     method: 'POST',
@@ -83,6 +84,7 @@ test('POST `/organization/donation` 401 unauthorized | user doesnt have access '
     payload: {
       billingToken: 'new-stripe-token',
       organizationId: t.context.orgId1,
+      globalDonation: false,
       amount: 1000
     },
     headers: {
@@ -90,6 +92,23 @@ test('POST `/organization/donation` 401 unauthorized | user doesnt have access '
     }
   })
   t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/organization/donation` 404 | no org by that id', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/organization/donation',
+    payload: {
+      billingToken: 'new-stripe-token',
+      organizationId: 'aaaaaaaaaaaa',
+      globalDonation: false,
+      amount: 1000
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutBillingInfo}`
+    }
+  })
+  t.deepEqual(res.statusCode, 404)
 })
 
 test('POST `/organization/donation` 200 success | update card on file', async (t) => {

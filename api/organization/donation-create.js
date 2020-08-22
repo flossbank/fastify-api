@@ -13,6 +13,10 @@ module.exports = async (req, res, ctx) => {
      * - Update org donation information
      */
     const org = await ctx.db.organization.get({ orgId: organizationId })
+    if (!org) {
+      res.status(404)
+      return res.send({ success: false })
+    }
 
     // If user doesn't have write permissions, return 401
     const userWithWritePerms = org.users.filter((user) => {
