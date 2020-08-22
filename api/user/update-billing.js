@@ -9,7 +9,7 @@ module.exports = async (req, res, ctx) => {
     let customerId
     if (!user.billingInfo || !user.billingInfo.customerId) {
       // Create stripe customer, and add the stripe customer id to db
-      const stripeCustomer = await ctx.stripe.createStripeCustomer(user.email)
+      const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: user.email })
       await ctx.db.user.updateCustomerId({
         userId: req.session.userId,
         customerId: stripeCustomer.id
@@ -21,7 +21,10 @@ module.exports = async (req, res, ctx) => {
     }
 
     // Update the stripe user with the new billing token (stripe CC card token) if it exists
-    await ctx.stripe.updateStripeCustomer(customerId, billingToken)
+    await ctx.stripe.updateStripeCustomer({
+      customerId,
+      sourceId: billingToken
+    })
     await ctx.db.user.updateHasCardInfo({
       userId: req.session.userId,
       last4

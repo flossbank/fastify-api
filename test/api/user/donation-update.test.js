@@ -110,7 +110,10 @@ test('PUT `/user/donation` 200 success | threshold below ad threshold', async (t
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold - 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold - 1))
+  t.true(t.context.stripe.updateDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold - 1
+  }))
 })
 
 test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t) => {
@@ -137,7 +140,10 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold', async (t
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold + 1))
+  t.true(t.context.stripe.updateDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold + 1
+  }))
 })
 
 test('PUT `/user/donation` 200 success | updating donation to existing amount is a no-op', async (t) => {
@@ -164,7 +170,10 @@ test('PUT `/user/donation` 200 success | updating donation to existing amount is
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === threshold * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold))
+  t.true(t.context.stripe.updateDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold
+  }))
 })
 
 test('PUT `/user/donation` 200 success | threshold above ad threshold but choose to see ads', async (t) => {
@@ -191,7 +200,10 @@ test('PUT `/user/donation` 200 success | threshold above ad threshold but choose
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
-  t.true(t.context.stripe.updateDonation.calledWith(user.billingInfo.customerId, threshold + 1))
+  t.true(t.context.stripe.updateDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold + 1
+  }))
 })
 
 test('PUT `/user/donation` 404 error | donation not found', async (t) => {

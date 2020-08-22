@@ -138,8 +138,14 @@ test('POST `/organization/donation` 200 success | update card on file', async (t
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === amountToDonateCents * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.notCalled)
-  t.true(t.context.stripe.updateStripeCustomer.calledWith('honesty-cust-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(org.billingInfo.customerId, amountToDonateCents))
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'honesty-cust-id',
+    sourceId: 'stripe-billing-token'
+  }))
+  t.true(t.context.stripe.createDonation.calledWith({
+    customerId: org.billingInfo.customerId,
+    amount: amountToDonateCents
+  }))
 
   // Should return 409 for same sessions attempt at creating a donation
   const res2 = await t.context.app.inject({
@@ -180,8 +186,14 @@ test('POST `/organization/donation` 200 success | first card added ', async (t) 
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === amountToDonateCents * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
-  t.true(t.context.stripe.updateStripeCustomer.calledWith('test-stripe-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(org.billingInfo.customerId, amountToDonateCents))
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'test-stripe-id',
+    sourceId: 'stripe-billing-token'
+  }))
+  t.true(t.context.stripe.createDonation.calledWith({
+    customerId: org.billingInfo.customerId,
+    amount: amountToDonateCents
+  }))
 })
 
 test('POST `/organization/donation` 500 server error', async (t) => {
