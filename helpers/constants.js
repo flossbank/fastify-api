@@ -8,6 +8,7 @@ module.exports = {
     INVALID_EMAIL_TOKEN: 'Invalid email or token',
     INVALID_EMAIL_PASSWORD: 'Invalid email or password',
     INVALID_SESSION: 'Invalid session',
+    INSUFFICIENT_PERMISSIONS: 'Insufficient permissions',
     INVALID_EVENT_SIG: 'Invalid event or signature',
     INVALID_API_KEY: 'Invalid API key',
     NO_DONATION: 'No donation found',
