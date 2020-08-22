@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
     const user = await ctx.db.user.get({ userId: req.session.userId })
     let org = await ctx.db.organization.getByNameAndHost({ name, host })
     if (!org) {
-      org = await ctx.db.organization.create({ name, host, userId: user.id.toString() })
+      org = await ctx.db.organization.create({ name, host, userId: user.id.toString(), email: user.email })
       created = true
     }
     await ctx.db.user.associateOrgWithUser({

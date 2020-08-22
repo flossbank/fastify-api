@@ -97,7 +97,7 @@ test('POST `/organization/choose` 200 success', async (t) => {
     billingInfo: {},
     globalDonation: false,
     host: 'GitHub',
-    email: '',
+    email: 'honey@etsy.com',
     users: [{
       userId: t.context.userId1,
       role: ORG_ROLES.WRITE

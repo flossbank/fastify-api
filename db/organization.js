@@ -24,11 +24,11 @@ class OrganizationDbController {
     return { id, ...rest }
   }
 
-  async create ({ name, host, userId }) {
+  async create ({ name, host, userId, email }) {
     const orgToInsert = {
       name,
       host,
-      email: '',
+      email,
       users: [{
         userId,
         role: ORG_ROLES.WRITE
@@ -40,6 +40,29 @@ class OrganizationDbController {
     }
     const { insertedId } = await this.db.collection('organizations').insertOne(orgToInsert)
     return { id: insertedId, ...orgToInsert }
+  }
+
+  async updateCustomerId ({ orgId, customerId }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: { 'billingInfo.customerId': customerId }
+    })
+  }
+
+  async setDonation ({ orgId, amount, globalDonation }) {
+    // Amount in this case is passed in as cents so need to convert to mc
+    const donationInMc = amount * 1000
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: {
+        monthlyDonation: donationInMc !== 0,
+        donationAmount: donationInMc,
+        globalDonation
+      },
+      $push: { donationChanges: { timestamp: Date.now(), donationAmount: donationInMc } }
+    })
   }
 }
 
