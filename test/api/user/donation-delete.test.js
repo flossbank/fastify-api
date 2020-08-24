@@ -90,7 +90,7 @@ test('DELETE `/user/donation` 200 success', async (t) => {
 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === 0)
   t.true(donationLedgerAddition.timestamp === 1234)
-  t.true(t.context.stripe.deleteDonation.calledWith(user.billingInfo.customerId))
+  t.true(t.context.stripe.deleteDonation.calledWith({ customerId: user.billingInfo.customerId }))
 })
 
 test('DELETE `/user/donation` 404 error | donation not found', async (t) => {

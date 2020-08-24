@@ -83,8 +83,14 @@ test('POST `/user/donation` 200 success | update card on file and choose to see 
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.notCalled)
-  t.true(t.context.stripe.updateStripeCustomer.calledWith('honesty-cust-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold + 1))
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'honesty-cust-id',
+    sourceId: 'stripe-billing-token'
+  }))
+  t.true(t.context.stripe.createDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold + 1
+  }))
 
   // Should return 409 for same sessions attempt at creating a donation
   const res2 = await t.context.app.inject({
@@ -123,8 +129,14 @@ test('POST `/user/donation` 200 success | first card added and above disable ads
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold + 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
-  t.true(t.context.stripe.updateStripeCustomer.calledWith('test-stripe-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold + 1))
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'test-stripe-id',
+    sourceId: 'stripe-billing-token'
+  }))
+  t.true(t.context.stripe.createDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold + 1
+  }))
 })
 
 test('POST `/user/donation` 200 success | donation below threshold to disable ads', async (t) => {
@@ -153,8 +165,14 @@ test('POST `/user/donation` 200 success | donation below threshold to disable ad
   const donationLedgerAddition = user.billingInfo.donationChanges.find(el => el.donationAmount === (threshold - 1) * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
-  t.true(t.context.stripe.updateStripeCustomer.calledWith('test-stripe-id', 'stripe-billing-token'))
-  t.true(t.context.stripe.createDonation.calledWith(user.billingInfo.customerId, threshold - 1))
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'test-stripe-id',
+    sourceId: 'stripe-billing-token'
+  }))
+  t.true(t.context.stripe.createDonation.calledWith({
+    customerId: user.billingInfo.customerId,
+    amount: threshold - 1
+  }))
 })
 
 test('POST `/user/donation` 500 server error', async (t) => {

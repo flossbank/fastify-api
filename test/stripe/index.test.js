@@ -48,7 +48,7 @@ test.beforeEach((t) => {
 })
 
 test('create customer', async (t) => {
-  await t.context.stripe.createStripeCustomer('winney@thepoo.com')
+  await t.context.stripe.createStripeCustomer({ email: 'winney@thepoo.com' })
   t.deepEqual(t.context.stripe.stripe.customers.create.lastCall.args, [{
     email: 'winney@thepoo.com',
     metadata: { updatedAt: Date.now() }
@@ -56,7 +56,7 @@ test('create customer', async (t) => {
 })
 
 test('get customer', async (t) => {
-  await t.context.stripe.getStripeCustomer('1234')
+  await t.context.stripe.getStripeCustomer({ customerId: '1234' })
   t.deepEqual(t.context.stripe.stripe.customers.retrieve.lastCall.args, ['1234'])
 })
 
@@ -79,7 +79,10 @@ test('construct webhook event | invalid params throws', async (t) => {
 })
 
 test('update customer', async (t) => {
-  await t.context.stripe.updateStripeCustomer('test-id-1', 'test-source-5')
+  await t.context.stripe.updateStripeCustomer({
+    customerId: 'test-id-1',
+    sourceId: 'test-source-5'
+  })
   t.deepEqual(t.context.stripe.stripe.customers.update.lastCall.args, [
     'test-id-1', {
       source: 'test-source-5',
@@ -107,7 +110,7 @@ test('get stripe customer donation info', async (t) => {
     }
   })
 
-  t.deepEqual(await stripe.getStripeCustomerDonationInfo('cust-id'), {
+  t.deepEqual(await stripe.getStripeCustomerDonationInfo({ customerId: 'cust-id' }), {
     amount: 200,
     renewal: 1234000,
     last4: '5678'
@@ -116,7 +119,10 @@ test('get stripe customer donation info', async (t) => {
 
 test('create donation', async (t) => {
   const { stripe } = t.context
-  await stripe.createDonation('cust-id', 300)
+  await stripe.createDonation({
+    customerId: 'cust-id',
+    amount: 300
+  })
 
   t.deepEqual(stripe.stripe.subscriptions.create.lastCall.args, [{
     customer: 'cust-id',
@@ -132,8 +138,11 @@ test('update donation | customer does not have one', async (t) => {
       data: []
     }
   })
-  await stripe.updateDonation('cust-id', 200)
-  t.deepEqual(stripe.createDonation.lastCall.args, ['cust-id', 200])
+  await stripe.updateDonation({
+    customerId: 'cust-id',
+    amount: 200
+  })
+  t.deepEqual(stripe.createDonation.lastCall.args, [{ customerId: 'cust-id', amount: 200 }])
 })
 
 test('update donation | customer has one', async (t) => {
@@ -145,7 +154,10 @@ test('update donation | customer has one', async (t) => {
       ]
     }
   })
-  await stripe.updateDonation('cust-id', 200)
+  await stripe.updateDonation({
+    customerId: 'cust-id',
+    amount: 200
+  })
   t.deepEqual(stripe.stripe.subscriptions.update.lastCall.args, [
     'sub-id',
     { items: [{ id: 'item-id', plan: 2 }] }
@@ -173,7 +185,10 @@ test('update donation | customer has one and new amount is same as existing amou
     }
   })
   stripe.findOrCreatePlan = () => ({ id: 'plan-id-0' })
-  await stripe.updateDonation('cust-id', 40)
+  await stripe.updateDonation({
+    customerId: 'cust-id',
+    amount: 40
+  })
   t.true(stripe.stripe.subscriptions.update.notCalled)
 })
 test('delete donation | customer has one', async (t) => {
@@ -185,7 +200,7 @@ test('delete donation | customer has one', async (t) => {
       ]
     }
   })
-  await stripe.deleteDonation('cust-id')
+  await stripe.deleteDonation({ customerId: 'cust-id' })
 
   t.deepEqual(stripe.stripe.subscriptions.del.lastCall.args, ['sub-id'])
 })
@@ -197,14 +212,14 @@ test('delete donation | customer does not have one', async (t) => {
       data: []
     }
   })
-  await stripe.deleteDonation('cust-id')
+  await stripe.deleteDonation({ customerId: 'cust-id' })
 
   t.true(stripe.stripe.subscriptions.del.notCalled)
 })
 
 test('find or create plans | creates', async (t) => {
   const { stripe } = t.context
-  await stripe.findOrCreatePlan(100)
+  await stripe.findOrCreatePlan({ amount: 100 })
   t.deepEqual(stripe.stripe.plans.create.lastCall.args, [
     {
       amount: 100,
@@ -219,7 +234,7 @@ test('find or create plans | creates', async (t) => {
 
 test('find or create plans | finds', async (t) => {
   const { stripe } = t.context
-  t.deepEqual(await stripe.findOrCreatePlan(200), {
+  t.deepEqual(await stripe.findOrCreatePlan({ amount: 200 }), {
     id: 2,
     amount: 200
   })

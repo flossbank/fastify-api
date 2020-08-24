@@ -10,19 +10,19 @@ class Stripe {
     this.stripe = this.stripe(this.config.getStripeToken())
   }
 
-  async createStripeCustomer (email) {
+  async createStripeCustomer ({ email }) {
     return this.stripe.customers.create({
       email,
       metadata: { updatedAt: Date.now() }
     })
   }
 
-  async getStripeCustomer (customerId) {
+  async getStripeCustomer ({ customerId }) {
     return this.stripe.customers.retrieve(customerId)
   }
 
-  async getStripeCustomerDonationInfo (customerId) {
-    const customer = await this.getStripeCustomer(customerId)
+  async getStripeCustomerDonationInfo ({ customerId }) {
+    const customer = await this.getStripeCustomer({ customerId })
     return {
       amount: customer.subscriptions.data[0].plan.amount,
       // Stripe gives us subscription period end in seconds for some reason
@@ -31,7 +31,7 @@ class Stripe {
     }
   }
 
-  async updateStripeCustomer (customerId, sourceId) {
+  async updateStripeCustomer ({ customerId, sourceId }) {
     return this.stripe.customers.update(customerId, {
       source: sourceId,
       metadata: { updatedAt: Date.now() }
@@ -47,8 +47,8 @@ class Stripe {
   }
 
   // Amount is in cents
-  async createDonation (customerId, amount) {
-    const plan = await this.findOrCreatePlan(amount)
+  async createDonation ({ customerId, amount }) {
+    const plan = await this.findOrCreatePlan({ amount })
 
     // Subscribe the customer to the plan
     await this.stripe.subscriptions.create({
@@ -58,13 +58,13 @@ class Stripe {
   }
 
   // Amount is in cents
-  async updateDonation (customerId, amount) {
-    const plan = await this.findOrCreatePlan(amount)
+  async updateDonation ({ customerId, amount }) {
+    const plan = await this.findOrCreatePlan({ amount })
     const customer = await this.stripe.customers.retrieve(customerId)
     const currentSubscription = customer.subscriptions.data[0]
 
     if (!currentSubscription) {
-      return this.createDonation(customerId, amount)
+      return this.createDonation({ customerId, amount })
     }
 
     const existingPlanId = (customer.subscriptions.data[0].plan || {}).id
@@ -83,7 +83,7 @@ class Stripe {
     })
   }
 
-  async deleteDonation (customerId) {
+  async deleteDonation ({ customerId }) {
     const customer = await this.stripe.customers.retrieve(customerId)
     const currentSubscription = customer.subscriptions.data[0]
 
@@ -94,7 +94,7 @@ class Stripe {
   }
 
   // Amount is in cents
-  async findOrCreatePlan (amount) {
+  async findOrCreatePlan ({ amount }) {
     // Fetch all plans to see if we have one that matches the amount already
     const existingPlansRes = await this.stripe.plans.list()
     return existingPlansRes.data.find(p => p.amount === amount) || this.stripe.plans.create({
