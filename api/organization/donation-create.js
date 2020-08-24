@@ -19,10 +19,10 @@ module.exports = async (req, res, ctx) => {
     }
 
     // If user doesn't have write permissions, return 401
-    const userWithWritePerms = org.users.filter((user) => {
+    const userWithWritePerms = org.users.find((user) => {
       return user.userId === req.session.userId && user.role === ORG_ROLES.WRITE
     })
-    if (!userWithWritePerms.length) {
+    if (!userWithWritePerms) {
       ctx.log.warn('attempt to create donation for org user doesnt have write perms to')
       res.status(401)
       return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })

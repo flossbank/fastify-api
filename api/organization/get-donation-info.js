@@ -18,10 +18,10 @@ module.exports = async (req, res, ctx) => {
     }
 
     // If user doesn't have perms for this org - return 401
-    const userWithPerms = org.users.filter((user) => {
+    const userWithPerms = org.users.find((user) => {
       return user.userId === req.session.userId
     })
-    if (!userWithPerms.length) {
+    if (!userWithPerms) {
       ctx.log.warn('attempt to get donation info for org user doesnt have perms to')
       res.status(401)
       return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
@@ -33,7 +33,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: NO_DONATION })
     }
 
-    if (!org.billingInfo.customerId) throw new Error('No customer id for user when fetching donation info donation')
+    if (!org.billingInfo.customerId) throw new Error('No customer id for org when fetching donation info donation')
 
     const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
       customerId: org.billingInfo.customerId
