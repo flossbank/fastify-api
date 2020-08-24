@@ -50,7 +50,7 @@ class OrganizationDbController {
     })
   }
 
-  async setDonation ({ orgId, amount, globalDonation }) {
+  async setDonation ({ orgId, amount, globalDonation = false }) {
     // Amount in this case is passed in as cents so need to convert to mc
     const donationInMc = amount * 1000
     return this.db.collection('organizations').updateOne({
@@ -61,7 +61,13 @@ class OrganizationDbController {
         donationAmount: donationInMc,
         globalDonation
       },
-      $push: { donationChanges: { timestamp: Date.now(), donationAmount: donationInMc } }
+      $push: {
+        donationChanges: {
+          timestamp: Date.now(),
+          donationAmount: donationInMc,
+          globalDonation
+        }
+      }
     })
   }
 }
