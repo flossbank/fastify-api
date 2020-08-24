@@ -35,14 +35,10 @@ module.exports = async (req, res, ctx) => {
 
     if (!org.billingInfo.customerId) throw new Error('No customer id for user when fetching donation info donation')
 
-    try {
-      const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
-        customerId: org.billingInfo.customerId
-      })
-      res.send({ success: true, donationInfo })
-    } catch (e) {
-      throw new Error('Unable to retrieve customer stripe donation amount even though mongo said they have donation')
-    }
+    const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
+      customerId: org.billingInfo.customerId
+    })
+    res.send({ success: true, donationInfo })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

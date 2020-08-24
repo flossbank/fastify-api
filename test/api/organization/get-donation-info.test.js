@@ -115,6 +115,18 @@ test('GET `/organization/get-donation-info` 401 unauthorized | user doesnt have 
   })
 })
 
+test('GET `/organization/get-donation-info` 404 unauthorized | no org found', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-info',
+    query: { organizationId: 'aaaaaaaaaaaa' },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.deepEqual(res.statusCode, 404)
+})
+
 test('GET `/organization/get-donation-info` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
