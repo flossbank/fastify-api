@@ -37,7 +37,7 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
   t.is(payload.created, true)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
-  t.deepEqual(user.codeHost.accessToken, 'test_access_token')
+  t.deepEqual(user.codeHost, { GitHub: { accessToken: 'test_access_token' } })
 })
 
 test('POST `/user/github-auth` 200 success | existing user', async (t) => {
@@ -61,7 +61,7 @@ test('POST `/user/github-auth` 200 success | existing user', async (t) => {
   t.is(payload.created, false)
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.deepEqual(user.codeHost.accessToken, 'test_access_token')
+  t.deepEqual(user.codeHost, { GitHub: { accessToken: 'test_access_token' } })
 })
 
 test('POST `/user/github-auth` 400 bad request | no state', async (t) => {

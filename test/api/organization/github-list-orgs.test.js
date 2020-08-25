@@ -1,12 +1,12 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
+const { CODE_HOSTS, USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
-    await db.user.attachAccessToken({ userId: t.context.userId1, accessToken: 'accessToken' })
+    await db.user.attachAccessToken({ userId: t.context.userId1, host: CODE_HOSTS.GitHub, accessToken: 'accessToken' })
     const session1 = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.session1 = session1.sessionId
   })

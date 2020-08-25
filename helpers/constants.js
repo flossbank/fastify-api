@@ -25,5 +25,8 @@ module.exports = {
   ORG_ROLES: {
     WRITE: 'WRITE',
     READ: 'READ'
+  },
+  CODE_HOSTS: {
+    GitHub: 'GitHub'
   }
 }
