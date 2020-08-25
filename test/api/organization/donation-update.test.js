@@ -156,6 +156,7 @@ test('PUT `/organization/donation` 200 success', async (t) => {
 
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === 1000 * 1000)
   t.true(donationLedgerAddition.timestamp === 19991)
+  t.false(donationLedgerAddition.globalDonation)
   t.true(t.context.stripe.updateDonation.calledWith({
     customerId: org.billingInfo.customerId,
     amount: 1000

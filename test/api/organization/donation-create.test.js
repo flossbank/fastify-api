@@ -137,6 +137,7 @@ test('POST `/organization/donation` 200 success | update card on file', async (t
 
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === amountToDonateCents * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
+  t.false(donationLedgerAddition.globalDonation)
   t.true(t.context.stripe.createStripeCustomer.notCalled)
   t.true(t.context.stripe.updateStripeCustomer.calledWith({
     customerId: 'honesty-cust-id',
@@ -185,6 +186,7 @@ test('POST `/organization/donation` 200 success | first card added ', async (t) 
 
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === amountToDonateCents * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)
+  t.true(donationLedgerAddition.globalDonation)
   t.true(t.context.stripe.createStripeCustomer.calledOnce)
   t.true(t.context.stripe.updateStripeCustomer.calledWith({
     customerId: 'test-stripe-id',
