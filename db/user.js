@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const { ObjectId } = require('mongodb')
+const { CODE_HOSTS } = require('../helpers/constants')
 
 class UserDbController {
   constructor ({ db }) {
@@ -71,11 +72,14 @@ class UserDbController {
     return { id: insertedId, ...userToCreate }
   }
 
-  attachAccessToken ({ userId, accessToken }) {
+  attachAccessToken ({ userId, host, accessToken }) {
+    if (!CODE_HOSTS[host]) {
+      throw new Error(`Invalid code host: ${host}`)
+    }
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
     }, {
-      $set: { 'codeHost.accessToken': accessToken }
+      $set: { [`codeHost.${host}.accessToken`]: accessToken }
     })
   }
 

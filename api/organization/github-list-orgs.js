@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -11,10 +11,11 @@ module.exports = async (req, res, ctx) => {
      */
 
     const user = await ctx.db.user.get({ userId: req.session.userId })
-    const accessToken = user.codeHost.accessToken
+    const { GitHub } = user.codeHost
+    const { accessToken } = GitHub
     const { orgsData } = await ctx.github.getUserOrgs({ accessToken })
 
-    res.send({ success: true, organizations: orgsData.map((org) => ({ name: org.login, host: 'GitHub' })) })
+    res.send({ success: true, organizations: orgsData.map((org) => ({ name: org.login, host: CODE_HOSTS.GitHub })) })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
