@@ -54,6 +54,7 @@ const createOrgDonation = require('../api/organization/donation-create')
 const getOrgDonationInfo = require('../api/organization/get-donation-info')
 const updateOrgDonation = require('../api/organization/donation-update')
 const deleteOrgDonation = require('../api/organization/donation-delete')
+const getOrgImpact = require('../api/organization/get-impact')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -153,6 +154,7 @@ async function routes (fastify, opts, done) {
   fastify.put('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.updateDonation }, (req, res) => updateOrgDonation(req, res, fastify))
   fastify.delete('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.deleteDonation }, (req, res) => deleteOrgDonation(req, res, fastify))
   fastify.get('/organization/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.getDonationInfo }, (req, res) => getOrgDonationInfo(req, res, fastify))
+  fastify.get('/organization/get-impact', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => getOrgImpact(req, res, fastify))
 
   // Maintainer
   // fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
