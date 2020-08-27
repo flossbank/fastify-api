@@ -8,6 +8,7 @@ module.exports = {
     INVALID_EMAIL_TOKEN: 'Invalid email or token',
     INVALID_EMAIL_PASSWORD: 'Invalid email or password',
     INVALID_SESSION: 'Invalid session',
+    INSUFFICIENT_PERMISSIONS: 'Insufficient permissions',
     INVALID_EVENT_SIG: 'Invalid event or signature',
     INVALID_API_KEY: 'Invalid API key',
     NO_DONATION: 'No donation found',
@@ -20,5 +21,12 @@ module.exports = {
   INTEG_TEST_KEY: 'cf667c9381f7792bfa772025ff8ee93b89d9a757e6732e87611a0c34b48357d1',
   MAINTAINER_WEB_SESSION_COOKIE: 'flossbank_m_sess_id',
   ADVERTISER_WEB_SESSION_COOKIE: 'flossbank_a_sess_id',
-  USER_WEB_SESSION_COOKIE: 'flossbank_u_sess_id'
+  USER_WEB_SESSION_COOKIE: 'flossbank_u_sess_id',
+  ORG_ROLES: {
+    WRITE: 'WRITE',
+    READ: 'READ'
+  },
+  CODE_HOSTS: {
+    GitHub: 'GitHub'
+  }
 }

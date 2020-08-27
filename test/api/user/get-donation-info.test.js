@@ -81,7 +81,9 @@ test('GET `/user/get-donation-info` 200 success', async (t) => {
     donationInfo: { amount: 1000, last4: '4242', renewal: 1595197107000 }
   })
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.true(t.context.stripe.getStripeCustomerDonationInfo.calledWith(user.billingInfo.customerId))
+  t.true(t.context.stripe.getStripeCustomerDonationInfo.calledWith({
+    customerId: user.billingInfo.customerId
+  }))
 })
 
 test('GET `/user/get-donation-info` 404 error | donation not found', async (t) => {

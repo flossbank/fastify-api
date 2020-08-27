@@ -66,7 +66,7 @@ class Config {
     return this.env.recaptcha_secret
   }
 
-  getDistributeDonationQueueUrl () {
+  getDistributeUserDonationQueueUrl () {
     return this.env.distribute_donation_queue_url
   }
 
@@ -95,6 +95,14 @@ class Config {
   // ad threshold in cents
   getNoAdThreshold () {
     return 500
+  }
+
+  getGitHubClientId () {
+    return this.env.github_client_id
+  }
+
+  getGitHubClientSecret () {
+    return this.env.github_client_secret
   }
 }
 

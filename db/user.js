@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const { ObjectId } = require('mongodb')
+const { CODE_HOSTS } = require('../helpers/constants')
 
 class UserDbController {
   constructor ({ db }) {
@@ -13,6 +14,26 @@ class UserDbController {
 
     const { _id: id, ...rest } = user
     return { id, ...rest }
+  }
+
+  async getIdByCustomerId ({ customerId }) {
+    const user = await this.db.collection('users').findOne({
+      'billingInfo.customerId': customerId
+    })
+    return user && user._id
+  }
+
+  async associateOrgWithUser ({ userId, orgId, role }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $push: {
+        organizations: {
+          organizationId: orgId,
+          role
+        }
+      }
+    })
   }
 
   async get ({ userId }) {
@@ -40,14 +61,26 @@ class UserDbController {
 
   async create ({ email, referralCode }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
-    const { insertedId } = await this.db.collection('users').insertOne({
+    const userToCreate = {
       email,
       apiKey,
       referralCode,
       billingInfo: {},
       apiKeysRequested: []
+    }
+    const { insertedId } = await this.db.collection('users').insertOne(userToCreate)
+    return { id: insertedId, ...userToCreate }
+  }
+
+  attachAccessToken ({ userId, host, accessToken }) {
+    if (!CODE_HOSTS[host]) {
+      throw new Error(`Invalid code host: ${host}`)
+    }
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $set: { [`codeHost.${host}.accessToken`]: accessToken }
     })
-    return { id: insertedId, apiKey }
   }
 
   async updateHasCardInfo ({ userId, last4 }) {

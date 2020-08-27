@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
     const customerId = user.billingInfo.customerId
 
     // Delete the subscription and donation in stripe as well as push the donation change to mongo
-    await ctx.stripe.deleteDonation(customerId)
+    await ctx.stripe.deleteDonation({ customerId })
     await ctx.db.user.setDonation({
       userId: req.session.userId,
       amount: 0

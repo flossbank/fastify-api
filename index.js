@@ -11,6 +11,7 @@ const { Email } = require('./email')
 const { Registry } = require('./registry')
 const { Url } = require('./url')
 const { Stripe } = require('./stripe')
+const { GitHub } = require('./github')
 
 ;(async function () {
   const config = new Config({ env: process.env })
@@ -26,11 +27,12 @@ const { Stripe } = require('./stripe')
   const stripe = new Stripe({ stripe: StripeClient, config })
   const registry = new Registry()
   const url = new Url({ config, docs })
+  const github = new GitHub({ config })
 
   await db.setup()
   stripe.init()
 
-  const app = await App({ db, auth, sqs, email, stripe, registry, url, config })
+  const app = await App({ db, auth, sqs, email, stripe, registry, url, config, github })
   try {
     await app.listen(8081)
   } catch (err) {
