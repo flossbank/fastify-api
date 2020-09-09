@@ -95,3 +95,30 @@ test('POST `/stripe/webhook/event` 200 success | org', async (t) => {
   }
   t.deepEqual(t.context.sqs.sendDistributeOrgDonationMessage.lastCall.args, [expectedPayload])
 })
+
+test('POST `/stripe/webhook/event` 500 failure | unknown customer', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/stripe/webhook/event',
+    payload: testData.unknown_cust_succeeded.body,
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': testData.unknown_cust_succeeded.signature
+    }
+  })
+  t.deepEqual(res.statusCode, 500)
+})
+
+test('POST `/stripe/webhook/event` 500 failure', async (t) => {
+  t.context.sqs.sendDistributeOrgDonationMessage.rejects()
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/stripe/webhook/event',
+    payload: testData.org_succeeded.body,
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': testData.org_succeeded.signature
+    }
+  })
+  t.deepEqual(res.statusCode, 500)
+})

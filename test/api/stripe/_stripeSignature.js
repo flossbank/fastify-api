@@ -1,6 +1,9 @@
 const crypto = require('crypto')
-const testData = require('./test/api/stripe/_test_event.js')
+const testData = require('./_test_event.js')
 
+/*
+ * To use this tool, run `node _stripeSignature <secret> <testDataKey>`
+ */
 function main () {
   const secret = process.argv[2]
   const evt = process.argv[3]
