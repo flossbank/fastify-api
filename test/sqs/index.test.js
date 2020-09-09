@@ -11,6 +11,7 @@ test.beforeEach((t) => {
     },
     config: {
       getDistributeUserDonationQueueUrl: sinon.stub(),
+      getDistributeOrgDonationQueueUrl: sinon.stub().returns('asdf'),
       getSessionCompleteQueueUrl: sinon.stub()
     }
   })
@@ -28,6 +29,14 @@ test('sqs | send distribute user donation message', async (t) => {
   t.context.sqs.sendDistributeUserDonationMessage({ customerId: 'mary' })
   t.deepEqual(t.context.sqs.sqs.sendMessage.lastCall.args, [{
     QueueUrl: t.context.sqs.config.getDistributeUserDonationQueueUrl(),
+    MessageBody: JSON.stringify({ customerId: 'mary' })
+  }])
+})
+
+test('sqs | send distribute org donation message', async (t) => {
+  t.context.sqs.sendDistributeOrgDonationMessage({ customerId: 'mary' })
+  t.deepEqual(t.context.sqs.sqs.sendMessage.lastCall.args, [{
+    QueueUrl: t.context.sqs.config.getDistributeOrgDonationQueueUrl(),
     MessageBody: JSON.stringify({ customerId: 'mary' })
   }])
 })
