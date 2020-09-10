@@ -11,6 +11,7 @@ test.beforeEach((t) => {
       recaptcha_secret: 'recaptcha_secret',
       session_complete_queue_url: 'queue_url',
       distribute_donation_queue_url: 'dd_queue_url',
+      distribute_org_donation_queue_url: 'dd_org_queue_url',
       url_host: 'url_host',
       stripe_token: 'test_stripe_token'
     }
@@ -39,6 +40,10 @@ test('config | getSessionCompleteQueueUrl', (t) => {
 
 test('config | getDistributeUserDonationQueueUrl', (t) => {
   t.deepEqual(t.context.config.getDistributeUserDonationQueueUrl(), 'dd_queue_url')
+})
+
+test('config | getDistributeOrDonationQueueUrl', (t) => {
+  t.deepEqual(t.context.config.getDistributeOrgDonationQueueUrl(), 'dd_org_queue_url')
 })
 
 test('config | getUrlHost', (t) => {

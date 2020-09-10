@@ -70,6 +70,10 @@ class Config {
     return this.env.distribute_donation_queue_url
   }
 
+  getDistributeOrgDonationQueueUrl () {
+    return this.env.distribute_org_donation_queue_url
+  }
+
   getSessionCompleteQueueUrl () {
     return this.env.session_complete_queue_url
   }
