@@ -24,6 +24,13 @@ class OrganizationDbController {
     return { id, ...rest }
   }
 
+  async getIdByCustomerId ({ customerId }) {
+    const org = await this.db.collection('organizations').findOne({
+      'billingInfo.customerId': customerId
+    })
+    return org && org._id
+  }
+
   async create ({ name, host, userId, email }) {
     const orgToInsert = {
       name,
