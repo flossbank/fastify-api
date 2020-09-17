@@ -39,7 +39,8 @@ class UserAuthController {
 
   async createCliSession ({ apiKey }) {
     const sessionId = this.common.generateRandomToken()
-    const sessionItem = { sessionId, apiKey, created: Date.now() }
+    const expiration = this.common.getUnixTimestampPlus(this.constants.USER_CLI_SESSION_TIMEOUT)
+    const sessionItem = { sessionId, apiKey, created: Date.now(), expiration }
     await this.docs.put({
       TableName: this.constants.USER_CLI_SESSION_TABLE,
       Item: sessionItem

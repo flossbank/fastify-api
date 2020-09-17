@@ -11,9 +11,23 @@ const { registryPlugin } = require('./registry')
 const { emailPlugin } = require('./email')
 const { urlPlugin } = require('./url')
 const { githubPlugin } = require('./github')
+const { ethicalAdsPlugin } = require('./ethicalAds')
 
 module.exports = async function buildFastify (deps) {
-  const { db, auth, sqs, email, registry, stripe, url, config, github, logger = true, csrf = true } = deps
+  const {
+    db,
+    auth,
+    sqs,
+    email,
+    registry,
+    stripe,
+    url,
+    config,
+    github,
+    ethicalAds,
+    logger = true,
+    csrf = true
+  } = deps
   const fastify = Fastify({ logger })
   // Create custom ajv schema declaration to remove _all_ additional fields by default
   const ajv = new Ajv({
@@ -63,6 +77,7 @@ module.exports = async function buildFastify (deps) {
   fastify.register(urlPlugin(url))
   fastify.register(configPlugin(config))
   fastify.register(githubPlugin(github))
+  fastify.register(ethicalAdsPlugin(ethicalAds))
 
   return fastify
 }
