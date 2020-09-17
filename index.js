@@ -12,6 +12,7 @@ const { Registry } = require('./registry')
 const { Url } = require('./url')
 const { Stripe } = require('./stripe')
 const { GitHub } = require('./github')
+const { EthicalAds } = require('./ethicalAds')
 
 ;(async function () {
   const config = new Config({ env: process.env })
@@ -28,11 +29,23 @@ const { GitHub } = require('./github')
   const registry = new Registry()
   const url = new Url({ config, docs })
   const github = new GitHub({ config })
+  const ethicalAds = new EthicalAds({ config, docs })
 
   await db.setup()
   stripe.init()
 
-  const app = await App({ db, auth, sqs, email, stripe, registry, url, config, github })
+  const app = await App({
+    db,
+    auth,
+    sqs,
+    email,
+    stripe,
+    registry,
+    url,
+    config,
+    github,
+    ethicalAds
+  })
   try {
     await app.listen(8081)
   } catch (err) {

@@ -38,8 +38,10 @@ class AdDbController {
         $unwind: '$ads'
       },
       // randomly select 12 such documents
+      // actually now selecting 11 (09/2020) since we are serving asingle EA ad as well
+      // TODO -- set this dynamically
       {
-        $sample: { size: 12 }
+        $sample: { size: 11 }
       }
     ]).toArray())
 

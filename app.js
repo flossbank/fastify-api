@@ -11,9 +11,23 @@ const { registryPlugin } = require('./registry')
 const { emailPlugin } = require('./email')
 const { urlPlugin } = require('./url')
 const { githubPlugin } = require('./github')
+const { ethicalAdsPlugin } = require('./ethicalAds')
 
 module.exports = async function buildFastify (deps) {
-  const { db, auth, sqs, email, registry, stripe, url, config, github, logger = true, csrf = true } = deps
+  const {
+    db,
+    auth,
+    sqs,
+    email,
+    registry,
+    stripe,
+    url,
+    config,
+    github,
+    ethicalAds,
+    logger = true,
+    csrf = true
+  } = deps
   const fastify = Fastify({ logger })
   // Create custom ajv schema declaration to remove _all_ additional fields by default
   const ajv = new Ajv({
@@ -31,26 +45,26 @@ module.exports = async function buildFastify (deps) {
 
   fastify.register(stripeRoutes)
 
-  const allowedOrigins = [
-    'https://flossbank.com',
-    'https://advertiser.flossbank.com',
-    'https://maintainer.flossbank.com',
-    'https://user.flossbank.com'
-  ]
-  if (process.env.NODE_ENV !== 'production') {
-    allowedOrigins.push(
-      'http://localhost:3000',
-      /\.flossbank\.vercel\.app$/,
-      /\.flossbank\.now\.sh$/
-    )
-  }
-
-  fastify.register(require('fastify-cors'), {
-    origin: allowedOrigins,
-    methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
-    credentials: true
-  })
+  //   const allowedOrigins = [
+  //     'https://flossbank.com',
+  //     'https://advertiser.flossbank.com',
+  //     'https://maintainer.flossbank.com',
+  //     'https://user.flossbank.com'
+  //   ]
+  //   if (process.env.NODE_ENV !== 'production') {
+  //     allowedOrigins.push(
+  //       'http://localhost:3000',
+  //       /\.flossbank\.vercel\.app$/,
+  //       /\.flossbank\.now\.sh$/
+  //     )
+  //   }
+  //
+  //   fastify.register(require('fastify-cors'), {
+  //     origin: allowedOrigins,
+  //     methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
+  //     allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
+  //     credentials: true
+  //   })
 
   fastify.register(routes, { csrf })
 
@@ -63,6 +77,7 @@ module.exports = async function buildFastify (deps) {
   fastify.register(urlPlugin(url))
   fastify.register(configPlugin(config))
   fastify.register(githubPlugin(github))
+  fastify.register(ethicalAdsPlugin(ethicalAds))
 
   return fastify
 }

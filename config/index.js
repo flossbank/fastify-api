@@ -50,11 +50,27 @@ class Config {
         USER_REGISTRATION_TABLE: 'UserRegistrationTokens',
         USER_INSTALL_TABLE: 'UserInstallTokens',
         USER_LOGIN_TOKEN_TABLE: 'UserLoginTokens',
+        USER_CLI_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
         USER_WEB_SESSION_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
         USER_REGISTRATION_TIMEOUT: 15 * 60, // 15 minutes in seconds
         USER_INSTALL_TIMEOUT: 24 * 60 * 60, // 24 hrs in seconds
         USER_LOGIN_TIMEOUT: 15 * 60 // 15 minutes in seconds
       }
+    }
+  }
+
+  getEthicalAdsConfig () {
+    // since prefix differs in staging/prod, using env var
+    const ethicalAdPrefix = this.env.ethical_ad_prefix
+    return {
+      TableAttributes: [
+        { TableName: 'AdViewUrls', KeyAttribute: { AttributeName: 'sessionId', AttributeType: 'S' } }
+      ],
+      AD_VIEW_URLS_TABLE: 'AdViewUrls',
+      AD_VIEW_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
+
+      // this is advertiserId_campaignId_adId from a static ad in our db
+      ETHICAL_AD_PREFIX: `${ethicalAdPrefix}_ETHICAL`
     }
   }
 

@@ -40,5 +40,19 @@ module.exports = {
     this.requestAccessToken = sinon.stub().resolves('test_access_token')
     this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
     this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
-  }
+  },
+  EthicalAdsGot: () => ({
+    body: {
+      "id": "ethicaladsio-test-generic-text",
+      "text": "<a><strong>EthicalAds</strong> is a developer-focused ad network from Read the Docs. Publisher &amp; Advertisers wanted.</a>",
+      "body": "EthicalAds is a developer-focused ad network from Read the Docs. Publisher & Advertisers wanted.",
+      "image": null,
+      "link": "https://server.ethicalads.io/proxy/click/1050/Mo7FPcWUSOKbvmvD/",
+      "view_url": "https://server.ethicalads.io/proxy/view/1050/Mo7FPcWUSOKbvmvD/",
+      "nonce": "Mo7FPcWUSOKbvmvD",
+      "display_type": "text-v1",
+      "campaign_type": "house",
+      "div_id": "test"
+    }
+  })
 }

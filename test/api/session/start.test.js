@@ -115,7 +115,11 @@ test('POST `/session/start` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.true(payload.sessionId.length > 0)
+  
+  // first ad is an ethical ad
+  t.true(payload.ads[0].id.includes('ETHICAL'))
 
+  // flossbank ads were returned
   t.context.adCampaign1.ads.forEach((ad) => {
     const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
     t.deepEqual(
@@ -169,7 +173,7 @@ test('POST `/session/start` 200 success | existing session', async (t) => {
   })
 })
 
-test('POST `/session/start` 200 success | no ads', async (t) => {
+test('POST `/session/start` 200 success | user has opted out of ads', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',

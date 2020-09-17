@@ -6,6 +6,7 @@ const { Config } = require('../../config')
 const { Db } = require('../../db')
 const { Auth } = require('../../auth')
 const { Url } = require('../../url')
+const { EthicalAds } = require('../../ethicalAds')
 const mocks = require('./_mocks')
 
 exports.before = async function (t, setup) {
@@ -16,7 +17,8 @@ exports.before = async function (t, setup) {
     env: {
       mongo_uri: mongoUri,
       url_host: 'api.flossbank.io',
-      stripe_webhook_secret: 'whsec_QKhjn6Qhds46oInS0rBo7TYCjqHEug9D'
+      stripe_webhook_secret: 'whsec_QKhjn6Qhds46oInS0rBo7TYCjqHEug9D',
+      ethical_ad_prefix: '5e3b04ba7ca8796b782ce6b9_01EJCGBVGC9830HR131WYRR12V_01EJCGBVGCY9R8M2ZP2PEMWH2X'
     }
   })
 
@@ -48,6 +50,9 @@ exports.beforeEach = async function (t) {
   const endpoint = await t.context.dynamo.getEndpoint()
   const docs = new AWS.DynamoDB.DocumentClient({ endpoint })
 
+  t.context.ethicalAds = new EthicalAds({ docs, config: t.context.config })
+  t.context.ethicalAds.got = mocks.EthicalAdsGot
+
   t.context.auth = new Auth({ docs, config: t.context.config })
   t.context.url = new Url({ docs, config: t.context.config })
   t.context.sqs = new mocks.Sqs()
@@ -65,6 +70,7 @@ exports.beforeEach = async function (t) {
     url: t.context.url,
     config: t.context.config,
     github: t.context.github,
+    ethicalAds: t.context.ethicalAds,
     logger: false,
     csrf: false
   })
@@ -93,11 +99,13 @@ async function createTables (endpoint, config) {
 
   const { Advertiser, Maintainer, User } = config.getAuthConfig()
   const urlConfig = config.getUrlConfig()
+  const ethicalAdsConfig = config.getEthicalAdsConfig()
   const tables = [].concat(
     Advertiser.TableAttributes,
     Maintainer.TableAttributes,
     User.TableAttributes,
-    urlConfig.TableAttributes
+    urlConfig.TableAttributes,
+    ethicalAdsConfig.TableAttributes
   )
 
   const dynamo = new AWS.DynamoDB({ endpoint })
