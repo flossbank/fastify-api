@@ -45,26 +45,26 @@ module.exports = async function buildFastify (deps) {
 
   fastify.register(stripeRoutes)
 
-  //   const allowedOrigins = [
-  //     'https://flossbank.com',
-  //     'https://advertiser.flossbank.com',
-  //     'https://maintainer.flossbank.com',
-  //     'https://user.flossbank.com'
-  //   ]
-  //   if (process.env.NODE_ENV !== 'production') {
-  //     allowedOrigins.push(
-  //       'http://localhost:3000',
-  //       /\.flossbank\.vercel\.app$/,
-  //       /\.flossbank\.now\.sh$/
-  //     )
-  //   }
-  //
-  //   fastify.register(require('fastify-cors'), {
-  //     origin: allowedOrigins,
-  //     methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
-  //     allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
-  //     credentials: true
-  //   })
+  const allowedOrigins = [
+    'https://flossbank.com',
+    'https://advertiser.flossbank.com',
+    'https://maintainer.flossbank.com',
+    'https://user.flossbank.com'
+  ]
+  if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push(
+      'http://localhost:3000',
+      /\.flossbank\.vercel\.app$/,
+      /\.flossbank\.now\.sh$/
+    )
+  }
+  
+  fastify.register(require('fastify-cors'), {
+    origin: allowedOrigins,
+    methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With'],
+    credentials: true
+  })
 
   fastify.register(routes, { csrf })
 

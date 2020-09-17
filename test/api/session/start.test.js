@@ -115,7 +115,7 @@ test('POST `/session/start` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
   t.true(payload.sessionId.length > 0)
-  
+
   // first ad is an ethical ad
   t.true(payload.ads[0].id.includes('ETHICAL'))
 
