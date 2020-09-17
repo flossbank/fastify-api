@@ -36,8 +36,8 @@ test.before(async (t) => {
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         ads: [],
-        maxSpend: 100,
-        cpm: 100,
+        maxSpend: 1000000,
+        cpm: 100000,
         name: 'camp pain 1'
       },
       adIdsFromDrafts: [t.context.adId1, t.context.adId2],
@@ -52,14 +52,41 @@ test.before(async (t) => {
       advertiserId: t.context.advertiserId1,
       adCampaign: {
         ads: [],
-        maxSpend: 100,
-        cpm: 100,
+        maxSpend: 1000000,
+        cpm: 100000,
         name: 'camp pain 2'
       },
       adIdsFromDrafts: [t.context.adId1, t.context.adId2],
       keepDrafts: true
     })
 
+    // now an ad that won't be seen because it's in a campaign with <100c cpm
+    t.context.adId3 = await db.advertiser.createAdDraft({
+      advertiserId: advertiserId1,
+      draft: {
+        name: 'Invisible Ad',
+        title: 'Never Seen',
+        body: '666',
+        url: 'google.com'
+      }
+    })
+    // active campaign with 70c CPM
+    t.context.campaignId3 = await db.advertiser.createAdCampaign({
+      advertiserId: t.context.advertiserId1,
+      adCampaign: {
+        ads: [],
+        maxSpend: 100000,
+        cpm: 70000,
+        name: 'camp pain 3'
+      },
+      adIdsFromDrafts: [t.context.adId3],
+      keepDrafts: true
+    })
+    await db.advertiser.approveAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId3 })
+    await db.advertiser.activateAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId3 })
+    t.context.adCampaign3 = await db.advertiser.getAdCampaign({ advertiserId: t.context.advertiserId1, campaignId: t.context.campaignId3 })
+
+    // create some api keys to get the ads
     await auth.user.cacheApiKey({ apiKey: 'the-best-api-key', userId: 'user-id1' })
     await auth.user.cacheApiKey({ apiKey: 'no-ads-key', userId: 'user-id2' })
     await auth.user.cacheApiKeyNoAdsSetting({ apiKey: 'no-ads-key', noAds: true })
@@ -126,6 +153,11 @@ test('POST `/session/start` 200 success', async (t) => {
       payload.ads.find(payloadAd => payloadAd.id === id),
       { id, title: ad.title, body: ad.body, url: ad.url }
     )
+  })
+
+  t.context.adCampaign3.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId3}_${ad.id}`
+    t.true(!payload.ads.some(payloadAd => payloadAd.id === id))
   })
 })
 
