@@ -143,8 +143,8 @@ test('POST `/session/start` 200 success', async (t) => {
   const payload = JSON.parse(res.payload)
   t.true(payload.sessionId.length > 0)
 
-  // first ad is an ethical ad
-  t.true(payload.ads[0].id.includes('ETHICAL'))
+  // first ad is an ethical ad (cli consumes array from tail :D)
+  t.true(payload.ads[payload.ads.length - 1].id.includes('ETHICAL'))
 
   // flossbank ads were returned
   t.context.adCampaign1.ads.forEach((ad) => {

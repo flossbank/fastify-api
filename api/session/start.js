@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
       const flossbankAds = await ctx.db.ad.getBatch()
       ctx.log.info({ reqId: req.id }, 'Flossbank ads fetched')
 
-      ads = [ethicalAd, ...flossbankAds]
+      ads = [...flossbankAds, ethicalAd]
     }
 
     ctx.log.info({ reqId: req.id, sessionId, noAds })
