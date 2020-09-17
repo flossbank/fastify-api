@@ -58,7 +58,7 @@ module.exports = async function buildFastify (deps) {
       /\.flossbank\.now\.sh$/
     )
   }
-  
+
   fastify.register(require('fastify-cors'), {
     origin: allowedOrigins,
     methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE'],

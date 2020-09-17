@@ -10,7 +10,7 @@
     "coverage": "nyc npm run unit-tests",
     "unit-tests": "ava",
     "watch:unit-tests": "ava --watch",
-    "test": "npm run lint && ava -v",
+    "test": "standard && ava -v",
     "ci-tests": "nyc --reporter=cobertura npm run unit-tests"
   },
   "husky": {
