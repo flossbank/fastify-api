@@ -3,7 +3,7 @@ class AdDbController {
     this.db = db
   }
 
-  async getBatch () {
+  async getBatch ({ count }) {
     // more complicated logic and/or caching can come later
     const ads = await this.db.collection('advertisers').aggregate([
       // project advertiser documents as { _id: advertiserId, campaigns: <active campaigns> }
@@ -54,11 +54,8 @@ class AdDbController {
           }
         }
       },
-      // randomly select 12 such documents
-      // actually now selecting 11 (09/2020) since we are serving asingle EA ad as well
-      // TODO -- set this dynamically
       {
-        $sample: { size: 11 }
+        $sample: { size: count }
       }
     ]).toArray()
 

@@ -155,6 +155,39 @@ test('POST `/session/start` 200 success', async (t) => {
     )
   })
 
+  // ad in campaign with small cpm was not returned
+  t.context.adCampaign3.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId3}_${ad.id}`
+    t.true(!payload.ads.some(payloadAd => payloadAd.id === id))
+  })
+})
+
+test('POST `/session/start` 200 success | ethical ads is down', async (t) => {
+  t.context.ethicalAds.got = () => { throw new Error() }
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/session/start',
+    payload: {},
+    headers: { authorization: 'Bearer the-best-api-key' }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+  t.true(payload.sessionId.length > 0)
+
+  // no ethical ads
+  t.true(!payload.ads.some(ad => ad.id.includes('ETHICAL')))
+
+  // flossbank ads were returned
+  t.context.adCampaign1.ads.forEach((ad) => {
+    const id = `${t.context.advertiserId1}_${t.context.campaignId1}_${ad.id}`
+    t.deepEqual(
+      payload.ads.find(payloadAd => payloadAd.id === id),
+      { id, title: ad.title, body: ad.body, url: ad.url }
+    )
+  })
+
+  // ad in campaign with small cpm was not returned
   t.context.adCampaign3.ads.forEach((ad) => {
     const id = `${t.context.advertiserId1}_${t.context.campaignId3}_${ad.id}`
     t.true(!payload.ads.some(payloadAd => payloadAd.id === id))

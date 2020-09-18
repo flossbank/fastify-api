@@ -9,13 +9,19 @@ module.exports = async (req, res, ctx) => {
     let ads = []
     if (!noAds) {
       // get an ethical ad; logs are for timing metrics
-      ctx.log.info({ reqId: req.id }, 'Fetching ethical ad...')
-      const ethicalAd = await ctx.ethicalAds.getAd({ sessionId })
-      ctx.log.info({ reqId: req.id }, 'Ethical ad fetched; fetching Flossbank ads...')
-      const flossbankAds = await ctx.db.ad.getBatch()
+      let ethicalAd
+      try {
+        ctx.log.info({ reqId: req.id }, 'Fetching ethical ad...')
+        ethicalAd = await ctx.ethicalAds.getAd({ sessionId })
+        ctx.log.info({ reqId: req.id }, 'Ethical ad fetched; fetching Flossbank ads...')
+      } catch (e) {
+        ctx.log.error('Could not retrieve ethical ad', e)
+      }
+
+      ads = await ctx.db.ad.getBatch({ count: ethicalAd ? 11 : 12 })
       ctx.log.info({ reqId: req.id }, 'Flossbank ads fetched')
 
-      ads = [...flossbankAds, ethicalAd]
+      if (ethicalAd) ads.push(ethicalAd)
     }
 
     ctx.log.info({ reqId: req.id, sessionId, noAds })
