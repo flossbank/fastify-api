@@ -70,7 +70,8 @@ class Config {
       AD_VIEW_TIMEOUT: 7 * 24 * 60 * 60, // 7 days in seconds
 
       // this is advertiserId_campaignId_adId from a static ad in our db
-      ETHICAL_AD_PREFIX: `${ethicalAdPrefix}_ETHICAL`
+      ETHICAL_AD_PREFIX: `${ethicalAdPrefix}_ETHICAL`,
+      HOUSE_ADS_ONLY: this.env.ethical_ads_house_only
     }
   }
 
