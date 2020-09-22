@@ -7,11 +7,15 @@ class EthicalAds {
     this.docs = docs
     this.config = config
     this.constants = config.getEthicalAdsConfig()
+
+    this.url = this.constants.HOUSE_ADS_ONLY
+      ? 'https://server.ethicalads.io/api/v1/decision/?publisher=flossbank&div_ids=test&ad_types=text-v1&force_ad=ethicaladsio-test-generic-text'
+      : 'https://server.ethicalads.io/api/v1/decision/?publisher=flossbank&div_ids=test&ad_types=text-v1'
   }
 
   // TODO support getting multiple ads at once
   async getAd ({ sessionId }) {
-    const { body: response } = await this.got('https://server.ethicalads.io/api/v1/decision/?publisher=flossbank&div_ids=test&ad_types=text-v1', {
+    const { body: response } = await this.got(this.url, {
       responseType: 'json'
     })
 
