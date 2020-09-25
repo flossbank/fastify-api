@@ -3,10 +3,11 @@ class AdDbController {
     this.db = db
   }
 
-  async getBatch () {
+  async getBatch ({ count }) {
     // more complicated logic and/or caching can come later
-    const ads = (await this.db.collection('advertisers').aggregate([
+    const ads = await this.db.collection('advertisers').aggregate([
       // project advertiser documents as { _id: advertiserId, campaigns: <active campaigns> }
+      // also filter out any campaigns with <1$ cpm
       {
         $project: {
           _id: '$_id',
@@ -15,7 +16,10 @@ class AdDbController {
               input: '$adCampaigns',
               as: 'campaign',
               cond: {
-                $eq: ['$$campaign.active', true]
+                $and: [
+                  { $eq: ['$$campaign.active', true] },
+                  { $gte: ['$$campaign.cpm', 100000] }
+                ]
               }
             }
           }
@@ -37,15 +41,27 @@ class AdDbController {
       {
         $unwind: '$ads'
       },
-      // randomly select 12 such documents
+      // project only the important parts of each ad (drop impressions)
       {
-        $sample: { size: 12 }
+        $project: {
+          _id: '$_id',
+          campaignId: 1,
+          ad: {
+            title: '$ads.title',
+            body: '$ads.body',
+            url: '$ads.url',
+            id: '$ads.id'
+          }
+        }
+      },
+      {
+        $sample: { size: count }
       }
-    ]).toArray())
+    ]).toArray()
 
     // return ids in the form campaignId_adId for easier processing later
     return ads
-      .reduce((acc, { ads: { id, title, body, url }, _id: advertiserId, campaignId }) => acc.concat({
+      .reduce((acc, { ad: { id, title, body, url }, _id: advertiserId, campaignId }) => acc.concat({
         id: `${advertiserId}_${campaignId}_${id}`, title, body, url
       }), [])
   }

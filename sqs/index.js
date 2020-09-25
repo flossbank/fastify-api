@@ -16,6 +16,11 @@ class Sqs {
     return this.sendMessage(url, payload)
   }
 
+  async sendDistributeOrgDonationMessage (payload) {
+    const url = this.config.getDistributeOrgDonationQueueUrl()
+    return this.sendMessage(url, payload)
+  }
+
   async sendMessage (url, payload) {
     return this.sqs.sendMessage({
       QueueUrl: url,

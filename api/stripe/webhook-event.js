@@ -36,7 +36,18 @@ module.exports = async (req, res, ctx) => {
             paymentSuccess: true
           })
         } else {
-          // TODO look up organization ID from orgranization table
+          const organizationId = await ctx.db.organization.getIdByCustomerId({ customerId: customer })
+          if (!organizationId) {
+            throw new Error('Received a valid Stripe webhook event that contained a non-existant customer id')
+          }
+
+          await ctx.sqs.sendDistributeOrgDonationMessage({
+            organizationId: organizationId.toString(),
+            amount,
+            description,
+            timestamp: Date.now(),
+            paymentSuccess: true
+          })
         }
         break
       }
@@ -45,7 +56,7 @@ module.exports = async (req, res, ctx) => {
     }
 
     // Return a response to acknowledge receipt of the event, must do this quickly to ensure stripe
-    // doesnt designate this request as a timeout https://stripe.com/docs/webhooks
+    // doesn't designate this request as a timeout https://stripe.com/docs/webhooks
     res.send({ received: true })
   } catch (e) {
     ctx.log.error(e)
