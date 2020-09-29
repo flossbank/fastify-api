@@ -24,6 +24,11 @@ module.exports = async (req, res, ctx) => {
       role: created ? ORG_ROLES.WRITE : ORG_ROLES.READ
     })
 
+    await ctx.auth.organization.updateWebSession({
+      sessionId: req.session.sessionId,
+      organizationId: org.id.toString()
+    })
+
     res.send({ success: true, organization: org, created })
   } catch (e) {
     ctx.log.error(e)

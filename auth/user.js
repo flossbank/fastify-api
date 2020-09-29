@@ -55,6 +55,7 @@ class UserAuthController {
     const sessionItem = {
       sessionId,
       userId,
+      organizationId: undefined,
       expiration: this.common.getUnixTimestampPlus(this.constants.USER_WEB_SESSION_TIMEOUT)
     }
     await this.docs.put({

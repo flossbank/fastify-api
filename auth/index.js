@@ -7,6 +7,7 @@ const niceware = require('eff-diceware-passphrase')
 const UserAuth = require('./user')
 const AdvertiserAuth = require('./advertiser')
 const MaintainerAuth = require('./maintainer')
+const OrganizationAuth = require('./organization')
 
 // General purpose authentication functions with more specific logic nested per usecase
 class Auth {
@@ -14,6 +15,7 @@ class Auth {
     this.user = new UserAuth({ docs, config, common: this })
     this.advertiser = new AdvertiserAuth({ docs, config, common: this })
     this.maintainer = new MaintainerAuth({ docs, config, common: this })
+    this.organization = new OrganizationAuth({ docs, config, common: this })
 
     this.docs = docs
     this.post = got.post
@@ -32,6 +34,28 @@ class Auth {
         ExpressionAttributeValues: {
           ':now': Date.now() / 1000,
           ':newExpiration': this.getUnixTimestampPlus(expirationIncrementSeconds)
+        },
+        ReturnValues: 'ALL_OLD'
+      }).promise()
+      return Attributes
+    } catch (e) {
+      if (e.code === 'ConditionalCheckFailedException') {
+        // this means the token has expired
+        return
+      }
+      throw e
+    }
+  }
+
+  async addOrganizationToWebSession ({ tableName, sessionId, organizationId }) {
+    if (!sessionId || !organizationId) { return }
+    try {
+      const { Attributes } = await this.docs.update({
+        TableName: tableName,
+        Key: { sessionId },
+        UpdateExpression: 'SET organizationId = :organizationId',
+        ExpressionAttributeValues: {
+          ':organizationId': organizationId
         },
         ReturnValues: 'ALL_OLD'
       }).promise()
