@@ -48,7 +48,11 @@ test('POST `/organization/github-list-orgs` 200 success', async (t) => {
     role: ORG_ROLES.WRITE
   }])
 
-  t.deepEqual(payload.organizations, [{ name: 'flossbank', host: 'GitHub' }])
+  t.deepEqual(payload.organizations, [{
+    name: 'flossbank',
+    host: 'GitHub',
+    id: org.id.toString()
+  }])
   t.is(payload.success, true)
 })
 
@@ -74,8 +78,8 @@ test('POST `/organization/github-list-orgs` 200 success | multiple orgs', async 
   t.truthy(user.organizations.find((rel) => rel.organizationId === org2.id.toString()))
 
   t.deepEqual(payload.organizations, [
-    { name: 'flossbank', host: 'GitHub' },
-    { name: 'yttrium', host: 'GitHub' }
+    { name: 'flossbank', host: 'GitHub', id: org1.id.toString() },
+    { name: 'yttrium', host: 'GitHub', id: org2.id.toString() }
   ])
   t.is(payload.success, true)
 })

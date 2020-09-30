@@ -14,7 +14,12 @@ module.exports = async (req, res, ctx) => {
     const { GitHub } = user.codeHost
     const { accessToken } = GitHub
     const { orgsData } = await ctx.github.getUserOrgs({ accessToken })
-    const orgsMap = orgsData.map((org) => ({ name: org.login, host: CODE_HOSTS.GitHub }))
+    const orgsMap = orgsData.map((org) => ({
+      name: org.login,
+      host: CODE_HOSTS.GitHub
+    }))
+
+    const orgsMapWithId = []
 
     for (let i = 0; i < orgsMap.length; i++) {
       const { name, host } = orgsMap[i]
@@ -22,6 +27,13 @@ module.exports = async (req, res, ctx) => {
       if (!org) {
         org = await ctx.db.organization.create({ name, host, userId: user.id.toString(), email: user.email })
       }
+
+      // Push to the orgs map with the org id
+      orgsMapWithId.push({
+        id: org.id.toString(),
+        name,
+        host
+      })
 
       // If the user hasn't been associated with the org yet, then associate them now
       if (!user.organizations || !user.organizations.find((org) => org.orgId)) {
@@ -33,7 +45,7 @@ module.exports = async (req, res, ctx) => {
       }
     }
 
-    res.send({ success: true, organizations: orgsMap })
+    res.send({ success: true, organizations: orgsMapWithId })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
