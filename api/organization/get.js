@@ -2,7 +2,7 @@ const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('..
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { organizationId } = req.query
+    const { organizationId } = req.params
     ctx.log.info('finding org with id %s', organizationId)
 
     let org = await ctx.db.organization.get({ orgId: organizationId })

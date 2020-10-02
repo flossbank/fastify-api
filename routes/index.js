@@ -146,7 +146,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getDonationInfo }, (req, res) => getUserDonationInfo(req, res, fastify))
   fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
 
-  // Organizatoin
+  // Organization
   fastify.post('/organization/github-list-orgs', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.githubListOrgs }, (req, res) => githubListOrgs(req, res, fastify))
   fastify.get('/organization/:organizationId', (req, res) => getOrganization(req, res, fastify))
   fastify.post('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.createDonation }, (req, res) => createOrgDonation(req, res, fastify))
