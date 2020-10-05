@@ -58,7 +58,7 @@ test('POST `/organization/github-list-orgs` 200 success', async (t) => {
 
 test('POST `/organization/github-list-orgs` 200 success | multiple orgs', async (t) => {
   t.context.github.getUserOrgs.resolves({
-    orgsData: [{ login: 'flossbank' }, { login: 'yttrium', url: 'other_stuff' }]
+    orgsData: [{ login: 'vscodium' }, { login: 'yttrium', url: 'other_stuff' }]
   })
 
   const res = await t.context.app.inject({
@@ -72,13 +72,13 @@ test('POST `/organization/github-list-orgs` 200 success | multiple orgs', async 
   const payload = JSON.parse(res.payload)
 
   const user = await t.context.db.user.get({ userId: t.context.userId1 })
-  const org1 = await t.context.db.organization.getByNameAndHost({ name: 'flossbank', host: CODE_HOSTS.GitHub })
+  const org1 = await t.context.db.organization.getByNameAndHost({ name: 'vscodium', host: CODE_HOSTS.GitHub })
   const org2 = await t.context.db.organization.getByNameAndHost({ name: 'yttrium', host: CODE_HOSTS.GitHub })
   t.truthy(user.organizations.find((rel) => rel.organizationId === org1.id.toString()))
   t.truthy(user.organizations.find((rel) => rel.organizationId === org2.id.toString()))
 
   t.deepEqual(payload.organizations, [
-    { name: 'flossbank', host: 'GitHub', id: org1.id.toString() },
+    { name: 'vscodium', host: 'GitHub', id: org1.id.toString() },
     { name: 'yttrium', host: 'GitHub', id: org2.id.toString() }
   ])
   t.is(payload.success, true)
