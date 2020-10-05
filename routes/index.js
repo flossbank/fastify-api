@@ -49,11 +49,11 @@ const githubAuthUser = require('../api/user/github-auth')
 
 // Organization
 const githubListOrgs = require('../api/organization/github-list-orgs')
-const chooseOrg = require('../api/organization/choose')
 const createOrgDonation = require('../api/organization/donation-create')
 const getOrgDonationInfo = require('../api/organization/get-donation-info')
 const updateOrgDonation = require('../api/organization/donation-update')
 const deleteOrgDonation = require('../api/organization/donation-delete')
+const getOrganization = require('../api/organization/get')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -146,9 +146,9 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getDonationInfo }, (req, res) => getUserDonationInfo(req, res, fastify))
   fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
 
-  // Organizatoin
-  fastify.get('/organization/github-list-orgs', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.githubListOrgs }, (req, res) => githubListOrgs(req, res, fastify))
-  fastify.post('/organization/choose', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.chooseOrg }, (req, res) => chooseOrg(req, res, fastify))
+  // Organization
+  fastify.post('/organization/github-list-orgs', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.githubListOrgs }, (req, res) => githubListOrgs(req, res, fastify))
+  fastify.get('/organization/:organizationId', (req, res) => getOrganization(req, res, fastify))
   fastify.post('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.createDonation }, (req, res) => createOrgDonation(req, res, fastify))
   fastify.put('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.updateDonation }, (req, res) => updateOrgDonation(req, res, fastify))
   fastify.delete('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.deleteDonation }, (req, res) => deleteOrgDonation(req, res, fastify))
