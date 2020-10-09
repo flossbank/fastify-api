@@ -38,6 +38,12 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
   t.deepEqual(user.codeHost, { GitHub: { accessToken: 'test_access_token' } })
+
+  // make sure that their API key was cached in Dynamo
+  const { auth } = t.context
+  const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
+
+  t.true(apiKeyInfo.apiKey.length > 0)
 })
 
 test('POST `/user/github-auth` 200 success | existing user', async (t) => {
