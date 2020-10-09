@@ -21,6 +21,7 @@ module.exports = async (req, res, ctx) => {
     if (!user) {
       created = true
       user = await ctx.db.user.create({ email })
+      await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
     }
     await ctx.db.user.attachAccessToken({ userId: user.id.toString(), host: CODE_HOSTS.GitHub, accessToken })
 
