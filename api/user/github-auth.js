@@ -21,6 +21,7 @@ module.exports = async (req, res, ctx) => {
     if (!user) {
       created = true
       user = await ctx.db.user.create({ email })
+      await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
     }
 
     const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
