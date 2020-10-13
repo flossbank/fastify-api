@@ -1,4 +1,4 @@
-const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -23,7 +23,6 @@ module.exports = async (req, res, ctx) => {
       user = await ctx.db.user.create({ email })
       await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
     }
-    await ctx.db.user.attachAccessToken({ userId: user.id.toString(), host: CODE_HOSTS.GitHub, accessToken })
 
     const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
     res.setCookie(
