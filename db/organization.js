@@ -6,6 +6,15 @@ class OrganizationDbController {
     this.db = db
   }
 
+  async findOrgsByNameAndHost ({ names, host }) {
+    const orgs = await this.db.collection('organizations').find({
+      name: { $in: names },
+      host
+    }).toArray()
+
+    return orgs.map((org) => ({ id: org._id, ...org }))
+  }
+
   async getByNameAndHost ({ name, host }) {
     const org = await this.db.collection('organizations').findOne({ name, host })
 
@@ -31,11 +40,12 @@ class OrganizationDbController {
     return org && org._id
   }
 
-  async create ({ name, host, userId, email }) {
+  async create ({ name, host, userId, email, avatarUrl }) {
     const orgToInsert = {
       name,
       host,
       email,
+      avatarUrl,
       users: [{
         userId,
         role: ORG_ROLES.WRITE
