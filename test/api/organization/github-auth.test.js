@@ -41,8 +41,8 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
 
-  t.is(!!payload.user.id, true)
-  t.is(payload.success, true)
+  t.true(!!payload.user.id)
+  t.true(payload.success)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
 
