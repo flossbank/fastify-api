@@ -23,9 +23,7 @@ module.exports = async (req, res, ctx) => {
     }
 
     const { orgsData } = await ctx.github.getUserOrgs({ accessToken })
-    const orgNames = orgsData.reduce((acc, org) => {
-      return acc.concat(org.login)
-    }, [])
+    const orgNames = orgsData.map((org) => org.login)
 
     const existingFlossbankOrgs = await ctx.db.organization.findOrgsByNameAndHost({
       names: orgNames,
