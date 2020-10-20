@@ -7,15 +7,32 @@ const { MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/c
  */
 module.exports = async (req, res, ctx) => {
   try {
-    // const { installationId } = req.body
+    const { installationId } = req.body
+    const existingOrg = await ctx.db.organization.getByInstallationId({ installationId })
 
-    // TODO authenticate with GH
-    // TODO get the org data from GH
+    if (existingOrg) {
+      return res.send({ success: true, organization: existingOrg })
+    }
+
+    let installationDetails
+    try {
+      installationDetails = await ctx.github.getInstallationDetails({ installationId })
+    } catch (e) {
+      if (e.response && e.response.statusCode === 404) {
+        ctx.log.warn('Attempt to create GH organization with an invalid installation ID', installationId)
+        return res.status(404).send({ success: false })
+      }
+      throw e
+    }
+
+    const { account } = installationDetails
+    const { login: name, avatar_url: avatarUrl } = account
 
     const organization = await ctx.db.organization.create({
-      name: 'name goes here', // TODO populate
+      name,
+      installationId,
       host: CODE_HOSTS.GitHub,
-      avatarUrl: 'avatar url goes here' // TODO populate
+      avatarUrl
     })
 
     res.send({ success: true, organization })

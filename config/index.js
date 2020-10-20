@@ -118,6 +118,13 @@ class Config {
     return 500
   }
 
+  getGithubAppConfig () {
+    return {
+      id: this.env.github_app_id,
+      privateKey: this.env.github_app_pem
+    }
+  }
+
   getGitHubClientId () {
     return this.env.github_client_id
   }

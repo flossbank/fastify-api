@@ -6,13 +6,18 @@ test.beforeEach((t) => {
   t.context.github = new GitHub({
     config: {
       getGitHubClientId: () => 'valhalla',
-      getGitHubClientSecret: () => 'valhalla_secret'
+      getGitHubClientSecret: () => 'valhalla_secret',
+      getGithubAppConfig: () => ({ id: 'abc', privateKey: 'def' })
     }
   })
   t.context.github.got = {
     post: sinon.stub(),
     get: sinon.stub()
   }
+})
+
+test('constructs gh app', async (t) => {
+  t.true(!!t.context.github.app)
 })
 
 test('github | request access token with state and code', async (t) => {
@@ -39,4 +44,22 @@ test('github | get user orgs', async (t) => {
   const res = await t.context.github.getUserOrgs({ accessToken: 'blah_blah' })
 
   t.deepEqual(res, { orgsData: [{ login: 'flossbank' }] })
+})
+
+test('getInstallationDetails', async (t) => {
+  const { github } = t.context
+  const { got, app } = github
+  app.getSignedJsonWebToken = sinon.stub().returns('a gr8 jwt')
+  got.get.returns({ body: JSON.stringify({ account: { login: 'flossbank' } }) })
+
+  await github.getInstallationDetails({ installationId: 'install123' })
+
+  t.true(app.getSignedJsonWebToken.calledOnce)
+  const { args } = got.get.lastCall
+  const [url, options] = args
+  t.true(url.includes('install123'))
+
+  const { headers } = options
+  const { authorization } = headers
+  t.true(authorization.includes('a gr8 jwt'))
 })

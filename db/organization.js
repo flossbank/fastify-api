@@ -39,10 +39,22 @@ class OrganizationDbController {
     return org && org._id
   }
 
-  async create ({ name, host, email, avatarUrl }) {
+  async getByInstallationId ({ installationId }) {
+    const org = await this.db.collection('organizations').findOne({
+      installationId
+    })
+
+    if (!org) return org
+
+    const { _id: id, ...rest } = org
+    return { id, ...rest }
+  }
+
+  async create ({ name, host, installationId, email, avatarUrl }) {
     const orgToInsert = {
       name,
       host,
+      installationId,
       email,
       avatarUrl,
       globalDonation: false,
