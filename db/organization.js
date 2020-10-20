@@ -1,4 +1,3 @@
-const { ORG_ROLES } = require('../helpers/constants')
 const { ObjectId } = require('mongodb')
 
 class OrganizationDbController {
@@ -40,16 +39,24 @@ class OrganizationDbController {
     return org && org._id
   }
 
-  async create ({ name, host, userId, email, avatarUrl }) {
+  async getByInstallationId ({ installationId }) {
+    const org = await this.db.collection('organizations').findOne({
+      installationId
+    })
+
+    if (!org) return org
+
+    const { _id: id, ...rest } = org
+    return { id, ...rest }
+  }
+
+  async create ({ name, host, installationId, email, avatarUrl }) {
     const orgToInsert = {
       name,
       host,
+      installationId,
       email,
       avatarUrl,
-      users: [{
-        userId,
-        role: ORG_ROLES.WRITE
-      }],
       globalDonation: false,
       billingInfo: {},
       donationAmount: 0,
