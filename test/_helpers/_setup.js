@@ -11,7 +11,7 @@ const mocks = require('./_mocks')
 
 exports.before = async function (t, setup) {
   const mongo = new MongoMemoryServer()
-  const mongoUri = await mongo.getConnectionString()
+  const mongoUri = await mongo.getUri()
 
   const config = new Config({
     env: {
