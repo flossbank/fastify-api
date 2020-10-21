@@ -119,10 +119,9 @@ class Config {
   }
 
   getGithubAppConfig () {
-    return {
-      id: this.env.github_app_id,
-      privateKey: this.env.github_app_pem
-    }
+    const id = this.env.github_app_id
+    const privateKey = Buffer.from(this.env.github_app_pem, 'base64').toString('utf8')
+    return { id, privateKey }
   }
 
   getGitHubClientId () {
