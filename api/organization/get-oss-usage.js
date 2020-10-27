@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR, NO_SNAPSHOTS } } = require('../../helpers/constants') // eslint-disable-line
+const { MSGS: { INTERNAL_SERVER_ERROR, NO_SNAPSHOTS } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
