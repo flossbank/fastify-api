@@ -74,6 +74,20 @@ class OrganizationDbController {
     })
   }
 
+  async addSnapshot ({ orgId, totalDeps, topLevelDeps }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $push: {
+        snapshots: {
+          timestamp: Date.now(),
+          totalDependencies: totalDeps,
+          topLevelDependencies: topLevelDeps
+        }
+      }
+    })
+  }
+
   async setDonation ({ orgId, amount, globalDonation = false }) {
     // Amount in this case is passed in as cents so need to convert to mc
     const donationInMc = amount * 1000
