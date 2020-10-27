@@ -43,19 +43,19 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('GET `/organization/get-oss-details` 404 unauthorized | no org found', async (t) => {
+test('GET `/organization/get-oss-usage` 404 unauthorized | no org found', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/organization/get-oss-details',
+    url: '/organization/get-oss-usage',
     query: { organizationId: 'aaaaaaaaaaaa' }
   })
   t.deepEqual(res.statusCode, 404)
 })
 
-test('GET `/organization/get-oss-details` 200 success', async (t) => {
+test('GET `/organization/get-oss-usage` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/organization/get-oss-details',
+    url: '/organization/get-oss-usage',
     query: { organizationId: t.context.orgId1 }
   })
   t.deepEqual(res.statusCode, 200)
@@ -66,21 +66,21 @@ test('GET `/organization/get-oss-details` 200 success', async (t) => {
   })
 })
 
-test('GET `/organization/get-oss-details` 404 error | no snapshots yet', async (t) => {
+test('GET `/organization/get-oss-usage` 404 error | no snapshots yet', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/organization/get-oss-details',
+    url: '/organization/get-oss-usage',
     query: { organizationId: t.context.orgId2 }
   })
   t.deepEqual(res.statusCode, 404)
   t.deepEqual(JSON.parse(res.payload), { success: false, message: NO_SNAPSHOTS })
 })
 
-test('GET `/organization/get-oss-details` 500 server error', async (t) => {
+test('GET `/organization/get-oss-usage` 500 server error', async (t) => {
   t.context.db.organization.get = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/organization/get-oss-details',
+    url: '/organization/get-oss-usage',
     query: { organizationId: t.context.orgId1 }
   })
   t.deepEqual(res.statusCode, 500)

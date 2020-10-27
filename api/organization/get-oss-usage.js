@@ -22,12 +22,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: NO_SNAPSHOTS })
     }
 
-    const latestOssDetails = org.snapshots.reduce((acc, snapshot) => {
-      if (acc && acc.timestamp > snapshot.timestamp) return acc
-      return snapshot
-    })
-
-    res.send({ success: true, details: latestOssDetails })
+    res.send({ success: true, details: org.snapshots.pop() })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
