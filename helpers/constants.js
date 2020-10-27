@@ -12,6 +12,7 @@ module.exports = {
     INVALID_EVENT_SIG: 'Invalid event or signature',
     INVALID_API_KEY: 'Invalid API key',
     NO_DONATION: 'No donation found',
+    NO_SNAPSHOTS: 'No snapshots found',
     DONATION_ALREADY_EXISTS: 'Donation already exists',
     URL_NOT_FOUND: 'URL identifier not found'
   },
