@@ -41,6 +41,7 @@ module.exports = {
     this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
     this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
     this.getInstallationDetails = sinon.stub().resolves()
+    this.isUserAnOrgAdmin = sinon.stub().resolves(true)
   },
   EthicalAdsGot: () => ({
     body: {
