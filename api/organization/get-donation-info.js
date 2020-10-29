@@ -17,24 +17,28 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    // If user doesn't have perms for this org - return 401
-    // TODO check GH to see if user's email has admin permissions to the org
-    ctx.log.warn('attempt to get donation info for org user doesnt have perms to')
-    res.status(401)
-    return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
+    // confirm user is an admin of the GH org
+    const user = await ctx.db.user.get({ userId: req.session.userId })
+    const { githubId } = user
 
-    // // If the org doesn't have a donation, return not found
-    // if (!org.monthlyDonation) {
-    //   res.status(404)
-    //   return res.send({ success: false, message: NO_DONATION })
-    // }
+    if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization: org })) {
+      ctx.log.warn('attempt to create donation for org user doesnt have write perms to')
+      res.status(401)
+      return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
+    }
 
-    // if (!org.billingInfo.customerId) throw new Error('No customer id for org when fetching donation info donation')
+    // If the org doesn't have a donation, return not found
+    if (!org.monthlyDonation) {
+      res.status(404)
+      return res.send({ success: false, message: NO_DONATION })
+    }
 
-    // const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
-    //   customerId: org.billingInfo.customerId
-    // })
-    // res.send({ success: true, donationInfo })
+    if (!org.billingInfo.customerId) throw new Error('No customer id for org when fetching donation info donation')
+
+    const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
+      customerId: org.billingInfo.customerId
+    })
+    res.send({ success: true, donationInfo })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

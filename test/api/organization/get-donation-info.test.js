@@ -95,7 +95,7 @@ test('GET `/organization/get-donation-info` 401 unauthorized | middleware', asyn
 })
 
 test('GET `/organization/get-donation-info` 401 unauthorized | user doesnt have perms', async (t) => {
-  // User with cookie "sessionWithDonation" doesn't have perms for org 4
+  t.context.github.isUserAnOrgAdmin.resolves(false)
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -123,7 +123,7 @@ test('GET `/organization/get-donation-info` 404 unauthorized | no org found', as
   t.deepEqual(res.statusCode, 404)
 })
 
-test.failing('GET `/organization/get-donation-info` 200 success', async (t) => {
+test('GET `/organization/get-donation-info` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -143,7 +143,7 @@ test.failing('GET `/organization/get-donation-info` 200 success', async (t) => {
   }))
 })
 
-test.failing('GET `/organization/get-donation-info` 404 error | donation not found', async (t) => {
+test('GET `/organization/get-donation-info` 404 error | donation not found', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -157,7 +157,7 @@ test.failing('GET `/organization/get-donation-info` 404 error | donation not fou
   t.true(t.context.stripe.getStripeCustomerDonationInfo.notCalled)
 })
 
-test.failing('GET `/organization/get-donation-info` Error thrown when no customer id', async (t) => {
+test('GET `/organization/get-donation-info` Error thrown when no customer id', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -169,7 +169,7 @@ test.failing('GET `/organization/get-donation-info` Error thrown when no custome
   t.deepEqual(res.statusCode, 500)
 })
 
-test.failing('GET `/organization/get-donation-info` 500 server error', async (t) => {
+test('GET `/organization/get-donation-info` 500 server error', async (t) => {
   t.context.stripe.getStripeCustomerDonationInfo = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',

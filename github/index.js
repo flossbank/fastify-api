@@ -49,6 +49,29 @@ class GitHub {
     return body
   }
 
+  async isUserAnOrgAdmin ({ userGitHubId, organization }) {
+    const { installationId, name } = organization
+    const token = await this.app.getInstallationAccessToken({ installationId })
+
+    // get org admins
+    const admins = await this.got.paginate.all(
+      `https://api.github.com/orgs/${name}/members`, {
+        searchParams: {
+          role: 'admin',
+          per_page: 100
+        },
+        responseType: 'json',
+        headers: {
+          accept: 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+
+    // return whether or not user's ID is one of the admins
+    return !!admins.find(user => user.id === userGitHubId)
+  }
+
   async makeAuthedReq (method, endpoint, accessToken) {
     return this.got[method](endpoint, {
       headers: {

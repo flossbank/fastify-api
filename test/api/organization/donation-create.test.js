@@ -74,7 +74,8 @@ test('POST `/organization/donation` 401 unauthorized | middleware', async (t) =>
 })
 
 test('POST `/organization/donation` 401 unauthorized | user doesnt have access', async (t) => {
-  // User two doesn't have perms for org 1, so shouldn't even be able to see it
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/donation',
@@ -108,7 +109,7 @@ test('POST `/organization/donation` 404 | no org by that id', async (t) => {
   t.deepEqual(res.statusCode, 404)
 })
 
-test.failing('POST `/organization/donation` 200 success | update card on file', async (t) => {
+test('POST `/organization/donation` 200 success | update card on file', async (t) => {
   const amountToDonateCents = 1000000
   const res = await t.context.app.inject({
     method: 'POST',
@@ -157,7 +158,7 @@ test.failing('POST `/organization/donation` 200 success | update card on file', 
   t.deepEqual(res2.statusCode, 409)
 })
 
-test.failing('POST `/organization/donation` 200 success | first card added ', async (t) => {
+test('POST `/organization/donation` 200 success | first card added ', async (t) => {
   const amountToDonateCents = 1000000
   const res = await t.context.app.inject({
     method: 'POST',
@@ -195,7 +196,7 @@ test.failing('POST `/organization/donation` 200 success | first card added ', as
   }))
 })
 
-test.failing('POST `/organization/donation` 500 server error', async (t) => {
+test('POST `/organization/donation` 500 server error', async (t) => {
   t.context.db.organization.setDonation = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',

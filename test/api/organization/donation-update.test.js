@@ -68,6 +68,7 @@ test('PUT `/organization/donation` 401 unauthorized | middleware', async (t) => 
 })
 
 test('PUT `/organization/donation` 401 unauthorized | user doesnt have perms', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/organization/donation',
@@ -132,7 +133,7 @@ test('PUT `/organization/donation` 400', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test.failing('PUT `/organization/donation` 200 success', async (t) => {
+test('PUT `/organization/donation` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/organization/donation',
@@ -161,7 +162,7 @@ test.failing('PUT `/organization/donation` 200 success', async (t) => {
   }))
 })
 
-test.failing('PUT `/organization/donation` 404 error | donation not found', async (t) => {
+test('PUT `/organization/donation` 404 error | donation not found', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/organization/donation',

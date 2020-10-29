@@ -1,8 +1,8 @@
-const { ORG_ROLES, MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS } } = require('../../helpers/constants') // eslint-disable-line
+const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { amount, billingToken, organizationId, globalDonation } = req.body // eslint-disable-line
+    const { amount, billingToken, organizationId, globalDonation } = req.body
     ctx.log.info('creation donation for %s organization id for amount %s, token %s', organizationId, amount, billingToken)
 
     /**
@@ -18,47 +18,51 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    // If user doesn't have write permissions, return 401
-    // TODO check GH to see if user's email has admin permissions to the org
-    ctx.log.warn('attempt to create donation for org user doesnt have write perms to')
-    res.status(401)
-    return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
+    // confirm user is an admin of the GH org
+    const user = await ctx.db.user.get({ userId: req.session.userId })
+    const { githubId } = user
 
-    // // If the org already has a donation, return conflict
-    // if (org.monthlyDonation) {
-    //   res.status(409)
-    //   return res.send({ success: false, message: DONATION_ALREADY_EXISTS })
-    // }
+    if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization: org })) {
+      ctx.log.warn('attempt to create donation for org user doesnt have write perms to')
+      res.status(401)
+      return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
+    }
 
-    // let customerId
-    // if (!org.billingInfo || !org.billingInfo.customerId) {
-    //   // Create stripe customer, and add the stripe customer id to db
-    //   const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: org.email })
-    //   await ctx.db.organization.updateCustomerId({
-    //     orgId: org.id.toString(),
-    //     customerId: stripeCustomer.id
-    //   })
+    // If the org already has a donation, return conflict
+    if (org.monthlyDonation) {
+      res.status(409)
+      return res.send({ success: false, message: DONATION_ALREADY_EXISTS })
+    }
 
-    //   customerId = stripeCustomer.id
-    // } else {
-    //   customerId = org.billingInfo.customerId
-    // }
+    let customerId
+    if (!org.billingInfo || !org.billingInfo.customerId) {
+      // Create stripe customer, and add the stripe customer id to db
+      const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: org.email })
+      await ctx.db.organization.updateCustomerId({
+        orgId: org.id.toString(),
+        customerId: stripeCustomer.id
+      })
 
-    // // Update the stripe customer with the billing token (stripe CC card token)
-    // await ctx.stripe.updateStripeCustomer({
-    //   customerId,
-    //   sourceId: billingToken
-    // })
+      customerId = stripeCustomer.id
+    } else {
+      customerId = org.billingInfo.customerId
+    }
 
-    // // Create the subscription and donation in stripe as well as mongo
-    // await ctx.stripe.createDonation({ customerId, amount })
-    // await ctx.db.organization.setDonation({
-    //   orgId: org.id.toString(),
-    //   amount,
-    //   globalDonation
-    // })
+    // Update the stripe customer with the billing token (stripe CC card token)
+    await ctx.stripe.updateStripeCustomer({
+      customerId,
+      sourceId: billingToken
+    })
 
-    // res.send({ success: true })
+    // Create the subscription and donation in stripe as well as mongo
+    await ctx.stripe.createDonation({ customerId, amount })
+    await ctx.db.organization.setDonation({
+      orgId: org.id.toString(),
+      amount,
+      globalDonation
+    })
+
+    res.send({ success: true })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

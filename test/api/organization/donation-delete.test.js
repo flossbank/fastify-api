@@ -95,7 +95,7 @@ test('DELETE `/organization/donation` 401 unauthorized | middleware', async (t) 
 })
 
 test('DELETE `/organization/donation` 401 unauthorized | user doesnt have perms', async (t) => {
-  // User with cookie "sessionWithDonation" doesn't have perms for org 4
+  t.context.github.isUserAnOrgAdmin.resolves(false)
   const res = await t.context.app.inject({
     method: 'DELETE',
     url: '/organization/donation',
@@ -123,7 +123,7 @@ test('DELETE `/organization/donation` 404 unauthorized | no org found', async (t
   t.deepEqual(res.statusCode, 404)
 })
 
-test.failing('DELETE `/organization/donation` 200 success', async (t) => {
+test('DELETE `/organization/donation` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'DELETE',
     url: '/organization/donation',
@@ -144,7 +144,7 @@ test.failing('DELETE `/organization/donation` 200 success', async (t) => {
   t.false(donationLedgerAddition.globalDonation)
 })
 
-test.failing('DELETE `/organization/donation` 404 error | donation not found', async (t) => {
+test('DELETE `/organization/donation` 404 error | donation not found', async (t) => {
   const res = await t.context.app.inject({
     method: 'DELETE',
     url: '/organization/donation',
@@ -158,7 +158,7 @@ test.failing('DELETE `/organization/donation` 404 error | donation not found', a
   t.true(t.context.stripe.deleteDonation.notCalled)
 })
 
-test.failing('DELETE `/organization/donation` Error thrown when no customer id', async (t) => {
+test('DELETE `/organization/donation` Error thrown when no customer id', async (t) => {
   const res = await t.context.app.inject({
     method: 'DELETE',
     url: '/organization/donation',
@@ -170,7 +170,7 @@ test.failing('DELETE `/organization/donation` Error thrown when no customer id',
   t.deepEqual(res.statusCode, 500)
 })
 
-test.failing('DELETE `/organization/donation` 500 server error', async (t) => {
+test('DELETE `/organization/donation` 500 server error', async (t) => {
   t.context.stripe.deleteDonation = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'DELETE',
