@@ -3,7 +3,7 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
-    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
+    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', githubId: 'id-1' })
     t.context.userId1 = userId1.toHexString()
   })
 })
@@ -37,6 +37,8 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
   t.is(payload.created, true)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
+  // Ensure github id was attached
+  t.is(user.githubId, 'id-1')
 
   // make sure that their API key was cached in Dynamo
   const { auth } = t.context
@@ -46,9 +48,10 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
 })
 
 test('POST `/user/github-auth` 200 success | existing user', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com' })
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
   const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.deepEqual(userBefore.codeHost, undefined)
+  t.is(userBefore.codeHost, undefined)
+  t.is(userBefore.githubId, 'id-1')
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -64,6 +67,9 @@ test('POST `/user/github-auth` 200 success | existing user', async (t) => {
   t.is(!!payload.user.id, true)
   t.is(payload.success, true)
   t.is(payload.created, false)
+
+  const userAfter = await t.context.db.user.get({ userId: payload.user.id })
+  t.is(userAfter.githubId, 'id-2')
 })
 
 test('POST `/user/github-auth` 400 bad request | no state', async (t) => {

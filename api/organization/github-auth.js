@@ -15,11 +15,14 @@ module.exports = async (req, res, ctx) => {
      * - return the intersection of the mongo scan and the github orgs list
      */
     const accessToken = await ctx.github.requestAccessToken({ code, state })
-    const { email } = await ctx.github.requestUserData({ accessToken })
+    const { email, githubId } = await ctx.github.requestUserData({ accessToken })
     let user = await ctx.db.user.getByEmail({ email })
     if (!user) {
-      user = await ctx.db.user.create({ email })
+      user = await ctx.db.user.create({ email, githubId })
       await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
+    } else if (user.githubId !== githubId) {
+      // If github user ids are different, update github user id
+      await ctx.db.user.updateGithubId({ userId: user.id, githubId })
     }
 
     const { orgsData } = await ctx.github.getUserOrgs({ accessToken })

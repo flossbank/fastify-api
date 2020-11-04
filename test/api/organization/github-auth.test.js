@@ -4,7 +4,7 @@ const { CODE_HOSTS } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
-    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
+    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', githubId: 'id-1' })
     t.context.userId1 = userId1.toHexString()
 
     t.context.flossbankOrg = await db.organization.create({
@@ -45,6 +45,7 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
   t.true(payload.success)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
+  t.is(user.githubId, 'id-1')
 
   // make sure that their API key was cached in Dynamo
   const { auth } = t.context
@@ -54,9 +55,10 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
 })
 
 test('POST `/organization/github-auth` 200 success | existing user', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com' })
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
   const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
   t.deepEqual(userBefore.codeHost, undefined)
+  t.is(userBefore.githubId, 'id-1')
 
   const res = await t.context.app.inject({
     method: 'POST',
@@ -71,6 +73,9 @@ test('POST `/organization/github-auth` 200 success | existing user', async (t) =
 
   t.true(!!payload.user.id)
   t.true(payload.success)
+
+  const userAfter = await t.context.db.user.get({ userId: payload.user.id })
+  t.is(userAfter.githubId, 'id-2')
 })
 
 test('POST `/organization/github-auth` 200 success | overlapping org', async (t) => {
