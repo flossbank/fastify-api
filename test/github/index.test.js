@@ -34,12 +34,12 @@ test('github | request access token with state and code', async (t) => {
 })
 
 test('github | request user info', async (t) => {
-  t.context.github.got.get.returns({ body: JSON.stringify({ email: 'joelwass@joel.com' }) })
+  t.context.github.got.get.returns({ body: JSON.stringify({ email: 'joelwass@joel.com', id: 'id-1' }) })
   const res = await t.context.github.requestUserData({
     accessToken: 'test_access_token'
   })
 
-  t.deepEqual(res, { email: 'joelwass@joel.com' })
+  t.deepEqual(res, { email: 'joelwass@joel.com', githubId: 'id-1' })
 })
 
 test('github | get user orgs', async (t) => {

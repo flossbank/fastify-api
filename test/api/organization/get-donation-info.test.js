@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION, INSUFFICIENT_PERMISSIONS } } = require('../../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION } } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -80,35 +80,6 @@ test.afterEach(async (t) => {
 
 test.after.always(async (t) => {
   await after(t)
-})
-
-test('GET `/organization/get-donation-info` 401 unauthorized | middleware', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization/get-donation-info',
-    query: { organizationId: t.context.orgId1 },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/organization/get-donation-info` 401 unauthorized | user doesnt have perms', async (t) => {
-  t.context.github.isUserAnOrgAdmin.resolves(false)
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization/get-donation-info',
-    query: { organizationId: t.context.orgId4 },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-  t.deepEqual(JSON.parse(res.payload), {
-    success: false,
-    message: INSUFFICIENT_PERMISSIONS
-  })
 })
 
 test('GET `/organization/get-donation-info` 404 unauthorized | no org found', async (t) => {

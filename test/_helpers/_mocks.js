@@ -38,7 +38,7 @@ module.exports = {
   },
   GitHub: function GitHub () {
     this.requestAccessToken = sinon.stub().resolves('test_access_token')
-    this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
+    this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com', githubId: 'id-1' })
     this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
     this.getInstallationDetails = sinon.stub().resolves()
     this.isUserAnOrgAdmin = sinon.stub().resolves(true)

@@ -22,6 +22,14 @@ class UserDbController {
     return user && user._id
   }
 
+  async updateGithubId ({ userId, githubId }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $set: { githubId }
+    })
+  }
+
   async associateOrgWithUser ({ userId, orgId, role }) {
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
@@ -58,11 +66,12 @@ class UserDbController {
     }
   }
 
-  async create ({ email, referralCode }) {
+  async create ({ email, referralCode, githubId }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
     const userToCreate = {
       email,
       apiKey,
+      githubId,
       referralCode,
       billingInfo: {},
       apiKeysRequested: []
