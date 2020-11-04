@@ -82,18 +82,6 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('GET `/organization/get-donation-info` 401 unauthorized | middleware', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization/get-donation-info',
-    query: { organizationId: t.context.orgId1 },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
 test('GET `/organization/get-donation-info` 404 unauthorized | no org found', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',

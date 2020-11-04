@@ -155,7 +155,7 @@ async function routes (fastify, opts, done) {
   fastify.post('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.createDonation }, (req, res) => createOrgDonation(req, res, fastify))
   fastify.put('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.updateDonation }, (req, res) => updateOrgDonation(req, res, fastify))
   fastify.delete('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.deleteDonation }, (req, res) => deleteOrgDonation(req, res, fastify))
-  fastify.get('/organization/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.getDonationInfo }, (req, res) => getOrgDonationInfo(req, res, fastify))
+  fastify.get('/organization/get-donation-info', { schema: Schema.organization.getDonationInfo }, (req, res) => getOrgDonationInfo(req, res, fastify))
   fastify.get('/organization/get-oss-usage', { schema: Schema.organization.getOssUsage }, (req, res) => getOrgOssUsage(req, res, fastify))
 
   // Maintainer
