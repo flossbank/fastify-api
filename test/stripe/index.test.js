@@ -23,6 +23,9 @@ test.beforeEach((t) => {
         update: sinon.stub(),
         del: sinon.stub()
       },
+      charges: {
+        list: sinon.stub()
+      },
       webhooks: {
         constructEvent: sinon.stub().resolves()
       },
@@ -191,6 +194,35 @@ test('update donation | customer has one and new amount is same as existing amou
   })
   t.true(stripe.stripe.subscriptions.update.notCalled)
 })
+
+test('get charges list', async (t) => {
+  const { stripe } = t.context
+  stripe.stripe.charges.list.onFirstCall().resolves({
+    data: [
+      {
+        id: 'charge-id',
+        amount_collected: 100
+      }
+    ],
+    has_more: true
+  })
+  stripe.stripe.charges.list.onSecondCall().resolves({
+    data: [
+      {
+        id: 'charge-id-2',
+        amount_collected: 50
+      }
+    ],
+    has_more: false
+  })
+  await stripe.getStripeCustomerAllTransactions({ customerId: 'cust-id' })
+  t.deepEqual(stripe.stripe.charges.list.lastCall.args, [{
+    customer: 'cust-id',
+    limit: 100,
+    startingAfter: 'charge-id'
+  }])
+})
+
 test('delete donation | customer has one', async (t) => {
   const { stripe } = t.context
   stripe.stripe.customers.retrieve.resolves({
