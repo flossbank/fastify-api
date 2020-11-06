@@ -31,6 +31,31 @@ class Stripe {
     }
   }
 
+  async getStripeCustomerAllTransactions ({ customerId }) {
+    const transactions = await this.requestStripeCustomerTransactions({ customerId })
+    const charges = transactions.data
+    let hasMore = transactions.has_more
+    // If there's more, continue fetching them with the using the "startingAfter" param
+    // The starting after param takes in the id of the last object returned in the previous request
+    while (hasMore) {
+      const nextTransactions = await this.requestStripeCustomerTransactions({
+        customerId,
+        startingAfter: charges[charges.length - 1].id
+      })
+      hasMore = nextTransactions.has_more
+      charges.push(...nextTransactions.data)
+    }
+    return charges
+  }
+
+  async requestStripeCustomerTransactions ({ customerId, startingAfter }) {
+    return this.stripe.charges.list({
+      customer: customerId,
+      limit: 100,
+      startingAfter
+    })
+  }
+
   async updateStripeCustomer ({ customerId, sourceId }) {
     return this.stripe.customers.update(customerId, {
       source: sourceId,
