@@ -30,10 +30,10 @@ module.exports = async (req, res, ctx) => {
     const charges = await ctx.stripe.getStripeCustomerAllTransactions({
       customerId: org.billingInfo.customerId
     })
-    const totalDonationsMade = charges.reduce((acc, charge) => {
+    const totalDonated = charges.reduce((acc, charge) => {
       return acc + charge.amount_captured
     }, 0)
-    donationInfo.totalDonationsMade = totalDonationsMade
+    donationInfo.totalDonated = totalDonated
     res.send({ success: true, donationInfo })
   } catch (e) {
     ctx.log.error(e)

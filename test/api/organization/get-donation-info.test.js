@@ -106,7 +106,7 @@ test('GET `/organization/get-donation-info` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    donationInfo: { amount: 1000, last4: '4242', renewal: 1595197107000, totalDonationsMade: 1050 }
+    donationInfo: { amount: 1000, last4: '4242', renewal: 1595197107000, totalDonated: 1050 }
   })
   const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
   t.true(t.context.stripe.getStripeCustomerDonationInfo.calledWith({
