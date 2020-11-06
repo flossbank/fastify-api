@@ -32,7 +32,7 @@ class Stripe {
   }
 
   async getStripeCustomerAllTransactions ({ customerId }) {
-    const transactions = await this.requestStripeCustomerTransactions({ customerId, startingAfter: undefined })
+    const transactions = await this.requestStripeCustomerTransactions({ customerId })
     const charges = transactions.data
     let hasMore = transactions.has_more
     // If there's more, continue fetching them with the using the "startingAfter" param
@@ -43,7 +43,7 @@ class Stripe {
         startingAfter: charges[charges.length - 1].id
       })
       hasMore = nextTransactions.has_more
-      charges.concat(nextTransactions.data)
+      charges.push(...nextTransactions.data)
     }
     return charges
   }
