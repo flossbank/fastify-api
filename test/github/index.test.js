@@ -126,7 +126,7 @@ test('isUserAnOrgAdmin', async (t) => {
     globalDonation: false,
     billingInfo: {},
     donationAmount: 0,
-    donationAmountChanges: []
+    donationChanges: []
   }
   got.paginate.all.resolves(admins)
 

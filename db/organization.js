@@ -60,7 +60,7 @@ class OrganizationDbController {
       globalDonation: false,
       billingInfo: {},
       donationAmount: 0,
-      donationAmountChanges: []
+      donationChanges: []
     }
     const { insertedId } = await this.db.collection('organizations').insertOne(orgToInsert)
     return { id: insertedId, ...orgToInsert }
