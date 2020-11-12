@@ -118,6 +118,12 @@ class Config {
     return 500
   }
 
+  getGithubAppConfig () {
+    const id = this.env.github_app_id
+    const privateKey = Buffer.from(this.env.github_app_pem, 'base64').toString('utf8')
+    return { id, privateKey }
+  }
+
   getGitHubClientId () {
     return this.env.github_client_id
   }

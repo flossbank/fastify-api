@@ -1,4 +1,4 @@
-const { ORG_ROLES, MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -18,15 +18,16 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    // If user doesn't have write permissions, return 401
-    const userWithWritePerms = org.users.find((user) => {
-      return user.userId === req.session.userId && user.role === ORG_ROLES.WRITE
-    })
-    if (!userWithWritePerms) {
+    // confirm user is an admin of the GH org
+    const user = await ctx.db.user.get({ userId: req.session.userId })
+    const { githubId } = user
+
+    if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization: org })) {
       ctx.log.warn('attempt to create donation for org user doesnt have write perms to')
       res.status(401)
       return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
     }
+
     // If the org already has a donation, return conflict
     if (org.monthlyDonation) {
       res.status(409)

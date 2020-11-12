@@ -12,7 +12,6 @@ test.before(async (t) => {
     const { id: orgId1 } = await db.organization.create({
       name: 'flossbank',
       host: 'GitHub',
-      userId: t.context.userId1,
       email
     })
     t.context.orgId1 = orgId1.toString()
@@ -28,7 +27,6 @@ test.before(async (t) => {
     const { id: orgId2 } = await db.organization.create({
       name: 'vscodium',
       host: 'GitHub',
-      userId: t.context.userId2,
       email
     })
     t.context.orgId2 = orgId2.toString()
@@ -40,7 +38,6 @@ test.before(async (t) => {
     const { id: orgId3 } = await db.organization.create({
       name: 'vscodium',
       host: 'GitHub',
-      userId: t.context.userId2,
       email
     })
     t.context.orgId3 = orgId3.toString()
@@ -77,7 +74,8 @@ test('POST `/organization/donation` 401 unauthorized | middleware', async (t) =>
 })
 
 test('POST `/organization/donation` 401 unauthorized | user doesnt have access', async (t) => {
-  // User two doesn't have perms for org 1, so shouldn't even be able to see it
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/donation',

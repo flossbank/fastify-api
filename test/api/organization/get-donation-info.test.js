@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION, INSUFFICIENT_PERMISSIONS } } = require('../../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -13,7 +13,6 @@ test.before(async (t) => {
     const { id: orgId1 } = await db.organization.create({
       name: 'flossbank',
       host: 'GitHub',
-      userId: t.context.userId1,
       email
     })
     t.context.orgId1 = orgId1.toString()
@@ -30,7 +29,6 @@ test.before(async (t) => {
     const { id: orgId2 } = await db.organization.create({
       name: 'vscodium',
       host: 'GitHub',
-      userId: t.context.userId2,
       email
     })
     t.context.orgId2 = orgId2.toString()
@@ -46,7 +44,6 @@ test.before(async (t) => {
     const { id: orgId3 } = await db.organization.create({
       name: 'js-deep-equals',
       host: 'GitHub',
-      userId: t.context.userId3,
       email
     })
     t.context.orgId3 = orgId3.toString()
@@ -63,7 +60,6 @@ test.before(async (t) => {
     const { id: orgId4 } = await db.organization.create({
       name: 'lodash',
       host: 'GitHub',
-      userId: t.context.userId4,
       email
     })
     t.context.orgId4 = orgId4.toString()
@@ -84,35 +80,6 @@ test.afterEach(async (t) => {
 
 test.after.always(async (t) => {
   await after(t)
-})
-
-test('GET `/organization/get-donation-info` 401 unauthorized | middleware', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization/get-donation-info',
-    query: { organizationId: t.context.orgId1 },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
-test('GET `/organization/get-donation-info` 401 unauthorized | user doesnt have perms', async (t) => {
-  // User with cookie "sessionWithDonation" doesn't have perms for org 4
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization/get-donation-info',
-    query: { organizationId: t.context.orgId4 },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-  t.deepEqual(JSON.parse(res.payload), {
-    success: false,
-    message: INSUFFICIENT_PERMISSIONS
-  })
 })
 
 test('GET `/organization/get-donation-info` 404 unauthorized | no org found', async (t) => {
@@ -139,15 +106,23 @@ test('GET `/organization/get-donation-info` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    donationInfo: { amount: 1000, last4: '4242', renewal: 1595197107000 }
+    donationInfo: { amount: 1000, last4: '4242', renewal: 1595197107000, totalDonated: 1050 }
   })
   const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
   t.true(t.context.stripe.getStripeCustomerDonationInfo.calledWith({
     customerId: org.billingInfo.customerId
   }))
+  t.true(t.context.stripe.getStripeCustomerAllTransactions.calledWith({
+    customerId: org.billingInfo.customerId
+  }))
 })
 
-test('GET `/organization/get-donation-info` 404 error | donation not found', async (t) => {
+test('GET `/organization/get-donation-info` 200 | donation not found but return info still', async (t) => {
+  t.context.stripe.getStripeCustomerDonationInfo.resolves({
+    last4: '4242',
+    amount: 0,
+    renewal: 'Never'
+  })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -156,9 +131,11 @@ test('GET `/organization/get-donation-info` 404 error | donation not found', asy
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutDonation}`
     }
   })
-  t.deepEqual(res.statusCode, 404)
-  t.deepEqual(JSON.parse(res.payload), { success: false, message: NO_DONATION })
-  t.true(t.context.stripe.getStripeCustomerDonationInfo.notCalled)
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    donationInfo: { amount: 0, last4: '4242', totalDonated: 1050 }
+  })
 })
 
 test('GET `/organization/get-donation-info` Error thrown when no customer id', async (t) => {

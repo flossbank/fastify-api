@@ -35,11 +35,23 @@ module.exports = {
     this.updateDonation = sinon.stub().resolves()
     this.deleteDonation = sinon.stub().resolves()
     this.constructWebhookEvent = stripe.constructWebhookEvent.bind(stripe)
+    this.getStripeCustomerAllTransactions = sinon.stub().resolves([
+      {
+        id: 'blahblah',
+        amount_captured: 1000
+      },
+      {
+        id: 'secondCharge',
+        amount_captured: 50
+      }
+    ])
   },
   GitHub: function GitHub () {
     this.requestAccessToken = sinon.stub().resolves('test_access_token')
-    this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com' })
+    this.requestUserData = sinon.stub().resolves({ email: 'stripedpajamas@github.com', githubId: 'id-1' })
     this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
+    this.getInstallationDetails = sinon.stub().resolves()
+    this.isUserAnOrgAdmin = sinon.stub().resolves(true)
   },
   EthicalAdsGot: () => ({
     body: {

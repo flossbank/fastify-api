@@ -1,10 +1,19 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { CODE_HOSTS } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', githubId: 'id-1' })
     t.context.userId1 = userId1.toHexString()
+
+    t.context.flossbankOrg = await db.organization.create({
+      name: 'flossbank',
+      host: CODE_HOSTS.GitHub,
+      userId: t.context.userId1,
+      email: undefined,
+      avatarUrl: 'https://testing-url'
+    })
   })
 })
 
@@ -20,10 +29,10 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/user/github-auth` 200 success | create new user', async (t) => {
+test('POST `/organization/github-auth` 200 success | create new user', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/github-auth',
+    url: '/organization/github-auth',
     payload: {
       code: 'test_code',
       state: 'test_state'
@@ -32,12 +41,10 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
 
-  t.is(!!payload.user.id, true)
-  t.is(payload.success, true)
-  t.is(payload.created, true)
+  t.true(!!payload.user.id)
+  t.true(payload.success)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
-  // Ensure github id was attached
   t.is(user.githubId, 'id-1')
 
   // make sure that their API key was cached in Dynamo
@@ -47,15 +54,15 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
   t.true(apiKeyInfo.apiKey.length > 0)
 })
 
-test('POST `/user/github-auth` 200 success | existing user', async (t) => {
+test('POST `/organization/github-auth` 200 success | existing user', async (t) => {
   t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
   const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.is(userBefore.codeHost, undefined)
+  t.deepEqual(userBefore.codeHost, undefined)
   t.is(userBefore.githubId, 'id-1')
 
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/github-auth',
+    url: '/organization/github-auth',
     payload: {
       code: 'test_code',
       state: 'test_state'
@@ -64,18 +71,44 @@ test('POST `/user/github-auth` 200 success | existing user', async (t) => {
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.payload)
 
-  t.is(!!payload.user.id, true)
-  t.is(payload.success, true)
-  t.is(payload.created, false)
+  t.true(!!payload.user.id)
+  t.true(payload.success)
 
   const userAfter = await t.context.db.user.get({ userId: payload.user.id })
   t.is(userAfter.githubId, 'id-2')
 })
 
-test('POST `/user/github-auth` 400 bad request | no state', async (t) => {
+test('POST `/organization/github-auth` 200 success | overlapping org', async (t) => {
+  t.context.github.getUserOrgs.resolves({
+    orgsData: [{ login: 'vscodium' }, { login: 'flossbank' }]
+  })
+
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com' })
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/github-auth',
+    url: '/organization/github-auth',
+    payload: {
+      code: 'test_code',
+      state: 'test_state'
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+
+  t.true(!!payload.user.id)
+  t.true(payload.success)
+  t.deepEqual(payload.organizations, [{
+    name: 'flossbank',
+    host: CODE_HOSTS.GitHub,
+    avatarUrl: t.context.flossbankOrg.avatarUrl,
+    id: t.context.flossbankOrg.id.toString()
+  }])
+})
+
+test('POST `/organization/github-auth` 400 bad request | no state', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/organization/github-auth',
     payload: {
       code: 'test_code'
     }
@@ -83,10 +116,10 @@ test('POST `/user/github-auth` 400 bad request | no state', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/user/github-auth` 400 bad request | no code', async (t) => {
+test('POST `/organization/github-auth` 400 bad request | no code', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/github-auth',
+    url: '/organization/github-auth',
     payload: {
       state: 'test_state'
     }
@@ -94,11 +127,11 @@ test('POST `/user/github-auth` 400 bad request | no code', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/user/github-auth` 500 server error', async (t) => {
+test('POST `/organization/github-auth` 500 server error', async (t) => {
   t.context.github.requestAccessToken.rejects('error!')
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/github-auth',
+    url: '/organization/github-auth',
     payload: {
       code: 'test_code',
       state: 'test_state'

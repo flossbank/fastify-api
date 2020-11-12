@@ -23,12 +23,42 @@ class Stripe {
 
   async getStripeCustomerDonationInfo ({ customerId }) {
     const customer = await this.getStripeCustomer({ customerId })
-    return {
-      amount: customer.subscriptions.data[0].plan.amount,
-      // Stripe gives us subscription period end in seconds for some reason
-      renewal: customer.subscriptions.data[0].current_period_end * 1000,
+    const donationInfo = {
       last4: customer.sources.data[0].last4
     }
+    try {
+      donationInfo.amount = customer.subscriptions.data[0].plan.amount
+      donationInfo.renewal = customer.subscriptions.data[0].current_period_end * 1000
+    } catch {
+      donationInfo.amount = 0
+      donationInfo.renewal = 'Never'
+    }
+    return donationInfo
+  }
+
+  async getStripeCustomerAllTransactions ({ customerId }) {
+    const transactions = await this.requestStripeCustomerTransactions({ customerId })
+    const charges = transactions.data
+    let hasMore = transactions.has_more
+    // If there's more, continue fetching them with the using the "startingAfter" param
+    // The starting after param takes in the id of the last object returned in the previous request
+    while (hasMore) {
+      const nextTransactions = await this.requestStripeCustomerTransactions({
+        customerId,
+        startingAfter: charges[charges.length - 1].id
+      })
+      hasMore = nextTransactions.has_more
+      charges.push(...nextTransactions.data)
+    }
+    return charges
+  }
+
+  async requestStripeCustomerTransactions ({ customerId, startingAfter }) {
+    return this.stripe.charges.list({
+      customer: customerId,
+      limit: 100,
+      startingAfter
+    })
   }
 
   async updateStripeCustomer ({ customerId, sourceId }) {

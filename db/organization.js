@@ -1,9 +1,17 @@
-const { ORG_ROLES } = require('../helpers/constants')
 const { ObjectId } = require('mongodb')
 
 class OrganizationDbController {
   constructor ({ db }) {
     this.db = db
+  }
+
+  async findOrgsByNameAndHost ({ names, host }) {
+    const orgs = await this.db.collection('organizations').find({
+      name: { $in: names },
+      host
+    }).toArray()
+
+    return orgs.map((org) => ({ id: org._id, ...org }))
   }
 
   async getByNameAndHost ({ name, host }) {
@@ -31,19 +39,28 @@ class OrganizationDbController {
     return org && org._id
   }
 
-  async create ({ name, host, userId, email }) {
+  async getByInstallationId ({ installationId }) {
+    const org = await this.db.collection('organizations').findOne({
+      installationId
+    })
+
+    if (!org) return org
+
+    const { _id: id, ...rest } = org
+    return { id, ...rest }
+  }
+
+  async create ({ name, host, installationId, email, avatarUrl }) {
     const orgToInsert = {
       name,
       host,
+      installationId,
       email,
-      users: [{
-        userId,
-        role: ORG_ROLES.WRITE
-      }],
+      avatarUrl,
       globalDonation: false,
       billingInfo: {},
       donationAmount: 0,
-      donationAmountChanges: []
+      donationChanges: []
     }
     const { insertedId } = await this.db.collection('organizations').insertOne(orgToInsert)
     return { id: insertedId, ...orgToInsert }
@@ -54,6 +71,20 @@ class OrganizationDbController {
       _id: ObjectId(orgId)
     }, {
       $set: { 'billingInfo.customerId': customerId }
+    })
+  }
+
+  async addSnapshot ({ orgId, totalDeps, topLevelDeps }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $push: {
+        snapshots: {
+          timestamp: Date.now(),
+          totalDependencies: totalDeps,
+          topLevelDependencies: topLevelDeps
+        }
+      }
     })
   }
 

@@ -13,7 +13,6 @@ test.before(async (t) => {
     const { id: orgId1 } = await db.organization.create({
       name: 'flossbank',
       host: 'GitHub',
-      userId: t.context.userId1,
       email
     })
     t.context.orgId1 = orgId1.toString()
@@ -30,7 +29,6 @@ test.before(async (t) => {
     const { id: orgId2 } = await db.organization.create({
       name: 'vscodium',
       host: 'GitHub',
-      userId: t.context.userId2,
       email
     })
     t.context.orgId2 = orgId2.toString()
@@ -70,6 +68,7 @@ test('PUT `/organization/donation` 401 unauthorized | middleware', async (t) => 
 })
 
 test('PUT `/organization/donation` 401 unauthorized | user doesnt have perms', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/organization/donation',
