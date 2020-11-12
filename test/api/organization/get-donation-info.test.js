@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE, MSGS: { NO_DONATION } } = require('../../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -117,7 +117,12 @@ test('GET `/organization/get-donation-info` 200 success', async (t) => {
   }))
 })
 
-test('GET `/organization/get-donation-info` 404 error | donation not found', async (t) => {
+test('GET `/organization/get-donation-info` 200 | donation not found but return info still', async (t) => {
+  t.context.stripe.getStripeCustomerDonationInfo.resolves({
+    last4: '4242',
+    amount: 0,
+    renewal: 'Never'
+  })
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -126,9 +131,11 @@ test('GET `/organization/get-donation-info` 404 error | donation not found', asy
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutDonation}`
     }
   })
-  t.deepEqual(res.statusCode, 404)
-  t.deepEqual(JSON.parse(res.payload), { success: false, message: NO_DONATION })
-  t.true(t.context.stripe.getStripeCustomerDonationInfo.notCalled)
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    donationInfo: { amount: 0, last4: '4242', totalDonated: 1050 }
+  })
 })
 
 test('GET `/organization/get-donation-info` Error thrown when no customer id', async (t) => {
