@@ -28,6 +28,7 @@ module.exports = async (req, res, ctx) => {
         // determine if customerId is attached to a User or an Organization
         const userId = await ctx.db.user.getIdByCustomerId({ customerId: customer })
         if (userId) {
+          ctx.log.info('Sending distribute user donations sqs message')
           await ctx.sqs.sendDistributeUserDonationMessage({
             userId: userId.toString(),
             amount,
@@ -40,6 +41,7 @@ module.exports = async (req, res, ctx) => {
           if (!organizationId) {
             throw new Error('Received a valid Stripe webhook event that contained a non-existant customer id')
           }
+          ctx.log.info('Sending distribute org donations sqs message')
 
           await ctx.sqs.sendDistributeOrgDonationMessage({
             organizationId: organizationId.toString(),

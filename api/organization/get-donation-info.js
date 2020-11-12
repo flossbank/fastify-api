@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR, NO_DONATION } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -14,12 +14,6 @@ module.exports = async (req, res, ctx) => {
     if (!org) {
       res.status(404)
       return res.send({ success: false })
-    }
-
-    // If the org doesn't have a donation, return not found
-    if (!org.monthlyDonation) {
-      res.status(404)
-      return res.send({ success: false, message: NO_DONATION })
     }
 
     if (!org.billingInfo.customerId) throw new Error('No customer id for org when fetching donation info donation')

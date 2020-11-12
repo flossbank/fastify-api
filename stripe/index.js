@@ -23,12 +23,17 @@ class Stripe {
 
   async getStripeCustomerDonationInfo ({ customerId }) {
     const customer = await this.getStripeCustomer({ customerId })
-    return {
-      amount: customer.subscriptions.data[0].plan.amount,
-      // Stripe gives us subscription period end in seconds for some reason
-      renewal: customer.subscriptions.data[0].current_period_end * 1000,
+    const donationInfo = {
       last4: customer.sources.data[0].last4
     }
+    try {
+      donationInfo.amount = customer.subscriptions.data[0].plan.amount
+      donationInfo.renewal = customer.subscriptions.data[0].current_period_end * 1000
+    } catch {
+      donationInfo.amount = 0
+      donationInfo.renewal = 'Never'
+    }
+    return donationInfo
   }
 
   async getStripeCustomerAllTransactions ({ customerId }) {
