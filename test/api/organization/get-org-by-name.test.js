@@ -67,6 +67,18 @@ test('GET `/organization` 404 no org', async (t) => {
   t.deepEqual(res.statusCode, 404)
 })
 
+test('GET `/organization` 404 no org name, dont find undefined org', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization',
+    query: {
+      name: '',
+      host: 'GitHub'
+    }
+  })
+  t.deepEqual(res.statusCode, 404)
+})
+
 test('GET `/organization` 400 no host', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
