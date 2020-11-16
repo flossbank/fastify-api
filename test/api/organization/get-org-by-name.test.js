@@ -37,7 +37,8 @@ test('GET `/organization` send back org info', async (t) => {
     method: 'GET',
     url: '/organization',
     query: {
-      name: t.context.orgName
+      name: t.context.orgName,
+      host: 'GitHub'
     }
   })
   t.deepEqual(res.statusCode, 200)
@@ -59,10 +60,22 @@ test('GET `/organization` 404 no org', async (t) => {
     method: 'GET',
     url: '/organization',
     query: {
-      name: 'nonexistent'
+      name: 'nonexistent',
+      host: 'GitHub'
     }
   })
   t.deepEqual(res.statusCode, 404)
+})
+
+test('GET `/organization` 400 no host', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization',
+    query: {
+      name: 'nonexistent'
+    }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
 test('GET `/organization` 500 error', async (t) => {
@@ -71,7 +84,8 @@ test('GET `/organization` 500 error', async (t) => {
     method: 'GET',
     url: '/organization',
     query: {
-      name: t.context.orgName
+      name: t.context.orgName,
+      host: 'GitHub'
     }
   })
   t.deepEqual(res.statusCode, 500)

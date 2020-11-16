@@ -1,8 +1,8 @@
-const { MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { name } = req.query
+    const { name, host } = req.query
     ctx.log.info('finding org with name %s', name)
 
     if (!name) {
@@ -10,7 +10,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    let org = await ctx.db.organization.getByNameAndHost({ name, host: CODE_HOSTS.GitHub })
+    let org = await ctx.db.organization.getByNameAndHost({ name, host })
     if (!org) {
       res.status(404)
       return res.send({ success: false })
