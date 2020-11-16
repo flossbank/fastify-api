@@ -56,6 +56,7 @@ const deleteOrgDonation = require('../api/organization/donation-delete')
 const createGitHubOrganization = require('../api/organization/github-create')
 const getOrganization = require('../api/organization/get')
 const getOrgOssUsage = require('../api/organization/get-oss-usage')
+const getOrgByName = require('../api/organization/get-org-by-name')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -150,6 +151,7 @@ async function routes (fastify, opts, done) {
 
   // Organization
   fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => orgGithubAuth(req, res, fastify))
+  fastify.get('/organization', { schema: Schema.organization.getByName }, (req, res) => getOrgByName(req, res, fastify))
   fastify.get('/organization/:organizationId', (req, res) => getOrganization(req, res, fastify))
   fastify.post('/organization/github-create', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.githubCreate }, (req, res) => createGitHubOrganization(req, res, fastify))
   fastify.post('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.createDonation }, (req, res) => createOrgDonation(req, res, fastify))
