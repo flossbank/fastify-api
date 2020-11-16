@@ -12,6 +12,7 @@ test.before(async (t) => {
       name: 'flossbank',
       host: 'GitHub',
       userId: t.context.userId1,
+      avatarUrl: 'blah.com',
       email
     })
     t.context.orgId1 = orgId1.toString()
