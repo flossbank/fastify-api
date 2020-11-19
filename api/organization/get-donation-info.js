@@ -11,12 +11,10 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('fetching donation info for %s', organizationId)
     const org = await ctx.db.organization.get({ orgId: organizationId })
 
-    if (!org) {
+    if (!org || !org.billingInfo.customerId) {
       res.status(404)
       return res.send({ success: false })
     }
-
-    if (!org.billingInfo.customerId) throw new Error('No customer id for org when fetching donation info donation')
 
     const donationInfo = await ctx.stripe.getStripeCustomerDonationInfo({
       customerId: org.billingInfo.customerId
