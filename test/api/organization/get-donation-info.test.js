@@ -138,7 +138,7 @@ test('GET `/organization/get-donation-info` 200 | donation not found but return 
   })
 })
 
-test('GET `/organization/get-donation-info` Error thrown when no customer id', async (t) => {
+test('GET `/organization/get-donation-info` 404 | no customer id', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization/get-donation-info',
@@ -147,7 +147,7 @@ test('GET `/organization/get-donation-info` Error thrown when no customer id', a
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutCustomerId}`
     }
   })
-  t.deepEqual(res.statusCode, 500)
+  t.deepEqual(res.statusCode, 404)
 })
 
 test('GET `/organization/get-donation-info` 500 server error', async (t) => {
