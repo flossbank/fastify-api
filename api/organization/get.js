@@ -26,7 +26,8 @@ module.exports = async (req, res, ctx) => {
       org = {
         name: org.name,
         globalDonation: org.globalDonation,
-        donationAmount: org.donationAmount
+        donationAmount: org.donationAmount,
+        avatarUrl: org.avatarUrl
       }
       res.send({ success: true, organization: org })
     }
