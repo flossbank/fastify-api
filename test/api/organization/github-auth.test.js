@@ -78,33 +78,6 @@ test('POST `/organization/github-auth` 200 success | existing user', async (t) =
   t.is(userAfter.githubId, 'id-2')
 })
 
-test('POST `/organization/github-auth` 200 success | overlapping org', async (t) => {
-  t.context.github.getUserOrgs.resolves({
-    orgsData: [{ login: 'vscodium' }, { login: 'flossbank' }]
-  })
-
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com' })
-  const res = await t.context.app.inject({
-    method: 'POST',
-    url: '/organization/github-auth',
-    payload: {
-      code: 'test_code',
-      state: 'test_state'
-    }
-  })
-  t.deepEqual(res.statusCode, 200)
-  const payload = JSON.parse(res.payload)
-
-  t.true(!!payload.user.id)
-  t.true(payload.success)
-  t.deepEqual(payload.organizations, [{
-    name: 'flossbank',
-    host: CODE_HOSTS.GitHub,
-    avatarUrl: t.context.flossbankOrg.avatarUrl,
-    id: t.context.flossbankOrg.id.toString()
-  }])
-})
-
 test('POST `/organization/github-auth` 400 bad request | no state', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
