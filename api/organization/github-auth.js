@@ -1,4 +1,4 @@
-const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -25,21 +25,13 @@ module.exports = async (req, res, ctx) => {
       await ctx.db.user.updateGithubId({ userId: user.id, githubId })
     }
 
-    const { orgsData } = await ctx.github.getUserOrgs({ accessToken })
-    const orgNames = orgsData.map((org) => org.login)
-
-    const existingFlossbankOrgs = await ctx.db.organization.findOrgsByNameAndHost({
-      names: orgNames,
-      host: CODE_HOSTS.GitHub
-    })
-
     const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
     res.setCookie(
       USER_WEB_SESSION_COOKIE,
       sessionId,
       { path: '/', expires: new Date(expiration * 1000) }
     )
-    res.send({ success: true, user, organizations: existingFlossbankOrgs })
+    res.send({ success: true, user })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
