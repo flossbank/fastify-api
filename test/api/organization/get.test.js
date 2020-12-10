@@ -19,6 +19,15 @@ test.before(async (t) => {
     await db.organization.updateCustomerId({ orgId: t.context.orgId1, customerId: 'honesty-cust-id' })
     await db.organization.setDonation({ orgId: t.context.orgId1, amount: 1000, globalDonation: false })
 
+    const { id: orgId2 } = await db.organization.create({
+      name: 'tf',
+      host: 'GitHub',
+      userId: t.context.userId1,
+      avatarUrl: 'blah.com',
+      email
+    })
+    t.context.orgId2 = orgId2.toString()
+
     const sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.sessionWithDonation = sessionWithDonation.sessionId
   })
@@ -71,6 +80,53 @@ test('GET `/organization/:organizationId` authorized | send back private org dat
     }
   })
   const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
+  org.id = org.id.toString()
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    organization: {
+      ...org,
+      billingInfo: {
+        ...org.billingInfo,
+        last4: '4242'
+      }
+    }
+  })
+})
+
+test('GET `/organization/:organizationId` authorized | fetching last4 throws', async (t) => {
+  t.context.stripe.getCustomerLast4.throws()
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: `/organization/${t.context.orgId1}`,
+    query: {
+      organizationId: t.context.orgId1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
+  org.id = org.id.toString()
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    organization: org
+  })
+})
+
+test('GET `/organization/:organizationId` authorized | no customer id', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: `/organization/${t.context.orgId2}`,
+    query: {
+      organizationId: t.context.orgId2
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId2 })
   org.id = org.id.toString()
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {

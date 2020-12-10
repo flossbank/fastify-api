@@ -16,21 +16,28 @@ module.exports = async (req, res, ctx) => {
       sessionId: req.cookies[USER_WEB_SESSION_COOKIE]
     })
 
-    // If we fetched a session,
-    // then the request was made with an authenticated user and we should see if the
-    // user has access to see private org information
-    if (session && session.userId) {
-      res.send({ success: true, organization: org })
-    } else {
+    // If this was fetched without a session, return stripped down org data
+    if (!session || !session.userId) {
       // Strip off private info from the org
       org = {
         name: org.name,
         globalDonation: org.globalDonation,
         donationAmount: org.donationAmount,
-        avatarUrl: org.avatarUrl
+        avatarUrl: org.avatarUrl,
+        snapshots: org.snapshots
       }
-      res.send({ success: true, organization: org })
+      return res.send({ success: true, organization: org })
     }
+
+    // Fetch last4 from stripe using customer id
+    if (org.billingInfo.customerId) {
+      try {
+        const last4 = await ctx.stripe.getCustomerLast4({ customerId: org.billingInfo.customerId })
+        org.billingInfo.last4 = last4
+      } catch (e) {}
+    }
+
+    res.send({ success: true, organization: org })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

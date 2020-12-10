@@ -47,7 +47,7 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
   t.true(apiKeyInfo.apiKey.length > 0)
 })
 
-test('POST `/user/github-auth` 200 success | existing user', async (t) => {
+test('POST `/user/github-auth` 200 success | existing user | diff github Id', async (t) => {
   t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
   const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
   t.is(userBefore.codeHost, undefined)
@@ -70,6 +70,23 @@ test('POST `/user/github-auth` 200 success | existing user', async (t) => {
 
   const userAfter = await t.context.db.user.get({ userId: payload.user.id })
   t.is(userAfter.githubId, 'id-2')
+})
+
+test('POST `/user/github-auth` 200 success | existing user', async (t) => {
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1' })
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/github-auth',
+    payload: {
+      code: 'test_code',
+      state: 'test_state'
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+
+  t.is(!!payload.user.id, true)
+  t.is(payload.success, true)
 })
 
 test('POST `/user/github-auth` 400 bad request | no state', async (t) => {
