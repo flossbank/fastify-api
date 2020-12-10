@@ -16,7 +16,16 @@ test.beforeEach((t) => {
       customers: {
         create: sinon.stub().resolves({ id: 'blah' }),
         update: sinon.stub().resolves({ id: 'blah' }),
-        retrieve: sinon.stub().resolves({ id: 'blah' })
+        retrieve: sinon.stub().resolves({
+          id: 'blah',
+          sources: {
+            data: [
+              {
+                last4: '3652'
+              }
+            ]
+          }
+        })
       },
       subscriptions: {
         create: sinon.stub(),
@@ -61,6 +70,17 @@ test('create customer', async (t) => {
 test('get customer', async (t) => {
   await t.context.stripe.getStripeCustomer({ customerId: '1234' })
   t.deepEqual(t.context.stripe.stripe.customers.retrieve.lastCall.args, ['1234'])
+})
+
+test('get customer last4 of card info', async (t) => {
+  const last4 = await t.context.stripe.getCustomerLast4({ customerId: '1234' })
+  t.deepEqual(last4, '3652')
+})
+
+test('get customer last4 of card info | no sources', async (t) => {
+  t.context.stripe.getStripeCustomer = sinon.stub().resolves({ id: 'blah' })
+  const last4 = await t.context.stripe.getCustomerLast4({ customerId: '1234' })
+  t.deepEqual(last4, undefined)
 })
 
 test('construct webhook event', async (t) => {
@@ -116,6 +136,24 @@ test('get stripe customer donation info', async (t) => {
   t.deepEqual(await stripe.getStripeCustomerDonationInfo({ customerId: 'cust-id' }), {
     amount: 200,
     renewal: 1234000,
+    last4: '5678'
+  })
+})
+
+test('get stripe customer donation info | no subscriptions', async (t) => {
+  const { stripe } = t.context
+  stripe.getStripeCustomer = sinon.stub().resolves({
+    subscriptions: undefined,
+    sources: {
+      data: [
+        { last4: '5678' }
+      ]
+    }
+  })
+
+  t.deepEqual(await stripe.getStripeCustomerDonationInfo({ customerId: 'cust-id' }), {
+    amount: 0,
+    renewal: 'Never',
     last4: '5678'
   })
 })

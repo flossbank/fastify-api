@@ -36,6 +36,12 @@ class Stripe {
     return donationInfo
   }
 
+  async getCustomerLast4 ({ customerId }) {
+    const customer = await this.getStripeCustomer({ customerId })
+    if (!customer.sources || !customer.sources.data.length) return undefined
+    return customer.sources.data[0].last4
+  }
+
   async getStripeCustomerAllTransactions ({ customerId }) {
     const transactions = await this.requestStripeCustomerTransactions({ customerId })
     const charges = transactions.data

@@ -24,7 +24,17 @@ module.exports = {
   Stripe: function Stripe ({ config }) {
     const stripe = new StripeController({ stripe: require('stripe'), config })
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
-    this.getStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
+    this.getStripeCustomer = sinon.stub().resolves({
+      id: 'test-stripe-id',
+      sources: {
+        data: [
+          {
+            last4: '4242'
+          }
+        ]
+      }
+    })
+    this.getCustomerLast4 = sinon.stub().resolves('4242')
     this.getStripeCustomerDonationInfo = sinon.stub().resolves({
       last4: '4242',
       renewal: 1595197107000,
