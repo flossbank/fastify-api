@@ -35,6 +35,17 @@ module.exports = async (req, res, ctx) => {
       avatarUrl
     })
 
+    // Trigger org distribution with 0 dollars so we get an OSS snapshot
+    try {
+      await ctx.sqs.sendDistributeOrgDonationMessage({
+        organizationId: organization.id.toString(),
+        amount: 0,
+        description: 'Initial distribution to get OSS snapshot',
+        timestamp: Date.now(),
+        paymentSuccess: true
+      })
+    } catch {}
+
     res.send({ success: true, organization })
   } catch (e) {
     ctx.log.error(e)

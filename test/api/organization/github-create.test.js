@@ -60,6 +60,26 @@ test('POST `/organization/github-create` 200 success', async (t) => {
   const payload = JSON.parse(res.body)
 
   t.is(payload.organization.name, 'New Org')
+  t.true(t.context.sqs.sendDistributeOrgDonationMessage.calledOnce)
+})
+
+test('POST `/organization/github-create` 200 success | even if distribution call fails', async (t) => {
+  t.context.sqs.sendDistributeOrgDonationMessage.throws('error')
+
+  const { github } = t.context
+  github.getInstallationDetails.resolves({ account: { login: 'New Org' } })
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/organization/github-create',
+    body: { installationId: '42069' },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.body)
+
+  t.is(payload.organization.name, 'New Org')
 })
 
 test('POST `/organization/github-create` 200 success | existing org', async (t) => {
