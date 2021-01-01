@@ -14,13 +14,34 @@ class OrganizationDbController {
     return orgs.map((org) => ({ id: org._id, ...org }))
   }
 
-  async getByNameAndHost ({ name, host }) {
-    const org = await this.db.collection('organizations').findOne({ name, host })
+  async searchByNameAndHost ({ name, host }) {
+    // only allow alphanumeric characters and hyphens
+    // which is also what GitHub constrains the org name to
+    // (and probably future hosts); the input should already
+    // be safe due to a similar cleansing on the API schema level;
+    // adding this as an extra precaution
+    const safeName = name.replace(/[^a-z0-9-]/gi, '')
+    if (!safeName) return [] // handle case where all the characters were dangerous
 
-    if (!org) return org
+    const partialNameMatch = new RegExp(`.*${safeName}.*`, 'i')
+    const organizations = await this.db.collection('organizations').find({
+      name: partialNameMatch,
+      host
+      // TODO there may be cases where organizations do not want to appear
+      // in search results; if os, we can add a flag to their profiles in
+      // he DB and filter it out here
+    }, {
+      limit: 10,
+      projection: {
+        _id: 1,
+        name: 1,
+        globalDonation: 1,
+        donationAmount: 1,
+        avatarUrl: 1
+      }
+    }).toArray()
 
-    const { _id: id, ...rest } = org
-    return { id, ...rest }
+    return organizations.map(({ _id, ...rest }) => ({ id: _id, ...rest }))
   }
 
   async get ({ orgId }) {
