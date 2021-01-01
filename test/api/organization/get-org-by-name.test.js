@@ -44,18 +44,17 @@ test('GET `/organization` send back org info', async (t) => {
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    organization: {
+    organizations: [{
       id: t.context.orgId,
       name: 'flossbank',
       globalDonation: false,
       donationAmount: 1000000,
       avatarUrl: 'blah.com'
-    }
+    }]
   })
 })
 
-test('GET `/organization` 404 no org', async (t) => {
-  t.context.db.organization.getByNameAndHost = () => undefined
+test('GET `/organization` 200 no orgs found', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization',
@@ -64,23 +63,15 @@ test('GET `/organization` 404 no org', async (t) => {
       host: 'GitHub'
     }
   })
-  t.deepEqual(res.statusCode, 404)
-})
-
-test('GET `/organization` 404 no org name, dont find undefined org', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'GET',
-    url: '/organization',
-    query: {
-      name: '',
-      host: 'GitHub'
-    }
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    organizations: []
   })
-  t.deepEqual(res.statusCode, 404)
 })
 
-test('GET `/organization` 400 no host', async (t) => {
-  const res = await t.context.app.inject({
+test('GET `/organization` 400 bad input', async (t) => {
+  let res = await t.context.app.inject({
     method: 'GET',
     url: '/organization',
     query: {
@@ -88,10 +79,39 @@ test('GET `/organization` 400 no host', async (t) => {
     }
   })
   t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization',
+    query: {
+      host: 'GitHub'
+    }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization',
+    query: {
+      name: '*', // non alphanumeric (+ hyphens) names are rejected
+      host: 'GitHub'
+    }
+  })
+  t.deepEqual(res.statusCode, 400)
+
+  res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization',
+    query: {
+      name: 'teacherfund',
+      host: 'FartHub' // only supported hosts are allowed
+    }
+  })
+  t.deepEqual(res.statusCode, 400)
 })
 
 test('GET `/organization` 500 error', async (t) => {
-  t.context.db.organization.getByNameAndHost = () => { throw new Error() }
+  t.context.db.organization.searchByNameAndHost = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/organization',
