@@ -44,9 +44,11 @@ module.exports = async (req, res, ctx) => {
         timestamp: Date.now(),
         paymentSuccess: true
       })
-    } catch {}
-
-    res.send({ success: true, organization })
+    } catch (e) {
+      ctx.log.error(e)
+    } finally {
+      res.send({ success: true, organization })
+    }
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
