@@ -54,13 +54,9 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
   t.true(apiKeyInfo.apiKey.length > 0)
 })
 
-test('POST `/organization/github-auth` 200 success | existing user different gh Id', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
-  const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
-  t.deepEqual(userBefore.codeHost, undefined)
-  t.is(userBefore.githubId, 'id-1')
-
-  const res = await t.context.app.inject({
+test('POST `/organization/github-auth` 200 success | existing user', async (t) => {
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1' })
+  let res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/github-auth',
     payload: {
@@ -69,30 +65,32 @@ test('POST `/organization/github-auth` 200 success | existing user different gh 
     }
   })
   t.deepEqual(res.statusCode, 200)
-  const payload = JSON.parse(res.payload)
+  let payload = JSON.parse(res.payload)
+
+  t.true(!!payload.user.id)
+  t.true(payload.success)
+
+  // calling again with updated github id
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-2' })
+  const userBefore = await t.context.db.user.get({ userId: t.context.userId1 })
+  t.is(userBefore.githubId, 'id-1')
+
+  res = await t.context.app.inject({
+    method: 'POST',
+    url: '/organization/github-auth',
+    payload: {
+      code: 'test_code',
+      state: 'test_state'
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  payload = JSON.parse(res.payload)
 
   t.true(!!payload.user.id)
   t.true(payload.success)
 
   const userAfter = await t.context.db.user.get({ userId: payload.user.id })
   t.is(userAfter.githubId, 'id-2')
-})
-
-test('POST `/organization/github-auth` 200 success | existing user', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1' })
-  const res = await t.context.app.inject({
-    method: 'POST',
-    url: '/organization/github-auth',
-    payload: {
-      code: 'test_code',
-      state: 'test_state'
-    }
-  })
-  t.deepEqual(res.statusCode, 200)
-  const payload = JSON.parse(res.payload)
-
-  t.true(!!payload.user.id)
-  t.true(payload.success)
 })
 
 test('POST `/organization/github-auth` 400 bad request | no state', async (t) => {
