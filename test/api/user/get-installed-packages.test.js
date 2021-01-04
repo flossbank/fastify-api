@@ -65,21 +65,18 @@ const testPkgs = (userId) => [
       {
         userId: userId,
         sessionId: 'f1765a7f351b77f368071c5d611cf428',
-
         weight: 0.010416666666666666,
         timestamp: 1587494171005
       },
       {
         userId: '5e87cd5dc647f344fc8fa586',
         sessionId: 'e4aa813ffea993ed4d4accd5c6f3ade9',
-
         weight: 0.0020833333333333333,
         timestamp: 1587590938021
       },
       {
         userId: userId,
         sessionId: 'd73539172c6b1ba9a960f3d358ad694a',
-
         weight: 0.0020161290322580645,
         timestamp: 1588287352863
       },
@@ -108,7 +105,8 @@ test.before(async (t) => {
     t.context.sessionId1 = session1.sessionId
 
     for (const pkg of testPkgs(t.context.userId1)) {
-      await db.package.create({ pkg })
+      const { id } = await db.package.create(pkg)
+      await db.package.updatePackageInstallsInternal({ id, installs: pkg.installs })
     }
   })
 })

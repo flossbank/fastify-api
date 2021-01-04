@@ -188,7 +188,7 @@ test('stub', (t) => {
 //   t.deepEqual(res.statusCode, 200)
 //   t.deepEqual(JSON.parse(res.payload), { success: true })
 
-//   const caesar = await t.context.db.package.getByName({
+//   const caesar = await t.context.db.package.getByNameAndRegistry({
 //     name: 'caesar',
 //     registry: 'npm'
 //   })
