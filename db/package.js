@@ -16,11 +16,17 @@ class PackageDbController {
     return { id: insertedId, ...newPackage }
   }
 
-  async updatePackageInstallsInternal ({ id, installs }) {
+  // DO NOT CALL THIS IN ANY ROUTES, THIS IS FOR TEST MOCKING ONLY
+  async updatePackageInternalDANGER ({ id, installs, adRevenue, donationRevenue }) {
+    const updateObject = {}
+    if (installs) updateObject.installs = installs
+    if (adRevenue) updateObject.adRevenue = adRevenue
+    if (donationRevenue) updateObject.donationRevenue = donationRevenue
+
     return this.db.collection('packages').updateOne({
       _id: ObjectId(id)
     }, {
-      $set: { installs }
+      $set: updateObject
     })
   }
 

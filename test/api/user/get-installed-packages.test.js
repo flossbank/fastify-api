@@ -106,7 +106,7 @@ test.before(async (t) => {
 
     for (const pkg of testPkgs(t.context.userId1)) {
       const { id } = await db.package.create(pkg)
-      await db.package.updatePackageInstallsInternal({ id, installs: pkg.installs })
+      await db.package.updatePackageInternalDANGER({ id, installs: pkg.installs })
     }
   })
 })
