@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR }, USER_WEB_SESSION_COOKIE } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -12,6 +12,11 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
+    // Attempt to fetch session
+    const session = await ctx.auth.user.getWebSession({
+      sessionId: req.cookies[USER_WEB_SESSION_COOKIE]
+    })
+
     pkg.adRevenue = pkg.adRevenue
       ? pkg.adRevenue.reduce((acc, session) => acc + session.amount, 0)
       : 0
@@ -19,6 +24,20 @@ module.exports = async (req, res, ctx) => {
     pkg.donationRevenue = pkg.donationRevenue
       ? pkg.donationRevenue.reduce((acc, session) => acc + session.amount, 0)
       : 0
+
+    // Remove maintainer and owner information if unauthorized session
+    if (!session) {
+      const unAuthedPackage = {
+        id: pkg.id,
+        adRevenue: pkg.adRevenue,
+        donationRevenue: pkg.donationRevenue,
+        name: pkg.name,
+        avatarUrl: pkg.avatarUrl,
+        language: pkg.language,
+        registry: pkg.registry
+      }
+      return res.send({ success: true, package: unAuthedPackage })
+    }
 
     res.send({ success: true, package: pkg })
   } catch (e) {

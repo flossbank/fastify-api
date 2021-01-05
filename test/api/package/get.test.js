@@ -1,5 +1,7 @@
 const test = require('ava')
+const { ObjectId } = require('mongodb')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
+const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
 const mockAdRevenue = [
   {
@@ -30,6 +32,13 @@ const mockDonationRevenue = [
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
+    const email = 'honey@etsy.com'
+    const { id: userId1 } = await db.user.create({ email })
+    t.context.userId1 = userId1.toHexString()
+
+    const session = await auth.user.createWebSession({ userId: t.context.userId1 })
+    t.context.sessionId = session.sessionId
+
     const { id: packageId1 } = await db.package.create({
       name: 'flossbank',
       registry: 'npm',
@@ -37,10 +46,17 @@ test.before(async (t) => {
       avatarUrl: 'blah.com'
     })
     t.context.packageId1 = packageId1.toString()
-    await db.package.updatePackageInternalDANGER({
-      id: t.context.packageId1,
-      adRevenue: mockAdRevenue,
-      donationRevenue: mockDonationRevenue
+    await db.db.collection('packages').updateOne({
+      _id: ObjectId(t.context.packageId1)
+    }, {
+      $set: {
+        maintainers: [{
+          maintainerId: 'blah',
+          revenuePercent: 0
+        }],
+        adRevenue: mockAdRevenue,
+        donationRevenue: mockDonationRevenue
+      }
     })
 
     const { id: packageId2 } = await db.package.create({
@@ -65,12 +81,37 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('GET `/package` 200 | ad revenue and donation revenue', async (t) => {
+test('GET `/package` 200 | unauthed | ad revenue and donation revenue', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package',
     query: {
       id: t.context.packageId1
+    }
+  })
+  const packageFromDb = await t.context.db.package.get({ packageId: t.context.packageId1 })
+  packageFromDb.id = packageFromDb.id.toString()
+  delete packageFromDb.maintainers
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    package: {
+      ...packageFromDb,
+      adRevenue: mockAdRevenue.reduce((acc, v) => acc + v.amount, 0),
+      donationRevenue: mockDonationRevenue.reduce((acc, v) => acc + v.amount, 0)
+    }
+  })
+})
+
+test('GET `/package` 200 | authed', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/package',
+    query: {
+      id: t.context.packageId1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionId}`
     }
   })
   const packageFromDb = await t.context.db.package.get({ packageId: t.context.packageId1 })
@@ -86,7 +127,7 @@ test('GET `/package` 200 | ad revenue and donation revenue', async (t) => {
   })
 })
 
-test('GET `/package` 200 | no revenue', async (t) => {
+test('GET `/package` 200 | unauthed | no revenue', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package',
