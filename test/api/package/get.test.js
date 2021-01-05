@@ -32,12 +32,17 @@ const mockDonationRevenue = [
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const email = 'honey@etsy.com'
-    const { id: userId1 } = await db.user.create({ email })
+    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
 
     const session = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.sessionId = session.sessionId
+
+    const { id: userId2 } = await db.user.create({ email: 'boo@etsy.com' })
+    t.context.userId2 = userId2.toHexString()
+
+    const badSession = await auth.user.createWebSession({ userId: t.context.userId2 })
+    t.context.unauthSessionId = badSession.sessionId
 
     const { id: packageId1 } = await db.package.create({
       name: 'flossbank',
@@ -51,7 +56,7 @@ test.before(async (t) => {
     }, {
       $set: {
         maintainers: [{
-          maintainerId: 'blah',
+          maintainerId: t.context.userId1,
           revenuePercent: 0
         }],
         adRevenue: mockAdRevenue,
@@ -103,7 +108,7 @@ test('GET `/package` 200 | unauthed | ad revenue and donation revenue', async (t
   })
 })
 
-test('GET `/package` 200 | authed', async (t) => {
+test('GET `/package` 200 | authed as maintainer', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package',
@@ -123,6 +128,30 @@ test('GET `/package` 200 | authed', async (t) => {
       ...packageFromDb,
       adRevenue: mockAdRevenue.reduce((acc, v) => acc + v.amount, 0),
       donationRevenue: mockDonationRevenue.reduce((acc, v) => acc + v.amount, 0)
+    }
+  })
+})
+
+test('GET `/package` 200 | unauthed | user not in maintainer list', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/package',
+    query: {
+      id: t.context.packageIdNoRevenue
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.unauthSessionId}`
+    }
+  })
+  const packageFromDb = await t.context.db.package.get({ packageId: t.context.packageIdNoRevenue })
+  packageFromDb.id = packageFromDb.id.toString()
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    package: {
+      ...packageFromDb,
+      adRevenue: 0,
+      donationRevenue: 0
     }
   })
 })

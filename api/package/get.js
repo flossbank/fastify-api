@@ -25,8 +25,10 @@ module.exports = async (req, res, ctx) => {
       ? pkg.donationRevenue.reduce((acc, session) => acc + session.amount, 0)
       : 0
 
+    const userIsMaintainer = session && pkg.maintainers && pkg.maintainers.find((m) => m.maintainerId === session.userId)
+
     // Remove maintainer and owner information if unauthorized session
-    if (!session) {
+    if (!userIsMaintainer) {
       const unAuthedPackage = {
         id: pkg.id,
         adRevenue: pkg.adRevenue,
