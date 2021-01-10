@@ -25,7 +25,7 @@ module.exports = async (req, res, ctx) => {
       ? pkg.donationRevenue.reduce((acc, session) => acc + session.amount, 0)
       : 0
 
-    const userIsMaintainer = session && pkg.maintainers && pkg.maintainers.find((m) => m.maintainerId === session.userId)
+    const userIsMaintainer = session && pkg.maintainers && pkg.maintainers.find((m) => m.userId === session.userId)
 
     // Remove maintainer and owner information if unauthorized session
     if (!userIsMaintainer) {
@@ -40,6 +40,22 @@ module.exports = async (req, res, ctx) => {
       }
       return res.send({ success: true, package: unAuthedPackage })
     }
+
+    // Need to map all of the maintainer user id's to usernames
+    const mapOfIds = pkg.maintainers.reduce((acc, maintainer) => {
+      acc[maintainer.userId] = {
+        revenuePercent: maintainer.revenuePercent
+      }
+      return acc
+    }, {})
+
+    const usersFromIds = await ctx.db.user.getListOfUsers({ ids: pkg.maintainers.map((m) => m.userId) })
+
+    usersFromIds.forEach((user) => {
+      mapOfIds[user._id.toString()].username = user.username
+    })
+
+    pkg.maintainers = Object.values(mapOfIds)
 
     res.send({ success: true, package: pkg })
   } catch (e) {

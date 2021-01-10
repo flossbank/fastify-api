@@ -32,13 +32,13 @@ const mockDonationRevenue = [
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
+    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', username: 'peter' })
     t.context.userId1 = userId1.toHexString()
 
     const session = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.sessionId = session.sessionId
 
-    const { id: userId2 } = await db.user.create({ email: 'boo@etsy.com' })
+    const { id: userId2 } = await db.user.create({ email: 'boo@etsy.com', username: 'joel' })
     t.context.userId2 = userId2.toHexString()
 
     const badSession = await auth.user.createWebSession({ userId: t.context.userId2 })
@@ -56,8 +56,12 @@ test.before(async (t) => {
     }, {
       $set: {
         maintainers: [{
-          maintainerId: t.context.userId1,
-          revenuePercent: 0
+          userId: t.context.userId1,
+          revenuePercent: 90
+        },
+        {
+          userId: t.context.userId2,
+          revenuePercent: 10
         }],
         adRevenue: mockAdRevenue,
         donationRevenue: mockDonationRevenue
@@ -108,7 +112,7 @@ test('GET `/package` 200 | unauthed | ad revenue and donation revenue', async (t
   })
 })
 
-test('GET `/package` 200 | authed as maintainer', async (t) => {
+test.only('GET `/package` 200 | authed as maintainer', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package',
@@ -127,7 +131,17 @@ test('GET `/package` 200 | authed as maintainer', async (t) => {
     package: {
       ...packageFromDb,
       adRevenue: mockAdRevenue.reduce((acc, v) => acc + v.amount, 0),
-      donationRevenue: mockDonationRevenue.reduce((acc, v) => acc + v.amount, 0)
+      donationRevenue: mockDonationRevenue.reduce((acc, v) => acc + v.amount, 0),
+      maintainers: [
+        {
+          username: 'peter',
+          revenuePercent: 90
+        },
+        {
+          username: 'joel',
+          revenuePercent: 10
+        }
+      ]
     }
   })
 })
