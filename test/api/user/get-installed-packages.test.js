@@ -1,4 +1,5 @@
 const test = require('ava')
+const { ObjectId } = require('mongodb')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
 
@@ -106,7 +107,13 @@ test.before(async (t) => {
 
     for (const pkg of testPkgs(t.context.userId1)) {
       const { id } = await db.package.create(pkg)
-      await db.package.updatePackageInstallsInternal({ id, installs: pkg.installs })
+      await db.db.collection('packages').updateOne({
+        _id: ObjectId(id)
+      }, {
+        $set: {
+          installs: pkg.installs
+        }
+      })
     }
   })
 })

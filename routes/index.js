@@ -70,7 +70,7 @@ const getOrgByName = require('../api/organization/get-org-by-name')
 
 // Packages
 const searchPackagesByName = require('../api/package/search-by-name')
-// const getPackages = require('../api/package/get')
+const getPackage = require('../api/package/get')
 // const refreshPackages = require('../api/package/refresh')
 // const updatePackages = require('../api/package/update')
 
@@ -173,7 +173,7 @@ async function routes (fastify, opts, done) {
 
   // Packages
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
-  // fastify.get('/package/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.get }, (req, res) => getPackages(req, res, fastify))
+  fastify.get('/package', { schema: Schema.package.get }, (req, res) => getPackage(req, res, fastify))
   // fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.refresh }, (req, res) => refreshPackages(req, res, fastify))
   // fastify.post('/package/update', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.update }, (req, res) => updatePackages(req, res, fastify))
 

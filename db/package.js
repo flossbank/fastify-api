@@ -16,14 +16,6 @@ class PackageDbController {
     return { id: insertedId, ...newPackage }
   }
 
-  async updatePackageInstallsInternal ({ id, installs }) {
-    return this.db.collection('packages').updateOne({
-      _id: ObjectId(id)
-    }, {
-      $set: { installs }
-    })
-  }
-
   async get ({ packageId }) {
     const pkg = await this.db.collection('packages').findOne({
       _id: ObjectId(packageId)
