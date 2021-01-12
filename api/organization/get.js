@@ -5,7 +5,7 @@ module.exports = async (req, res, ctx) => {
     const { organizationId } = req.params
     ctx.log.info('finding org with id %s', organizationId)
 
-    let org = await ctx.db.organization.get({ orgId: organizationId })
+    const org = await ctx.db.organization.get({ orgId: organizationId })
     if (!org) {
       res.status(404)
       return res.send({ success: false })
@@ -16,17 +16,26 @@ module.exports = async (req, res, ctx) => {
       sessionId: req.cookies[USER_WEB_SESSION_COOKIE]
     })
 
+    const unauthedOrgData = {
+      name: org.name,
+      globalDonation: org.globalDonation,
+      donationAmount: org.donationAmount,
+      avatarUrl: org.avatarUrl,
+      snapshots: org.snapshots
+    }
+
     // If this was fetched without a session, return stripped down org data
     if (!session || !session.userId) {
       // Strip off private info from the org
-      org = {
-        name: org.name,
-        globalDonation: org.globalDonation,
-        donationAmount: org.donationAmount,
-        avatarUrl: org.avatarUrl,
-        snapshots: org.snapshots
-      }
-      return res.send({ success: true, organization: org })
+      return res.send({ success: true, organization: unauthedOrgData })
+    }
+
+    // confirm user is an admin of the GH org
+    const user = await ctx.db.user.get({ userId: session.userId })
+    const { githubId } = user
+
+    if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization: org })) {
+      return res.send({ success: true, organization: unauthedOrgData })
     }
 
     // Fetch last4 from stripe using customer id

@@ -95,6 +95,14 @@ class OrganizationDbController {
     })
   }
 
+  async updateEmail ({ orgId, email }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: { email }
+    })
+  }
+
   async addSnapshot ({ orgId, totalDeps, topLevelDeps }) {
     return this.db.collection('organizations').updateOne({
       _id: ObjectId(orgId)

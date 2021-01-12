@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
-const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { ORG_MISSING_BILLING_EMAIL } } = require('../../../helpers/constants')
 
 test.before(async (t) => {
   sinon.stub(Date, 'now').returns(123456)
@@ -34,13 +34,20 @@ test.before(async (t) => {
     const sessionWithoutBillingInfo = await auth.user.createWebSession({ userId: t.context.userId2 })
     t.context.sessionWithoutBillingInfo = sessionWithoutBillingInfo.sessionId
 
-    // Org with no donation gets error
+    // Error org
     const { id: orgId3 } = await db.organization.create({
       name: 'vscodium',
       host: 'GitHub',
       email
     })
     t.context.orgId3 = orgId3.toString()
+
+    // Org without email
+    const { id: orgId4 } = await db.organization.create({
+      name: 'boop-boop',
+      host: 'GitHub'
+    })
+    t.context.orgId4 = orgId4.toString()
   })
 })
 
@@ -71,6 +78,24 @@ test('POST `/organization/donation` 401 unauthorized | middleware', async (t) =>
     }
   })
   t.deepEqual(res.statusCode, 401)
+})
+
+test('POST `/organization/donation` Failure | no email on org', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/organization/donation',
+    payload: {
+      billingToken: 'new-stripe-token',
+      organizationId: t.context.orgId4,
+      globalDonation: false,
+      amount: 1000
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithBillingInfo}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), { success: false, message: ORG_MISSING_BILLING_EMAIL })
 })
 
 test('POST `/organization/donation` 401 unauthorized | user doesnt have access', async (t) => {
@@ -204,7 +229,8 @@ test('POST `/organization/donation` 500 server error', async (t) => {
     payload: {
       billingToken: 'new-stripe-token',
       organizationId: t.context.orgId3,
-      amount: 1000
+      amount: 1000,
+      globalDonation: true
     },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutBillingInfo}`
