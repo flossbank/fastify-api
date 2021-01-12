@@ -83,6 +83,20 @@ test('PUT `/organization` 401 | user isnt authorized to update org', async (t) =
   t.is(res.statusCode, 401)
 })
 
+test('PUT `/organization` 400 | missing billingEmail', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.is(res.statusCode, 400)
+})
+
 test('PUT `/organization` authorized | success', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
