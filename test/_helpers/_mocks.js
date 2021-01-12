@@ -24,6 +24,7 @@ module.exports = {
   Stripe: function Stripe ({ config }) {
     const stripe = new StripeController({ stripe: require('stripe'), config })
     this.createStripeCustomer = sinon.stub().resolves({ id: 'test-stripe-id' })
+    this.updateCustomerEmail = sinon.stub().resolves()
     this.getStripeCustomer = sinon.stub().resolves({
       id: 'test-stripe-id',
       sources: {

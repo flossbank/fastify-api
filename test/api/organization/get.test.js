@@ -68,6 +68,30 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
   })
 })
 
+test('GET `/organization/:organizationId` unauthorized | not GH owner | send back public org data', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: `/organization/${t.context.orgId1}`,
+    query: {
+      organizationId: t.context.orgId1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    organization: {
+      avatarUrl: 'blah.com',
+      name: 'flossbank',
+      globalDonation: false,
+      donationAmount: 1000000
+    }
+  })
+})
+
 test('GET `/organization/:organizationId` authorized | send back private org data', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',

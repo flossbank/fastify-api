@@ -14,7 +14,8 @@ module.exports = {
     NO_DONATION: 'No donation found',
     NO_SNAPSHOTS: 'No snapshots found',
     DONATION_ALREADY_EXISTS: 'Donation already exists',
-    URL_NOT_FOUND: 'URL identifier not found'
+    URL_NOT_FOUND: 'URL identifier not found',
+    ORG_MISSING_BILLING_EMAIL: 'Please add a billing email for this organization on the settings page before creating a donation'
   },
   CODES: {
     AD_NOT_CLEAN: 273

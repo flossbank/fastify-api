@@ -42,6 +42,12 @@ class Stripe {
     return customer.sources.data[0].last4
   }
 
+  async updateCustomerEmail ({ customerId, billingEmail }) {
+    return this.stripe.customers.update(customerId, {
+      email: billingEmail
+    })
+  }
+
   async getStripeCustomerAllTransactions ({ customerId }) {
     const transactions = await this.requestStripeCustomerTransactions({ customerId })
     const charges = transactions.data
