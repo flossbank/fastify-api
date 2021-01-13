@@ -1,13 +1,15 @@
 const fastifyPlugin = require('fastify-plugin')
 const NpmRegistry = require('./npm')
 
-function Registry () {
-  this.npm = new NpmRegistry()
-  this.supported = ['npm']
-}
+class Registry {
+  constructor () {
+    this.npm = new NpmRegistry()
+    this.supported = new Set(['npm'])
+  }
 
-Registry.prototype.isSupported = function isSupported (registry) {
-  return this.supported.includes(registry)
+  isSupported (registry) {
+    return this.supported.has(registry)
+  }
 }
 
 exports.Registry = Registry
