@@ -112,7 +112,7 @@ test('GET `/package` 200 | unauthed | ad revenue and donation revenue', async (t
   })
 })
 
-test.only('GET `/package` 200 | authed as maintainer', async (t) => {
+test('GET `/package` 200 | authed as maintainer', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package',
