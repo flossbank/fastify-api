@@ -5,9 +5,15 @@ class PackageDbController {
     this.db = db
   }
 
-  async create ({ pkg }) {
-    const { insertedId } = await this.db.collection('packages').insertOne(pkg)
-    return insertedId
+  async create ({ name, registry, avatarUrl, language }) {
+    const newPackage = {
+      name,
+      registry,
+      avatarUrl,
+      language
+    }
+    const { insertedId } = await this.db.collection('packages').insertOne(newPackage)
+    return { id: insertedId, ...newPackage }
   }
 
   async get ({ packageId }) {
@@ -21,7 +27,32 @@ class PackageDbController {
     return { id, ...rest }
   }
 
-  async getByName ({ name, registry }) {
+  async searchByName ({ name }) {
+    // only allow alphanumeric characters and hyphens
+    const safeName = name.replace(/[^a-z0-9-]/gi, '')
+    if (!safeName) return [] // handle case where all the characters were dangerous
+
+    const partialNameMatch = new RegExp(`.*${safeName}.*`, 'i')
+    const packages = await this.db.collection('packages').find({
+      name: partialNameMatch
+      // TODO there may be cases where a package does not want to appear
+      // in search results; if so, we can add a flag to their profiles in
+      // the DB and filter it out here
+    }, {
+      limit: 10,
+      projection: {
+        _id: 1,
+        name: 1,
+        language: 1,
+        registry: 1,
+        avatarUrl: 1
+      }
+    }).toArray()
+
+    return packages.map(({ _id, ...rest }) => ({ id: _id, ...rest }))
+  }
+
+  async getByNameAndRegistry ({ name, registry }) {
     const pkg = await this.db.collection('packages').findOne({
       name, registry
     })

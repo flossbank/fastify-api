@@ -28,8 +28,8 @@ class OrganizationDbController {
       name: partialNameMatch,
       host
       // TODO there may be cases where organizations do not want to appear
-      // in search results; if os, we can add a flag to their profiles in
-      // he DB and filter it out here
+      // in search results; if so, we can add a flag to their profiles in
+      // the DB and filter it out here
     }, {
       limit: 10,
       projection: {
@@ -92,6 +92,14 @@ class OrganizationDbController {
       _id: ObjectId(orgId)
     }, {
       $set: { 'billingInfo.customerId': customerId }
+    })
+  }
+
+  async updateEmail ({ orgId, email }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: { email }
     })
   }
 

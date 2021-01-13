@@ -39,7 +39,7 @@ test('POST `/organization/github-create` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/github-create',
-    body: { installationId: '42069' }
+    body: { installationId: '69420' }
   })
   t.deepEqual(res.statusCode, 200)
   const payload = JSON.parse(res.body)

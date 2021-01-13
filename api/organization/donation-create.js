@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PERMISSIONS, ORG_MISSING_BILLING_EMAIL } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -16,6 +16,10 @@ module.exports = async (req, res, ctx) => {
     if (!org) {
       res.status(404)
       return res.send({ success: false })
+    }
+
+    if (!org.email) {
+      return res.send({ success: false, message: ORG_MISSING_BILLING_EMAIL })
     }
 
     // confirm user is an admin of the GH org

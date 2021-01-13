@@ -57,6 +57,7 @@ const createGitHubOrganization = require('../api/organization/github-create')
 const getOrganization = require('../api/organization/get')
 const getOrgOssUsage = require('../api/organization/get-oss-usage')
 const getOrgByName = require('../api/organization/get-org-by-name')
+const updateOrg = require('../api/organization/update')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
@@ -69,7 +70,8 @@ const getOrgByName = require('../api/organization/get-org-by-name')
 // const resumeMaintainerSession = require('../api/maintainer/resume')
 
 // Packages
-// const getPackages = require('../api/package/get')
+const searchPackagesByName = require('../api/package/search-by-name')
+const getPackage = require('../api/package/get')
 // const refreshPackages = require('../api/package/refresh')
 // const updatePackages = require('../api/package/update')
 
@@ -159,6 +161,7 @@ async function routes (fastify, opts, done) {
   fastify.delete('/organization/donation', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.deleteDonation }, (req, res) => deleteOrgDonation(req, res, fastify))
   fastify.get('/organization/get-donation-info', { schema: Schema.organization.getDonationInfo }, (req, res) => getOrgDonationInfo(req, res, fastify))
   fastify.get('/organization/get-oss-usage', { schema: Schema.organization.getOssUsage }, (req, res) => getOrgOssUsage(req, res, fastify))
+  fastify.put('/organization', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.update }, (req, res) => updateOrg(req, res, fastify))
 
   // Maintainer
   // fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
@@ -171,7 +174,8 @@ async function routes (fastify, opts, done) {
   // fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
 
   // Packages
-  // fastify.get('/package/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.get }, (req, res) => getPackages(req, res, fastify))
+  fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
+  fastify.get('/package', { schema: Schema.package.get }, (req, res) => getPackage(req, res, fastify))
   // fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.refresh }, (req, res) => refreshPackages(req, res, fastify))
   // fastify.post('/package/update', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.update }, (req, res) => updatePackages(req, res, fastify))
 

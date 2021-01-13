@@ -66,12 +66,19 @@ class UserDbController {
     }
   }
 
-  async create ({ email, referralCode, githubId }) {
+  async getListOfUsers ({ ids }) {
+    return this.db.collection('users').find({
+      _id: { $in: ids.map((userId) => ObjectId(userId)) }
+    }).toArray()
+  }
+
+  async create ({ email, referralCode, githubId, username }) {
     const apiKey = crypto.randomBytes(32).toString('hex')
     const userToCreate = {
       email,
       apiKey,
       githubId,
+      username: username || '',
       referralCode,
       billingInfo: {},
       apiKeysRequested: []
