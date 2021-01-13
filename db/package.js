@@ -102,8 +102,8 @@ class PackageDbController {
   }
 
   async refreshOwnership ({ packages, registry, maintainerId }) {
-    // find all the packages in the DB that are marked as maintained by me,
-    // that are in the provided registry, and have a name that's in the list provided by the registry
+    // find all the packages in the DB that either are marked as maintained by me,
+    // or simply have the provided registry and a name that's in the list provided by the registry
     const existingPackages = await this.db.collection('packages').find({
       $or: [
         { name: { $in: packages } },
@@ -113,12 +113,14 @@ class PackageDbController {
       registry
     }).toArray()
 
+    console.error('found existing pkgs for this maintainer', existingPackages)
+
     // of the packages already marked as maintained by me, whichever aren't in the list of
     // packages provided, remove my id from their maintainers list
     const packageDeletions = existingPackages
       .filter(pkg => !packages.includes(pkg.name))
       .map(pkg => ({
-        criteria: { name: pkg.name, registry },
+        criteria: { _id: pkg._id },
         update: {
           $pull: { maintainers: { maintainerId } }
         }
@@ -140,6 +142,22 @@ class PackageDbController {
         }
       }))
 
+    // of the packages found in the DB, make sure I am marked as a maintainer
+    // of the ones I maintain
+    const packageUpdates = existingPackages
+      .filter(pkg => !pkg.maintainers || !pkg.maintainers.some(m => m.maintainerId === maintainerId))
+      .map(pkg => ({
+        criteria: { _id: pkg._id },
+        update: {
+          $push: {
+            maintainers: {
+              maintainerId,
+              revenuePercent: 0
+            }
+          }
+        }
+      }))
+
     const bulkPackages = this.db.collection('packages').initializeUnorderedBulkOp()
 
     for (const insertion of packageInsertions) {
@@ -147,6 +165,9 @@ class PackageDbController {
     }
     for (const deletion of packageDeletions) {
       bulkPackages.find(deletion.criteria).update(deletion.update)
+    }
+    for (const update of packageUpdates) {
+      bulkPackages.find(update.criteria).update(update.update)
     }
 
     // due to how the insertions/updates were done, there may be some packages that were upserted
