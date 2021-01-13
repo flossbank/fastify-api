@@ -43,6 +43,16 @@ class UserDbController {
     })
   }
 
+  async linkToRegistry ({ userId, registry, data }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $set: {
+        [registry]: data
+      }
+    })
+  }
+
   async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 

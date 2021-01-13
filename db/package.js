@@ -102,60 +102,74 @@ class PackageDbController {
   }
 
   async refreshOwnership ({ packages, registry, maintainerId }) {
+    // find all the packages in the DB that are marked as maintained by me,
+    // that are in the provided registry, and have a name that's in the list provided by the registry
     const existingPackages = await this.db.collection('packages').find({
       $or: [
         { name: { $in: packages } },
-        { owner: maintainerId }
+        { 'maintainers.maintainerId': maintainerId }
+        // https://docs.mongodb.com/manual/tutorial/query-array-of-documents/#specify-a-query-condition-on-a-field-in-an-array-of-documents
       ],
       registry
     }).toArray()
 
+    // of the packages already marked as maintained by me, whichever aren't in the list of
+    // packages provided, remove my id from their maintainers list
     const packageDeletions = existingPackages
       .filter(pkg => !packages.includes(pkg.name))
       .map(pkg => ({
         criteria: { name: pkg.name, registry },
         update: {
-          $set: { owner: null },
           $pull: { maintainers: { maintainerId } }
         }
       }))
+
+    // of the packages provided, whichever aren't already marked as maintained by me,
+    // push my id to their maintainers list (upsert if the package isn't in the DB at all)
     const packageInsertions = packages
       .filter(pkg => !existingPackages.some((ePkg) => ePkg.name === pkg))
       .map(pkg => ({
-        name: pkg,
-        registry,
-        owner: maintainerId,
-        maintainers: [{ maintainerId, revenuePercent: 100 }]
-      }))
-    const packageUpdates = existingPackages
-      .filter(pkg => pkg.owner !== maintainerId)
-      .map(pkg => {
-        const alreadyMaintains = pkg.maintainers.some(maintainer => maintainer.maintainerId === maintainerId)
-        return {
-          criteria: { name: pkg.name, registry },
-          update: {
-            $set: {
-              owner: maintainerId,
-              maintainers: alreadyMaintains
-                ? pkg.maintainers
-                : pkg.maintainers.concat([{ maintainerId, revenuePercent: 0 }])
-            }
+        criteria: {
+          name: pkg,
+          registry
+        },
+        update: {
+          $push: {
+            maintainers: { maintainerId, revenuePercent: 0 }
           }
         }
-      })
+      }))
+
     const bulkPackages = this.db.collection('packages').initializeUnorderedBulkOp()
 
     for (const insertion of packageInsertions) {
-      bulkPackages.insert(insertion)
-    }
-    for (const update of packageUpdates) {
-      bulkPackages.find(update.criteria).update(update.update)
+      bulkPackages.find(insertion.criteria).upsert().update(insertion.update)
     }
     for (const deletion of packageDeletions) {
       bulkPackages.find(deletion.criteria).update(deletion.update)
     }
 
+    // due to how the insertions/updates were done, there may be some packages that were upserted
+    // or updated and have only one maintainer with 0 percent revenue share. to fix that, we'll
+    // change those to 100%
+    bulkPackages.find({
+      registry,
+      maintainers: { $size: 1 }
+    }).update({
+      $set: {
+        'maintainers.$[].revenuePercent': 100
+        // https://docs.mongodb.com/manual/reference/operator/update/positional-all/#up._S_[]
+      }
+    })
+
     return bulkPackages.execute()
+  }
+
+  async getOwnedPackages ({ userId, registry }) {
+    return this.db.collection('packages').find({
+      'maintainers.maintainerId': userId,
+      registry
+    }).toArray()
   }
 }
 
