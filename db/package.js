@@ -101,19 +101,17 @@ class PackageDbController {
     return installedPackages
   }
 
-  async refreshOwnership ({ packages, registry, maintainerId }) {
+  async refreshOwnership ({ packages, registry, userId }) {
     // find all the packages in the DB that either are marked as maintained by me,
     // or simply have the provided registry and a name that's in the list provided by the registry
     const existingPackages = await this.db.collection('packages').find({
       $or: [
         { name: { $in: packages } },
-        { 'maintainers.maintainerId': maintainerId }
+        { 'maintainers.userId': userId }
         // https://docs.mongodb.com/manual/tutorial/query-array-of-documents/#specify-a-query-condition-on-a-field-in-an-array-of-documents
       ],
       registry
     }).toArray()
-
-    console.error('found existing pkgs for this maintainer', existingPackages)
 
     // of the packages already marked as maintained by me, whichever aren't in the list of
     // packages provided, remove my id from their maintainers list
@@ -122,12 +120,12 @@ class PackageDbController {
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
-          $pull: { maintainers: { maintainerId } }
+          $pull: { maintainers: { userId } }
         }
       }))
 
-    // of the packages provided, whichever aren't already marked as maintained by me,
-    // push my id to their maintainers list (upsert if the package isn't in the DB at all)
+    // of the packages provided, whichever aren't already in the db, create them and
+    // push my id to their maintainers list
     const packageInsertions = packages
       .filter(pkg => !existingPackages.some((ePkg) => ePkg.name === pkg))
       .map(pkg => ({
@@ -137,7 +135,7 @@ class PackageDbController {
         },
         update: {
           $push: {
-            maintainers: { maintainerId, revenuePercent: 0 }
+            maintainers: { userId, revenuePercent: 100 }
           }
         }
       }))
@@ -145,13 +143,13 @@ class PackageDbController {
     // of the packages found in the DB, make sure I am marked as a maintainer
     // of the ones I maintain
     const packageUpdates = existingPackages
-      .filter(pkg => !pkg.maintainers || !pkg.maintainers.some(m => m.maintainerId === maintainerId))
+      .filter(pkg => !pkg.maintainers || !pkg.maintainers.some(m => m.userId === userId))
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
           $push: {
             maintainers: {
-              maintainerId,
+              userId,
               revenuePercent: 0
             }
           }
@@ -188,7 +186,7 @@ class PackageDbController {
 
   async getOwnedPackages ({ userId, registry }) {
     return this.db.collection('packages').find({
-      'maintainers.maintainerId': userId,
+      'maintainers.userId': userId,
       registry
     }).toArray()
   }

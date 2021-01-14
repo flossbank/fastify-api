@@ -65,7 +65,7 @@ test('POST `/package/npm/ownership` 200 success', async (t) => {
     (await npm.getOwnedPackages()).map((pkg) => ({
       name: pkg,
       maintainers: [{
-        maintainerId: userId,
+        userId,
         revenuePercent: 100
       }]
     })))
