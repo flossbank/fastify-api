@@ -19,10 +19,26 @@ class EthicalAds {
       responseType: 'json'
     })
 
-    const { body, link: url, view_url: viewUrl, nonce } = response
+    const { body, copy = {}, link: url, view_url: viewUrl, nonce } = response
+    const { headline, content, cta } = copy
+
+    // https://github.com/readthedocs/ethical-ad-server/pull/302/files
+    let textBody = ''
+    if (content) {
+      textBody += content
+    }
+    if (cta) {
+      textBody += ' '
+      textBody += cta
+    }
 
     const id = `${this.constants.ETHICAL_AD_PREFIX}_${nonce}`
-    const ad = { id, title: 'Ethical Ad', body, url }
+    const ad = {
+      id,
+      title: headline || 'Ethical Ad',
+      body: textBody || body,
+      url
+    }
 
     await this.saveViewUrls({ sessionId, ads: [{ viewUrl, nonce }] })
 
