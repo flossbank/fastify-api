@@ -24,6 +24,5 @@ test('constructor', (t) => {
 test('non-existant entities', async (t) => {
   const { db } = t.context
   t.is(await db.package.getByNameAndRegistry({ name: 'foo', registry: 'bar' }), null)
-  t.is(await db.maintainer.getByEmail({ email: 'foo' }), null)
   t.is(await db.user.get({ userId: 'aaaaaaaaaaaaaaaaaaaaaaaa' }), null)
 })

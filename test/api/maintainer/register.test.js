@@ -17,29 +17,29 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/user/register` 400 bad request', async (t) => {
+test('POST `/maintainer/register` 400 bad request', async (t) => {
   let res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: {}
   })
   t.deepEqual(res.statusCode, 400)
 
   res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: { email: 'not-valid-email' }
   })
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/user/register` 409 conflict', async (t) => {
+test('POST `/maintainer/register` 409 conflict', async (t) => {
   const { db } = t.context
   await db.user.create({ email: 'honeyyy@etsy.com' })
 
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: { email: 'honeyyy@etsy.com' }
   })
 
@@ -48,10 +48,10 @@ test('POST `/user/register` 409 conflict', async (t) => {
   t.false(payload.success)
 })
 
-test('POST `/user/register` 200 success', async (t) => {
+test('POST `/maintainer/register` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: { email: 'peter@quo.cc' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -59,10 +59,10 @@ test('POST `/user/register` 200 success', async (t) => {
   t.true(payload.success)
 })
 
-test('POST `/user/register` 200 success | with referral code', async (t) => {
+test('POST `/maintainer/register` 200 success | with referral code', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: { email: 'peter2@quo.cc', referralCode: 'asdf' }
   })
   t.deepEqual(res.statusCode, 200)
@@ -70,11 +70,11 @@ test('POST `/user/register` 200 success | with referral code', async (t) => {
   t.true(payload.success)
 })
 
-test('POST `/user/register` 500 server error', async (t) => {
+test('POST `/maintainer/register` 500 server error', async (t) => {
   t.context.auth.user.beginRegistration = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',
-    url: '/user/register',
+    url: '/maintainer/register',
     payload: { email: 'peter@quo.cc' }
   })
   t.deepEqual(res.statusCode, 500)
