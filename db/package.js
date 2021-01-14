@@ -184,10 +184,13 @@ class PackageDbController {
     return bulkPackages.execute()
   }
 
-  async getOwnedPackages ({ userId, registry }) {
+  async getOwnedPackages ({ userId, registry, language }) {
     return this.db.collection('packages').find({
       'maintainers.userId': userId,
-      registry
+
+      // optional qualifiers
+      ...(registry && { registry }),
+      ...(language && { language })
     }).toArray()
   }
 }

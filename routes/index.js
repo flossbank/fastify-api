@@ -46,6 +46,7 @@ const getInstalledPackages = require('../api/user/get-installed-packages')
 const getUserDonationInfo = require('../api/user/get-donation-info')
 const getUserSessions = require('../api/user/get-sessions')
 const githubAuthUser = require('../api/user/github-auth')
+const ownedPackages = require('../api/user/owned-packages')
 
 // Organization
 const orgGithubAuth = require('../api/organization/github-auth')
@@ -151,6 +152,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/get-installed-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getInstalledPackages }, (req, res) => getInstalledPackages(req, res, fastify))
   fastify.get('/user/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getDonationInfo }, (req, res) => getUserDonationInfo(req, res, fastify))
   fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
+  fastify.get('/user/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
 
   // Organization
   fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => orgGithubAuth(req, res, fastify))
