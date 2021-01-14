@@ -68,6 +68,7 @@ const updateOrg = require('../api/organization/update')
 // const updateMaintainerPayout = require('../api/maintainer/update-payout')
 // const verifyMaintainer = require('../api/maintainer/verify')
 // const resumeMaintainerSession = require('../api/maintainer/resume')
+const ownedPackages = require('../api/maintainer/owned-packages')
 
 // Packages
 const searchPackagesByName = require('../api/package/search-by-name')
@@ -173,6 +174,7 @@ async function routes (fastify, opts, done) {
   // fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
   // fastify.post('/maintainer/verify', { schema: Schema.maintainer.verify }, (req, res) => verifyMaintainer(req, res, fastify))
   // fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
+  fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
 
   // Packages
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
