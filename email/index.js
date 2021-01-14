@@ -97,18 +97,33 @@ class Email {
     }).promise()
   }
 
+  async sendMaintainerMagicLinkEmail (email, { token, code }) {
+    const loginUrl = this.createLoginUrl(email, token, 'maintainer')
+    return this.ses.sendTemplatedEmail({
+      Destination: { ToAddresses: [email] },
+      Source: FLOSSBANK_ADMIN,
+      ConfigurationSetName: DEFAULT_CONFIG_SET,
+      Template: USER_MAGIC_LINK_TEMPLATE,
+      TemplateData: JSON.stringify({ code, loginUrl })
+    }).promise()
+  }
+
   encodeEmail (email) {
     return b36.encode(Buffer.from(email))
   }
 
-  createActivationUrl (email, token) {
+  createActivationUrl (email, token, type) {
     const e = this.encodeEmail(email)
-    return `https://flossbank.com/verify?e=${e}&token=${token}`
+    let host = 'https://flossbank.com'
+    if (type === 'maintainer') host = 'https://maintainer.flossbank.com'
+    return `${host}/verify?e=${e}&token=${token}`
   }
 
-  createLoginUrl (email, token) {
+  createLoginUrl (email, token, type) {
     const e = this.encodeEmail(email)
-    return `https://flossbank.com/complete-login?e=${e}&token=${token}`
+    let host = 'https://flossbank.com'
+    if (type === 'maintainer') host = 'https://maintainer.flossbank.com'
+    return `${host}/complete-login?e=${e}&token=${token}`
   }
 
   createUnsubscribeUrl (email, token) {
