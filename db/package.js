@@ -63,11 +63,11 @@ class PackageDbController {
     return { id, ...rest }
   }
 
-  async update ({ packageId, maintainers, owner }) {
+  async update ({ packageId, maintainers }) {
     return this.db.collection('packages').updateOne({
       _id: ObjectId(packageId)
     }, {
-      $set: { maintainers, owner }
+      $set: { maintainers }
     })
   }
 
