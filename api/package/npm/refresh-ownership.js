@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR }, REGISTRIES: { NPM } } = require('../../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR }, REGISTRIES: { NPM }, LANGUAGES: { JAVASCRIPT } } = require('../../../helpers/constants')
 
 /** This endpoint will do the following:
  * 1) confirm we have necessary information associated with the requesting user to find
@@ -25,7 +25,7 @@ module.exports = async (req, res, ctx) => {
     const packages = await ctx.registry.npm.getOwnedPackages(user[NPM].username)
     ctx.log.info('%s maintains %d packages on NPM', userId, packages.length)
 
-    await ctx.db.package.refreshOwnership({ packages, registry: NPM, userId })
+    await ctx.db.package.refreshOwnership({ packages, language: JAVASCRIPT, registry: NPM, userId })
 
     res.send({ success: true })
   } catch (e) {

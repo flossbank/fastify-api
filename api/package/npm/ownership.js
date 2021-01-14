@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR }, REGISTRIES: { NPM } } = require('../../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR }, REGISTRIES: { NPM }, LANGUAGES: { JAVASCRIPT } } = require('../../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -12,7 +12,7 @@ module.exports = async (req, res, ctx) => {
     ctx.log.info('%s has username %s on NPM', req.session.userId, username)
 
     const packages = await ctx.registry.npm.getOwnedPackages({ username })
-    await ctx.db.package.refreshOwnership({ packages, registry: NPM, userId: req.session.userId })
+    await ctx.db.package.refreshOwnership({ packages, registry: NPM, language: JAVASCRIPT, userId: req.session.userId })
     ctx.log.info('%s maintains %d packages on NPM', req.session.userId, packages.length)
 
     res.send({ success: true })

@@ -1,6 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../../_helpers/_setup')
-const { REGISTRIES: { NPM }, USER_WEB_SESSION_COOKIE } = require('../../../../helpers/constants')
+const { REGISTRIES: { NPM }, LANGUAGES: { JAVASCRIPT }, USER_WEB_SESSION_COOKIE } = require('../../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -58,7 +58,7 @@ test('POST `/package/npm/ownership` 200 success', async (t) => {
   t.true(npm.getUsername.calledOnce)
   t.true(npm.getOwnedPackages.calledOnce)
 
-  const packages = await t.context.db.package.getOwnedPackages({ userId, registry: NPM })
+  const packages = await t.context.db.package.getOwnedPackages({ userId, registry: NPM, language: JAVASCRIPT })
   t.is(packages.length, 2)
   t.deepEqual(
     packages.map(({ name, maintainers }) => ({ name, maintainers })),

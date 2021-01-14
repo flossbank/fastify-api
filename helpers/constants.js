@@ -2,6 +2,9 @@ module.exports = {
   REGISTRIES: {
     NPM: 'npm'
   },
+  LANGUAGES: {
+    JAVASCRIPT: 'javascript'
+  },
   MSGS: {
     AD_NOT_CLEAN: 'String must be plain ASCII text. No Unicode, emojis, or control characters allowed.',
     ALREADY_EXISTS: 'An account with this email already exists',

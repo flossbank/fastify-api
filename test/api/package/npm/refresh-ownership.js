@@ -1,6 +1,6 @@
 const test = require('ava')
 const { before, beforeEach, afterEach, after } = require('../../../_helpers/_setup')
-const { REGISTRIES: { NPM }, USER_WEB_SESSION_COOKIE } = require('../../../../helpers/constants')
+const { REGISTRIES: { NPM }, LANGUAGES: { JAVASCRIPT }, USER_WEB_SESSION_COOKIE } = require('../../../../helpers/constants')
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -33,8 +33,8 @@ test.before(async (t) => {
     // a pkg that m4 owns that will not be changed
     const { id: pid1 } = await db.package.create({
       name: 'unc-bootcamp-project-a',
-      registry: 'npm',
-      language: 'javascript'
+      registry: NPM,
+      language: JAVASCRIPT
     })
     await db.package.update({
       packageId: pid1,
@@ -44,8 +44,8 @@ test.before(async (t) => {
     // a pkg that m1 owns and npm will confirm
     const { id: yttriumId } = await db.package.create({
       name: 'yttrium-server',
-      registry: 'npm',
-      langauge: 'javascript'
+      registry: NPM,
+      language: JAVASCRIPT
     })
     await db.package.update({
       packageId: yttriumId,
@@ -57,8 +57,8 @@ test.before(async (t) => {
     // will say m1 no longer maintains
     const { id: sodium } = await db.package.create({
       name: 'sodium-native',
-      registry: 'npm',
-      language: 'javascript'
+      registry: NPM,
+      language: JAVASCRIPT
     })
     await db.package.update({
       packageId: sodium,
@@ -70,8 +70,8 @@ test.before(async (t) => {
     // maintains it; the surviving maintainer should remain and get 100%
     const { id: papajohns } = await db.package.create({
       name: 'papajohns',
-      registry: 'npm',
-      language: 'javascript'
+      registry: NPM,
+      language: JAVASCRIPT
     })
     await db.package.update({
       packageId: papajohns,
@@ -86,8 +86,8 @@ test.before(async (t) => {
     // that npm will say m1 now maintains
     const { id: chive } = await db.package.create({
       name: 'chive',
-      registry: 'npm',
-      language: 'javscript'
+      registry: NPM,
+      language: JAVASCRIPT
     })
     await db.package.update({
       packageId: chive,
