@@ -71,10 +71,10 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('GET `/user/owned-packages` 401 unauthorized', async (t) => {
+test('GET `/maintainer/owned-packages` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
     }
@@ -82,10 +82,10 @@ test('GET `/user/owned-packages` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('GET `/user/owned-packages` 200 success | all packages', async (t) => {
+test('GET `/maintainer/owned-packages` 200 success | all packages', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
@@ -113,11 +113,11 @@ test('GET `/user/owned-packages` 200 success | all packages', async (t) => {
   })
 })
 
-test('GET `/user/owned-packages` 200 success | filtered', async (t) => {
+test('GET `/maintainer/owned-packages` 200 success | filtered', async (t) => {
   // only npm please
   let res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     query: { registry: 'npm' },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
@@ -143,7 +143,7 @@ test('GET `/user/owned-packages` 200 success | filtered', async (t) => {
   // only c++ please
   res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     query: { language: 'ruby' },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
@@ -162,10 +162,10 @@ test('GET `/user/owned-packages` 200 success | filtered', async (t) => {
   })
 })
 
-test('GET `/user/owned-packages` 400 bad request | invalid reg/lang', async (t) => {
+test('GET `/maintainer/owned-packages` 400 bad request | invalid reg/lang', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     query: { registry: 'garbage' },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
@@ -174,10 +174,10 @@ test('GET `/user/owned-packages` 400 bad request | invalid reg/lang', async (t) 
   t.deepEqual(res.statusCode, 400)
 })
 
-test('GET `/user/owned-packages` 200 success | nothing to see here', async (t) => {
+test('GET `/maintainer/owned-packages` 200 success | nothing to see here', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session2}`
     }
@@ -189,11 +189,11 @@ test('GET `/user/owned-packages` 200 success | nothing to see here', async (t) =
   })
 })
 
-test('GET `/user/owned-packages` 500 server error', async (t) => {
+test('GET `/maintainer/owned-packages` 500 server error', async (t) => {
   t.context.db.package.getOwnedPackages = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'GET',
-    url: '/user/owned-packages',
+    url: '/maintainer/owned-packages',
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
