@@ -114,16 +114,22 @@ class Email {
 
   createActivationUrl (email, token, type) {
     const e = this.encodeEmail(email)
-    let host = 'https://flossbank.com'
-    if (type === 'maintainer') host = 'https://maintainer.flossbank.com'
-    return `${host}/verify?e=${e}&token=${token}`
+    switch (type) {
+      case 'maintainer':
+        return `https://maintainer.flossbank.com/verify?e=${e}&token=${token}`
+      default:
+        return `https://flossbank.com/verify?e=${e}&token=${token}`
+    }
   }
 
   createLoginUrl (email, token, type) {
     const e = this.encodeEmail(email)
-    let host = 'https://flossbank.com'
-    if (type === 'maintainer') host = 'https://maintainer.flossbank.com'
-    return `${host}/complete-login?e=${e}&token=${token}`
+    switch (type) {
+      case 'maintainer':
+        return `https://maintainer.flossbank.com/complete-login?e=${e}&token=${token}`
+      default:
+        return `https://flossbank.com/complete-login?e=${e}&token=${token}`
+    }
   }
 
   createUnsubscribeUrl (email, token) {
