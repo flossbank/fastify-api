@@ -1,9 +1,11 @@
 module.exports = {
   REGISTRIES: {
-    NPM: 'npm'
+    NPM: 'npm',
+    RUBYGEMS: 'rubygems'
   },
   LANGUAGES: {
-    JAVASCRIPT: 'javascript'
+    JAVASCRIPT: 'javascript',
+    RUBY: 'ruby'
   },
   MSGS: {
     AD_NOT_CLEAN: 'String must be plain ASCII text. No Unicode, emojis, or control characters allowed.',

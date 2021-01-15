@@ -54,6 +54,18 @@ class UserDbController {
     })
   }
 
+  // unlink registry-specific info from this user account (e.g. username on NPM)
+  async unlinkFromRegistry ({ userId, registry }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      // https://docs.mongodb.com/manual/reference/operator/update/unset/
+      $unset: {
+        [registry]: null
+      }
+    })
+  }
+
   async get ({ userId }) {
     const user = await this.db.collection('users').findOne({ _id: ObjectId(userId) })
 
