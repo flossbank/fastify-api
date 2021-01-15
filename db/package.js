@@ -101,7 +101,7 @@ class PackageDbController {
     return installedPackages
   }
 
-  async refreshOwnership ({ packages, registry, userId }) {
+  async refreshOwnership ({ packages, language, registry, userId }) {
     // find all the packages in the DB that either are marked as maintained by me,
     // or simply have the provided registry and a name that's in the list provided by the registry
     const existingPackages = await this.db.collection('packages').find({
@@ -110,7 +110,8 @@ class PackageDbController {
         { 'maintainers.userId': userId }
         // https://docs.mongodb.com/manual/tutorial/query-array-of-documents/#specify-a-query-condition-on-a-field-in-an-array-of-documents
       ],
-      registry
+      registry,
+      language
     }).toArray()
 
     // of the packages already marked as maintained by me, whichever aren't in the list of
@@ -131,7 +132,8 @@ class PackageDbController {
       .map(pkg => ({
         criteria: {
           name: pkg,
-          registry
+          registry,
+          language
         },
         update: {
           $push: {
@@ -173,6 +175,7 @@ class PackageDbController {
     // change those to 100%
     bulkPackages.find({
       registry,
+      language,
       maintainers: { $size: 1 }
     }).update({
       $set: {
