@@ -18,7 +18,8 @@ module.exports = {
   },
   Registry: function Registry () {
     this.npm = {
-      getOwnedPackages: sinon.stub().resolves()
+      getUsername: sinon.stub().resolves('twoseventythree'),
+      getOwnedPackages: sinon.stub().resolves(['js-deep-equals', 'ninja-rmm-api'])
     }
     this.isSupported = sinon.stub().resolves(true)
   },

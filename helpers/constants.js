@@ -1,4 +1,12 @@
 module.exports = {
+  REGISTRIES: {
+    NPM: 'npm',
+    RUBYGEMS: 'rubygems'
+  },
+  LANGUAGES: {
+    JAVASCRIPT: 'javascript',
+    RUBY: 'ruby'
+  },
   MSGS: {
     AD_NOT_CLEAN: 'String must be plain ASCII text. No Unicode, emojis, or control characters allowed.',
     ALREADY_EXISTS: 'An account with this email already exists',
