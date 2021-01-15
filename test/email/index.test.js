@@ -20,6 +20,15 @@ test('sendUserActivationEmail creates proper url', async (t) => {
   }))
 })
 
+test('sendMaintainerActivationEmail creates proper url', async (t) => {
+  const { email } = t.context
+  await email.sendMaintainerActivationEmail('foo', 'bar')
+  const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
+  t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
+    activationUrl: 'https://maintainer.flossbank.com/verify?e=3zvxr&token=bar'
+  }))
+})
+
 test('sendContactUsEmail sends proper contact us email', async (t) => {
   const { email } = t.context
   const topic = 'foo'
@@ -33,15 +42,6 @@ test('sendContactUsEmail sends proper contact us email', async (t) => {
 test('sendAdvertiserActivationEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendAdvertiserActivationEmail('foo', 'bar')
-  const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
-  t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
-    activationUrl: 'https://flossbank.com/verify?e=3zvxr&token=bar'
-  }))
-})
-
-test('sendMaintainerActivationEmail creates proper url', async (t) => {
-  const { email } = t.context
-  await email.sendMaintainerActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
     activationUrl: 'https://flossbank.com/verify?e=3zvxr&token=bar'
@@ -64,5 +64,15 @@ test('sendUserMagicLinkEmail creates proper url', async (t) => {
   t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
     code: 'Code Words',
     loginUrl: 'https://flossbank.com/complete-login?e=3zvxr&token=bar'
+  }))
+})
+
+test('sendMaintainerMagicLinkEmail creates proper url', async (t) => {
+  const { email } = t.context
+  await email.sendMaintainerMagicLinkEmail('foo', { token: 'bar', code: 'Code Words' })
+  const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
+  t.deepEqual(sesArgs[0].TemplateData, JSON.stringify({
+    code: 'Code Words',
+    loginUrl: 'https://maintainer.flossbank.com/complete-login?e=3zvxr&token=bar'
   }))
 })
