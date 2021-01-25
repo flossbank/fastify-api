@@ -8,6 +8,7 @@ module.exports = {
     this.sendAdvertiserActivationEmail = sinon.stub().resolves()
     this.sendMaintainerActivationEmail = sinon.stub().resolves()
     this.sendUserMagicLinkEmail = sinon.stub().resolves()
+    this.sendMaintainerMagicLinkEmail = sinon.stub().resolves()
     this.sendContactUsEmail = sinon.stub().resolves()
   },
   Sqs: function Sqs () {
@@ -17,7 +18,8 @@ module.exports = {
   },
   Registry: function Registry () {
     this.npm = {
-      getOwnedPackages: sinon.stub().resolves()
+      getUsername: sinon.stub().resolves('twoseventythree'),
+      getOwnedPackages: sinon.stub().resolves(['js-deep-equals', 'ninja-rmm-api'])
     }
     this.isSupported = sinon.stub().resolves(true)
   },

@@ -61,18 +61,18 @@ const updateOrg = require('../api/organization/update')
 
 // Maintainer
 // const getMaintainer = require('../api/maintainer/get')
-// const loginMaintainer = require('../api/maintainer/login')
-// const logoutMaintainer = require('../api/maintainer/logout')
-// const registerMaintainer = require('../api/maintainer/register')
+const requestLoginMaintainer = require('../api/maintainer/request-login')
+const registerMaintainer = require('../api/maintainer/register')
 // const maintainerRevenue = require('../api/maintainer/revenue')
 // const updateMaintainerPayout = require('../api/maintainer/update-payout')
-// const verifyMaintainer = require('../api/maintainer/verify')
-// const resumeMaintainerSession = require('../api/maintainer/resume')
+const ownedPackages = require('../api/maintainer/owned-packages')
 
 // Packages
 const searchPackagesByName = require('../api/package/search-by-name')
 const getPackage = require('../api/package/get')
-// const refreshPackages = require('../api/package/refresh')
+const npmOwnership = require('../api/package/npm/ownership')
+const npmDeleteOwnership = require('../api/package/npm/delete-ownership')
+const npmRefreshOwnership = require('../api/package/npm/refresh-ownership')
 // const updatePackages = require('../api/package/update')
 
 // Session
@@ -165,18 +165,18 @@ async function routes (fastify, opts, done) {
 
   // Maintainer
   // fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
-  // fastify.post('/maintainer/login', { schema: Schema.maintainer.login }, (req, res) => loginMaintainer(req, res, fastify))
-  // fastify.post('/maintainer/logout', { schema: Schema.maintainer.logout }, (req, res) => logoutMaintainer(req, res, fastify))
-  // fastify.post('/maintainer/register', { schema: Schema.maintainer.register }, (req, res) => registerMaintainer(req, res, fastify))
+  fastify.post('/maintainer/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginMaintainer(req, res, fastify))
+  fastify.post('/maintainer/register', { schema: Schema.user.register }, (req, res) => registerMaintainer(req, res, fastify))
   // fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.revenue }, (req, res) => maintainerRevenue(req, res, fastify))
   // fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
-  // fastify.post('/maintainer/verify', { schema: Schema.maintainer.verify }, (req, res) => verifyMaintainer(req, res, fastify))
-  // fastify.get('/maintainer/resume', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done) }, (req, res) => resumeMaintainerSession(req, res, fastify))
+  fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
 
   // Packages
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
   fastify.get('/package', { schema: Schema.package.get }, (req, res) => getPackage(req, res, fastify))
-  // fastify.post('/package/refresh', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.refresh }, (req, res) => refreshPackages(req, res, fastify))
+  fastify.post('/package/npm/ownership', { schema: Schema.package.npm.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => npmOwnership(req, res, fastify))
+  fastify.delete('/package/npm/ownership', { schema: Schema.package.npm.deleteOwnership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => npmDeleteOwnership(req, res, fastify))
+  fastify.put('/package/npm/refresh-ownership', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.package.npm.refreshOwnership }, (req, res) => npmRefreshOwnership(req, res, fastify))
   // fastify.post('/package/update', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.package.update }, (req, res) => updatePackages(req, res, fastify))
 
   // Session

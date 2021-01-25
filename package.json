@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@flossbank/schema": "^1.25.3",
+    "@flossbank/schema": "^1.29.0",
     "@octokit/app": "^4.2.1",
     "ajv": "^6.10.2",
     "aws-sdk": "^2.543.0",
@@ -49,6 +49,7 @@
     "husky": "^3.0.8",
     "mocdoc": "^2.0.0",
     "mongodb-memory-server": "^6.7.1",
+    "nock": "^13.0.5",
     "nyc": "^14.1.1",
     "pino-pretty": "^4.0.0",
     "sinon": "^7.5.0",
