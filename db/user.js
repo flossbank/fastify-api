@@ -75,6 +75,14 @@ class UserDbController {
     return { id, ...rest }
   }
 
+  async updateUsername ({ userId, username }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
+    }, {
+      $set: { username }
+    })
+  }
+
   async getSessions ({ userId }) {
     try {
       const sessions = await this.db.collection('users').aggregate([

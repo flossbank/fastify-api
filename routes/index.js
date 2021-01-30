@@ -60,7 +60,7 @@ const getOrgByName = require('../api/organization/get-org-by-name')
 const updateOrg = require('../api/organization/update')
 
 // Maintainer
-// const getMaintainer = require('../api/maintainer/get')
+const updateMaintainerUsername = require('../api/maintainer/update-username')
 const requestLoginMaintainer = require('../api/maintainer/request-login')
 const registerMaintainer = require('../api/maintainer/register')
 // const maintainerRevenue = require('../api/maintainer/revenue')
@@ -164,10 +164,9 @@ async function routes (fastify, opts, done) {
   fastify.put('/organization', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.update }, (req, res) => updateOrg(req, res, fastify))
 
   // Maintainer
-  // fastify.get('/maintainer/get', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.get }, (req, res) => getMaintainer(req, res, fastify))
+  fastify.put('/maintainer/update-username', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateUsername }, (req, res) => updateMaintainerUsername(req, res, fastify))
   fastify.post('/maintainer/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: Schema.user.register }, (req, res) => registerMaintainer(req, res, fastify))
-  // fastify.get('/maintainer/revenue', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.revenue }, (req, res) => maintainerRevenue(req, res, fastify))
   // fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
   fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
 
