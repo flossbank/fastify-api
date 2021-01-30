@@ -1,6 +1,44 @@
 const test = require('ava')
+const { ObjectId } = require('mongodb')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 const { USER_WEB_SESSION_COOKIE } = require('../../../helpers/constants')
+
+const mockAdRevenue = [
+  {
+    userId: '5e83c1fe40e84654d6c75bd5',
+    sessionId: 'd75ece87dd33ff87cd261e672c1092902999f8652eb9a3c9f76d4d81b24e299a',
+    amount: 0.25,
+    timestamp: 1590384893790
+  },
+  {
+    userId: '5e83c1fe40e84654d6c75bf5',
+    sessionId: 'd75ece87dd33ff87cd261e672c1092902999f8652eb9a3c9f76d4d81b24e299a',
+    amount: 10.0,
+    timestamp: 1590384893780
+  }
+]
+const mockDonationRevenue = [
+  {
+    organizationId: '5f408f7f7311b720f775e162',
+    amount: 37312.26185483995,
+    timestamp: 1598475250862
+  },
+  {
+    userId: '5f408f7f7311b720f775e165',
+    amount: 20,
+    timestamp: 1598475250810
+  }
+]
+
+const formatPackages = (pkgs) => {
+  return pkgs.map((pkg) => {
+    delete pkg.maintainers
+    delete pkg.avatarUrl
+    pkg.donationRevenue = pkg.donationRevenue ? pkg.donationRevenue.reduce((a, r) => (a += r.amount), 0) : 0
+    pkg.adRevenue = pkg.adRevenue ? pkg.adRevenue.reduce((a, r) => (a += r.amount), 0) : 0
+    return pkg
+  })
+}
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
@@ -30,6 +68,15 @@ test.before(async (t) => {
     await db.package.update({
       packageId: yttriumId,
       maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }]
+    })
+
+    await db.db.collection('packages').updateOne({
+      _id: ObjectId(yttriumId)
+    }, {
+      $set: {
+        adRevenue: mockAdRevenue,
+        donationRevenue: mockDonationRevenue
+      }
     })
 
     // pkg maintained only by user id 1 (different lang/reg than the first)
@@ -91,12 +138,8 @@ test('GET `/maintainer/owned-packages` 200 success | all packages', async (t) =>
     }
   })
 
-  const pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1 })
-  pkgs.map((pkg) => {
-    delete pkg.maintainers
-    delete pkg.avatarUrl
-    return pkg
-  })
+  let pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1 })
+  pkgs = formatPackages(pkgs)
 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -117,11 +160,7 @@ test('GET `/maintainer/owned-packages` 200 success | filtered', async (t) => {
   })
 
   let pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1, registry: 'npm' })
-  pkgs.map((pkg) => {
-    delete pkg.maintainers
-    delete pkg.avatarUrl
-    return pkg
-  })
+  pkgs = formatPackages(pkgs)
 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
@@ -140,11 +179,7 @@ test('GET `/maintainer/owned-packages` 200 success | filtered', async (t) => {
   })
 
   pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1, language: 'ruby' })
-  pkgs.map((pkg) => {
-    delete pkg.maintainers
-    delete pkg.avatarUrl
-    return pkg
-  })
+  pkgs = formatPackages(pkgs)
 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
