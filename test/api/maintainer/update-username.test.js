@@ -51,6 +51,20 @@ test('PUT `/maintainer/update-username` 400 | missing username', async (t) => {
   t.is(res.statusCode, 400)
 })
 
+test('PUT `/maintainer/update-username` 400 | bad format, only hyphens alphanumeric allowed', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/maintainer/update-username',
+    body: {
+      username: 'guac and chips'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutUsername}`
+    }
+  })
+  t.is(res.statusCode, 400)
+})
+
 test('PUT `/maintainer/update-username` | success', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
