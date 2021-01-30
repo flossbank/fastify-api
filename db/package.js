@@ -188,13 +188,15 @@ class PackageDbController {
   }
 
   async getOwnedPackages ({ userId, registry, language }) {
-    return this.db.collection('packages').find({
+    const pkgs = await this.db.collection('packages').find({
       'maintainers.userId': userId,
 
       // optional qualifiers
       ...(registry && { registry }),
       ...(language && { language })
     }).toArray()
+
+    return pkgs.map(({ _id: id, ...rest }) => ({ id: id.toString(), ...rest }))
   }
 }
 
