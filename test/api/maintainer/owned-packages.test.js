@@ -90,26 +90,18 @@ test('GET `/maintainer/owned-packages` 200 success | all packages', async (t) =>
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
   })
+
+  const pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1 })
+  pkgs.map((pkg) => {
+    delete pkg.maintainers
+    delete pkg.avatarUrl
+    return pkg
+  })
+
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    packages: [
-      {
-        language: 'javascript',
-        name: 'yttrium-server',
-        registry: 'npm'
-      },
-      {
-        language: 'ruby',
-        name: 'sodium',
-        registry: 'rubygems'
-      },
-      {
-        language: 'javascript',
-        name: 'papajohns',
-        registry: 'npm'
-      }
-    ]
+    packages: pkgs
   })
 })
 
@@ -123,21 +115,18 @@ test('GET `/maintainer/owned-packages` 200 success | filtered', async (t) => {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
   })
+
+  let pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1, registry: 'npm' })
+  pkgs.map((pkg) => {
+    delete pkg.maintainers
+    delete pkg.avatarUrl
+    return pkg
+  })
+
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    packages: [
-      {
-        language: 'javascript',
-        name: 'yttrium-server',
-        registry: 'npm'
-      },
-      {
-        language: 'javascript',
-        name: 'papajohns',
-        registry: 'npm'
-      }
-    ]
+    packages: pkgs
   })
 
   // only c++ please
@@ -149,16 +138,18 @@ test('GET `/maintainer/owned-packages` 200 success | filtered', async (t) => {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
   })
+
+  pkgs = await t.context.db.package.getOwnedPackages({ userId: t.context.userId1, language: 'ruby' })
+  pkgs.map((pkg) => {
+    delete pkg.maintainers
+    delete pkg.avatarUrl
+    return pkg
+  })
+
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    packages: [
-      {
-        language: 'ruby',
-        name: 'sodium',
-        registry: 'rubygems'
-      }
-    ]
+    packages: pkgs
   })
 })
 
