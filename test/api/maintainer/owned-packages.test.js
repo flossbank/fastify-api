@@ -34,8 +34,8 @@ const formatPackages = (pkgs) => {
   return pkgs.map((pkg) => {
     delete pkg.maintainers
     delete pkg.avatarUrl
-    pkg.donationRevenue = pkg.donationRevenue ? pkg.donationRevenue.reduce((a, r) => (a += r.amount), 0) : 0
-    pkg.adRevenue = pkg.adRevenue ? pkg.adRevenue.reduce((a, r) => (a += r.amount), 0) : 0
+    pkg.donationRevenue = pkg.donationRevenue ? pkg.donationRevenue.reduce((a, r) => a + r.amount, 0) : 0
+    pkg.adRevenue = pkg.adRevenue ? pkg.adRevenue.reduce((a, r) => a + r.amount, 0) : 0
     return pkg
   })
 }

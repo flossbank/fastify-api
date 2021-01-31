@@ -51,7 +51,8 @@ test('GET `/user/resume` 200 | success', async (t) => {
   t.deepEqual(payload.user, {
     id: userRetrieved.id.toHexString(),
     billingInfo: userRetrieved.billingInfo,
-    email: userRetrieved.email
+    email: userRetrieved.email,
+    username: ''
   })
 })
 
