@@ -60,6 +60,7 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     user: {
+      username: '',
       billingInfo: user.billingInfo,
       id: user.id.toString(),
       email: user.email
@@ -90,6 +91,7 @@ test('POST `/user/verify-registration` 200 success | with referral code', async 
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     user: {
+      username: '',
       billingInfo: user.billingInfo,
       id: user.id.toString(),
       email: user.email

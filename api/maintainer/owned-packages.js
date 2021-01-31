@@ -19,8 +19,8 @@ module.exports = async (req, res, ctx) => {
       name,
       language,
       registry,
-      donationRevenue: donationRevenue ? donationRevenue.reduce((acc, r) => (acc += r.amount), 0) : 0,
-      adRevenue: adRevenue ? adRevenue.reduce((acc, a) => (acc += a.amount), 0) : 0
+      donationRevenue: donationRevenue ? donationRevenue.reduce((acc, r) => acc + r.amount, 0) : 0,
+      adRevenue: adRevenue ? adRevenue.reduce((acc, a) => acc + a.amount, 0) : 0
     }))
 
     res.send({ success: true, packages: cleanPackages })
