@@ -64,7 +64,7 @@ const updateMaintainerUsername = require('../api/maintainer/update-username')
 const requestLoginMaintainer = require('../api/maintainer/request-login')
 const registerMaintainer = require('../api/maintainer/register')
 // const maintainerRevenue = require('../api/maintainer/revenue')
-// const updateMaintainerPayout = require('../api/maintainer/update-payout')
+const updateMaintainerIlp = require('../api/maintainer/update-ilp-pointer')
 const ownedPackages = require('../api/maintainer/owned-packages')
 
 // Packages
@@ -167,7 +167,7 @@ async function routes (fastify, opts, done) {
   fastify.put('/maintainer/update-username', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateUsername }, (req, res) => updateMaintainerUsername(req, res, fastify))
   fastify.post('/maintainer/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: Schema.user.register }, (req, res) => registerMaintainer(req, res, fastify))
-  // fastify.post('/maintainer/update-payout', { preHandler: (req, res, done) => maintainerWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updatePayout }, (req, res) => updateMaintainerPayout(req, res, fastify))
+  fastify.post('/maintainer/update-ilp-pointer', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateIlpPointer }, (req, res) => updateMaintainerIlp(req, res, fastify))
   fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
 
   // Packages

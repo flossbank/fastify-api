@@ -23,11 +23,11 @@ class MaintainerDbController {
     }, 0)
   }
 
-  async updatePayoutInfo ({ maintainerId, payoutInfo }) {
-    return this.db.collection('maintainers').updateOne({
-      _id: ObjectId(maintainerId)
+  async updateIlpPointer ({ userId, ilpPointer }) {
+    return this.db.collection('users').updateOne({
+      _id: ObjectId(userId)
     }, {
-      $set: { payoutInfo }
+      $set: { 'payoutInfo.ilpPointer': ilpPointer }
     })
   }
 }
