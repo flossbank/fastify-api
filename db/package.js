@@ -52,6 +52,39 @@ class PackageDbController {
     return packages.map(({ _id, ...rest }) => ({ id: _id, ...rest }))
   }
 
+  // Grab top ten donating orgs for a package
+  async getSupportingCompanies ({ packageId }) {
+    const pkg = await this.db.collection('packages').findOne({ _id: ObjectId(packageId) })
+    if (!pkg || !pkg.donationRevenue) return []
+    // Get top ten package supporters
+    // @returns [[<org_id>, <donation_amount], [<org_id>, <donation_amount>]]
+    const supportingCompanies = Object.entries(pkg.donationRevenue.reduce((acc, curr) => {
+      if (!curr.organizationId) return acc
+      if (acc[curr.organizationId]) {
+        acc[curr.organizationId] += curr.amount
+      } else {
+        acc[curr.organizationId] = curr.amount
+      }
+      return acc
+    }, {})).sort((a, b) => b[1] - a[1]).slice(0, 10)
+    // Grab org names and id's from org db
+    const companyIdsArray = supportingCompanies.reduce((acc, curr) => acc.concat(ObjectId(curr[0])), [])
+    const companies = await this.db.collection('organizations').find({
+      _id: {
+        $in: companyIdsArray
+      }
+    }, {
+      _id: 1,
+      name: 1
+    }).toArray()
+    const output = supportingCompanies.map((c) => ({
+      organizationId: c[0],
+      contributionAmount: c[1],
+      name: companies.find((comp) => comp._id.toString() === c[0]).name
+    }))
+    return output
+  }
+
   async getByNameAndRegistry ({ name, registry }) {
     const pkg = await this.db.collection('packages').findOne({
       name, registry
