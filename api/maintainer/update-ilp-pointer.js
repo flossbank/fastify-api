@@ -2,11 +2,11 @@ const { MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { payoutInfo } = req.body
-    ctx.log.info('updating maintainer for id %s', req.session.maintainerId)
-    await ctx.db.maintainer.updatePayoutInfo({
-      maintainerId: req.session.maintainerId,
-      payoutInfo
+    const { ilpPointer } = req.body
+    ctx.log.info('updating maintainer %s payout ilp', req.session.userId)
+    await ctx.db.maintainer.updateIlpPointer({
+      userId: req.session.userId,
+      ilpPointer
     })
     res.send({ success: true })
   } catch (e) {
