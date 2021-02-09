@@ -193,25 +193,25 @@ test('GET `/package/get-supporting-companies` 200 | sorts and only returns top 1
         organizationId: t.context.orgId1,
         contributionAmount: 1500,
         name: 'flossbank',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId3,
         contributionAmount: 500,
         name: 'teacherfund3',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId4,
         contributionAmount: 500,
         name: 'teacherfund4',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId5,
         contributionAmount: 500,
         name: 'teacherfund5',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId6,
@@ -223,31 +223,31 @@ test('GET `/package/get-supporting-companies` 200 | sorts and only returns top 1
         organizationId: t.context.orgId7,
         contributionAmount: 500,
         name: 'teacherfund7',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId8,
         contributionAmount: 500,
         name: 'teacherfund8',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId9,
         contributionAmount: 500,
         name: 'teacherfund9',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId10,
         contributionAmount: 500,
         name: 'teacherfund10',
-        avatarUrl: null
+        avatarUrl: ''
       },
       {
         organizationId: t.context.orgId2,
         contributionAmount: 100,
         name: 'teacherfund',
-        avatarUrl: null
+        avatarUrl: ''
       }
     ]
   })
