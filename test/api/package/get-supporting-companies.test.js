@@ -44,7 +44,8 @@ test.before(async (t) => {
     t.context.orgId5 = orgId5.toString()
 
     const { id: orgId6 } = await db.organization.create({
-      name: 'teacherfund6'
+      name: 'teacherfund6',
+      avatarUrl: 'https://redfin.com'
     })
     t.context.orgId6 = orgId6.toString()
 
@@ -191,52 +192,62 @@ test('GET `/package/get-supporting-companies` 200 | sorts and only returns top 1
       {
         organizationId: t.context.orgId1,
         contributionAmount: 1500,
-        name: 'flossbank'
+        name: 'flossbank',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId3,
         contributionAmount: 500,
-        name: 'teacherfund3'
+        name: 'teacherfund3',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId4,
         contributionAmount: 500,
-        name: 'teacherfund4'
+        name: 'teacherfund4',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId5,
         contributionAmount: 500,
-        name: 'teacherfund5'
+        name: 'teacherfund5',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId6,
         contributionAmount: 500,
-        name: 'teacherfund6'
+        name: 'teacherfund6',
+        avatarUrl: 'https://redfin.com'
       },
       {
         organizationId: t.context.orgId7,
         contributionAmount: 500,
-        name: 'teacherfund7'
+        name: 'teacherfund7',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId8,
         contributionAmount: 500,
-        name: 'teacherfund8'
+        name: 'teacherfund8',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId9,
         contributionAmount: 500,
-        name: 'teacherfund9'
+        name: 'teacherfund9',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId10,
         contributionAmount: 500,
-        name: 'teacherfund10'
+        name: 'teacherfund10',
+        avatarUrl: null
       },
       {
         organizationId: t.context.orgId2,
         contributionAmount: 100,
-        name: 'teacherfund'
+        name: 'teacherfund',
+        avatarUrl: null
       }
     ]
   })

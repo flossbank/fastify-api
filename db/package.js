@@ -68,21 +68,28 @@ class PackageDbController {
       return acc
     }, {})).sort((a, b) => b[1] - a[1]).slice(0, 10)
     // Grab org names and id's from org db
-    const companyIdsArray = supportingCompanies.reduce((acc, curr) => acc.concat(ObjectId(curr[0])), [])
+    const companyIdsArray = supportingCompanies.reduce((acc, [orgId]) => acc.concat(ObjectId(orgId)), [])
     const companies = await this.db.collection('organizations').find({
       _id: {
         $in: companyIdsArray
       }
     }, {
       _id: 1,
-      name: 1
+      name: 1,
+      avatarUrl: 1
     }).toArray()
-    const output = supportingCompanies.map((c) => ({
-      organizationId: c[0],
-      contributionAmount: c[1],
-      name: companies.find((comp) => comp._id.toString() === c[0]).name
-    }))
-    return output
+
+    return supportingCompanies.map(([orgId, amount]) => {
+      const company = companies.find((comp) => comp._id.toString() === orgId)
+      if (!company) return null
+      const { name, avatarUrl } = company
+      return ({
+        organizationId: orgId,
+        contributionAmount: amount,
+        name,
+        avatarUrl
+      })
+    }).filter((c) => !!c) // filter out null
   }
 
   async getByNameAndRegistry ({ name, registry }) {
