@@ -4,12 +4,6 @@ const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup'
 
 test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
-    const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', username: 'peter' })
-    t.context.userId1 = userId1.toHexString()
-
-    const session = await auth.user.createWebSession({ userId: t.context.userId1 })
-    t.context.sessionId = session.sessionId
-
     const { id: packageId1 } = await db.package.create({
       name: 'flossbank',
       registry: 'npm',
@@ -139,6 +133,11 @@ test.before(async (t) => {
         organizationId: t.context.orgId11,
         amount: 50,
         timestamp: 1598475250862
+      },
+      {
+        organizationId: 'aaaaaaaaaaaa',
+        amount: 500000,
+        timestamp: 1598475250862
       }
     ]
 
@@ -146,10 +145,6 @@ test.before(async (t) => {
       _id: ObjectId(t.context.packageId1)
     }, {
       $set: {
-        maintainers: [{
-          userId: t.context.userId1,
-          revenuePercent: 100
-        }],
         donationRevenue: mockDonationRevenue
       }
     })
@@ -242,15 +237,11 @@ test('GET `/package/get-supporting-companies` 200 | sorts and only returns top 1
         contributionAmount: 500,
         name: 'teacherfund10',
         avatarUrl: ''
-      },
-      {
-        organizationId: t.context.orgId2,
-        contributionAmount: 100,
-        name: 'teacherfund',
-        avatarUrl: ''
       }
     ]
   })
+  // Make sure that an undefined org isn't included in the results of this endpoint
+  t.false(!!JSON.parse(res.payload).companies.find((c) => c.organizationId === 'aaaaaaaaaaaa'))
 })
 
 test('GET `/package/get-supporting-companies` 200 | no revenue', async (t) => {
