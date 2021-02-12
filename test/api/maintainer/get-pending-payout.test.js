@@ -13,14 +13,14 @@ const mockAdRevenue = [
   {
     userId: '5e83c1fe40e84654d6c75bf5',
     sessionId: 'd75ece87dd33ff87cd261e672c1092902999f8652eb9a3c9f76d4d81b24e299a',
-    amount: 10.0,
+    amount: 100.0,
     timestamp: 1590384893780
   }
 ]
 const mockDonationRevenue = [
   {
     organizationId: '5f408f7f7311b720f775e162',
-    amount: 10000,
+    amount: 100000,
     timestamp: 1598475250862
   },
   {
@@ -31,7 +31,7 @@ const mockDonationRevenue = [
   },
   {
     userId: '5f408f7f7311b720f775e165',
-    amount: 20,
+    amount: 200000,
     timestamp: 1598475250810
   }
 ]
@@ -129,7 +129,7 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer who owns 100% an
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: (10030.25 * 3 / 2).toFixed(1)
+    payout: (300100.25 * 3 / 2 / 100000).toFixed(1)
   })
 })
 
@@ -161,7 +161,7 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer with split packa
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: (10030.25 / 2).toFixed(1)
+    payout: (300100.25 / 2 / 100000).toFixed(1)
   })
 })
 

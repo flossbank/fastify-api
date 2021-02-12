@@ -11,7 +11,7 @@ module.exports = async (req, res, ctx) => {
 
     if (payoutRes.length) {
       // Round payout to the nearest 10 cents to obfuscate ad revenue abuse mechanism
-      payout = payoutRes.reduce((total, { payout: p }) => total + p, 0).toFixed(1)
+      payout = (payoutRes.reduce((total, { payout: p }) => total + p, 0) / 100000).toFixed(1)
     }
 
     res.send({ success: true, payout })
