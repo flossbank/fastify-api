@@ -6,7 +6,7 @@ test.before(async (t) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com', githubId: 'id-1' })
     t.context.userId1 = userId1.toHexString()
 
-    const { id: userId2 } = await db.user.create({ email: 'honey@etsy.com', githubId: 'id-2' })
+    const { id: userId2 } = await db.user.create({ email: 'mouse@etsy.com', githubId: 'id-2' })
     t.context.userId2 = userId2.toHexString()
   })
 })
@@ -51,7 +51,7 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
 })
 
 test('POST `/user/github-auth` 200 success | existing user | diff github Id', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-3' })
+  t.context.github.requestUserData.resolves({ email: 'mouse@etsy.com', githubId: 'id-3' })
   const userBefore = await t.context.db.user.get({ userId: t.context.userId2 })
   t.is(userBefore.codeHost, undefined)
   t.is(userBefore.githubId, 'id-2')
