@@ -137,6 +137,49 @@ class OrganizationDbController {
       }
     })
   }
+
+  async getDonationLedger ({ orgId }) {
+    const pkgs = await this.db.collection('packages').aggregate([
+      {
+        $match: { // First filter out all packages that dont have a single donation from this org
+          'donationRevenue.organizationId': {
+            $eq: orgId
+          }
+        }
+      }, {
+        $unwind: { // unwind donations
+          path: '$donationRevenue',
+          preserveNullAndEmptyArrays: false
+        }
+      }, {
+        $match: { // filter out all donations not made by this org
+          'donationRevenue.organizationId': {
+            $eq: orgId
+          }
+        }
+      }, {
+        $group: { // sum up total paid and retain fields of name, registry, maintainers
+          _id: '$_id',
+          totalPaid: {
+            $sum: '$donationRevenue.amount'
+          },
+          name: {
+            $first: '$name'
+          },
+          registry: {
+            $first: '$registry'
+          },
+          maintainers: {
+            $first: '$maintainers'
+          }
+        }
+      }
+    ]).toArray()
+    return pkgs.map((v) => {
+      const { _id, ...rest } = v
+      return { id: _id.toString(), ...rest }
+    })
+  }
 }
 
 module.exports = OrganizationDbController

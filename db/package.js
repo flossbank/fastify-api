@@ -76,12 +76,14 @@ class PackageDbController {
     }, {
       _id: 1,
       name: 1,
-      avatarUrl: 1
+      avatarUrl: 1,
+      publicallyGive: 1
     }).toArray()
 
     return supportingCompanies.map(([orgId, amount]) => {
       const company = companies.find((comp) => comp._id.toString() === orgId)
-      if (!company) return null
+      // If a company doesnt exist or hasn't opted in to having their donations shown, return null
+      if (!company || !company.publicallyGive) return null
       const { name, avatarUrl } = company
       return ({
         organizationId: orgId,
