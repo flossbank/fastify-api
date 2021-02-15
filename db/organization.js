@@ -103,6 +103,14 @@ class OrganizationDbController {
     })
   }
 
+  async updatePublicallyGive ({ orgId, publicallyGive }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: { publicallyGive }
+    })
+  }
+
   async addSnapshot ({ orgId, totalDeps, topLevelDeps }) {
     return this.db.collection('organizations').updateOne({
       _id: ObjectId(orgId)
@@ -117,7 +125,7 @@ class OrganizationDbController {
     })
   }
 
-  async setDonation ({ orgId, amount, globalDonation = false }) {
+  async setDonation ({ orgId, amount, globalDonation, publicallyGive }) {
     // Amount in this case is passed in as cents so need to convert to mc
     const donationInMc = amount * 1000
     return this.db.collection('organizations').updateOne({
@@ -126,7 +134,8 @@ class OrganizationDbController {
       $set: {
         monthlyDonation: donationInMc !== 0,
         donationAmount: donationInMc,
-        globalDonation
+        ...(globalDonation && { globalDonation }),
+        ...(publicallyGive && { publicallyGive })
       },
       $push: {
         donationChanges: {

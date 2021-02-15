@@ -83,21 +83,7 @@ test('PUT `/organization` 401 | user isnt authorized to update org', async (t) =
   t.is(res.statusCode, 401)
 })
 
-test('PUT `/organization` 400 | missing billingEmail', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'PUT',
-    url: '/organization',
-    body: {
-      organizationId: t.context.orgId1
-    },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
-    }
-  })
-  t.is(res.statusCode, 400)
-})
-
-test('PUT `/organization` authorized | success', async (t) => {
+test('PUT `/organization` authorized | success - update billing email', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
     url: '/organization',
@@ -115,6 +101,26 @@ test('PUT `/organization` authorized | success', async (t) => {
     success: true
   })
   t.is(org.email, 'boop@boop.com')
+})
+
+test('PUT `/organization` authorized | success - update publically give', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId1,
+      publicallyGive: true
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.is(org.publicallyGive, true)
 })
 
 test('PUT `/organization/:organizationId` 500 error', async (t) => {

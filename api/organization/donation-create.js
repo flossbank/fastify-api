@@ -2,8 +2,8 @@ const { MSGS: { INTERNAL_SERVER_ERROR, DONATION_ALREADY_EXISTS, INSUFFICIENT_PER
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { amount, billingToken, organizationId, globalDonation } = req.body
-    ctx.log.info('creation donation for %s organization id for amount %s, token %s', organizationId, amount, billingToken)
+    const { amount, billingToken, organizationId, globalDonation, publicallyGive } = req.body
+    ctx.log.info('creation donation for %s organization id for amount %s, token %s, public %s', organizationId, amount, billingToken, publicallyGive)
 
     /**
      * - Verify the user has WRITE permissions on the org
@@ -63,7 +63,8 @@ module.exports = async (req, res, ctx) => {
     await ctx.db.organization.setDonation({
       orgId: org.id.toString(),
       amount,
-      globalDonation
+      globalDonation,
+      publicallyGive
     })
 
     res.send({ success: true })
