@@ -4,15 +4,14 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('fetching pending payout for %s', req.session.userId)
 
-    let payout = 0
+    // TODO: when we add the pending payouts ledger to a maintainer for failed payments,
+    // add that amount to the amount we send back to the UI
     const payoutRes = await ctx.db.maintainer.getPendingPayout({
       maintainerId: req.session.userId
     })
 
-    if (payoutRes.length) {
-      // Round payout to the nearest 10 cents to obfuscate ad revenue abuse mechanism
-      payout = (payoutRes.reduce((total, { payout: p }) => total + p, 0) / 100000).toFixed(1)
-    }
+    // Round payout to the nearest 10 cents to obfuscate ad revenue abuse mechanism
+    const payout = (payoutRes.reduce((total, { payout: p }) => total + p, 0) / 100000).toFixed(1)
 
     res.send({ success: true, payout })
   } catch (e) {

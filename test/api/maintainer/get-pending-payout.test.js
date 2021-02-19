@@ -129,7 +129,7 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer who owns 100% an
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: (300100.25 * 3 / 2 / 100000).toFixed(1)
+    payout: Number((300100.25 * 3 / 2 / 100000).toFixed(1))
   })
 })
 
@@ -161,7 +161,7 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer with split packa
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: (300100.25 / 2 / 100000).toFixed(1)
+    payout: Number((300100.25 / 2 / 100000).toFixed(1))
   })
 })
 
