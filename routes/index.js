@@ -58,6 +58,7 @@ const getOrganization = require('../api/organization/get')
 const getOrgOssUsage = require('../api/organization/get-oss-usage')
 const getOrgByName = require('../api/organization/get-org-by-name')
 const updateOrg = require('../api/organization/update')
+const getOrgDonationLedger = require('../api/organization/get-donation-ledger')
 
 // Maintainer
 const updateMaintainerUsername = require('../api/maintainer/update-username')
@@ -162,6 +163,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/organization/get-donation-info', { schema: Schema.organization.getDonationInfo }, (req, res) => getOrgDonationInfo(req, res, fastify))
   fastify.get('/organization/get-oss-usage', { schema: Schema.organization.getOssUsage }, (req, res) => getOrgOssUsage(req, res, fastify))
   fastify.put('/organization', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.organization.update }, (req, res) => updateOrg(req, res, fastify))
+  fastify.get('/organization/get-donation-ledger', { schema: Schema.organization.getDonationLedger }, (req, res) => getOrgDonationLedger(req, res, fastify))
 
   // Maintainer
   fastify.put('/maintainer/update-username', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateUsername }, (req, res) => updateMaintainerUsername(req, res, fastify))

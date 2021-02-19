@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@flossbank/schema": "^1.29.4",
+    "@flossbank/schema": "^1.29.5",
     "@octokit/app": "^4.2.1",
     "ajv": "^6.10.2",
     "aws-sdk": "^2.543.0",
