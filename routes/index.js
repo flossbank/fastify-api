@@ -63,7 +63,7 @@ const updateOrg = require('../api/organization/update')
 const updateMaintainerUsername = require('../api/maintainer/update-username')
 const requestLoginMaintainer = require('../api/maintainer/request-login')
 const registerMaintainer = require('../api/maintainer/register')
-// const maintainerRevenue = require('../api/maintainer/revenue')
+const getMaintainerPendingPayout = require('../api/maintainer/get-pending-payout')
 const updateMaintainerIlp = require('../api/maintainer/update-ilp-pointer')
 const ownedPackages = require('../api/maintainer/owned-packages')
 
@@ -169,6 +169,7 @@ async function routes (fastify, opts, done) {
   fastify.post('/maintainer/register', { schema: Schema.user.register }, (req, res) => registerMaintainer(req, res, fastify))
   fastify.post('/maintainer/update-ilp-pointer', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateIlpPointer }, (req, res) => updateMaintainerIlp(req, res, fastify))
   fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
+  fastify.get('/maintainer/pending-payout', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.pendingPayout }, (req, res) => getMaintainerPendingPayout(req, res, fastify))
 
   // Packages
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
