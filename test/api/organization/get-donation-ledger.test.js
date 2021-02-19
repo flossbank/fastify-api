@@ -117,6 +117,25 @@ test('GET `/organization/get-donation-ledger` 401 unauthorized | user is not an 
     url: '/organization/get-donation-ledger',
     query: {
       organizationId: t.context.orgId1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithPublicDonations}`
+    }
+  })
+  t.deepEqual(res.statusCode, 401)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: false,
+    message: INSUFFICIENT_PERMISSIONS
+  })
+})
+
+test('GET `/organization/get-donation-ledger` 401 unauthorized | unauthed && public donations field is false', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId1
     }
   })
   t.deepEqual(res.statusCode, 401)
