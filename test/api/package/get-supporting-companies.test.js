@@ -305,10 +305,11 @@ test('GET `/package/get-supporting-companies` 200 | sorts and only returns top 1
       }
     ]
   })
+  const { companies } = JSON.parse(res.payload)
   // Make sure that an undefined org isn't included in the results of this endpoint
-  t.false(!!JSON.parse(res.payload).companies.find((c) => c.organizationId === 'aaaaaaaaaaaa'))
+  t.true(companies.every(({ organizationId }) => organizationId !== 'aaaaaaaaaaaa'))
   // Make sure that the org that isnt publically giving is not returned
-  t.false(!!JSON.parse(res.payload).companies.find((c) => c.organizationId === t.context.orgId4))
+  t.true(companies.every(({ organizationId }) => organizationId !== t.context.orgId4))
 })
 
 test('GET `/package/get-supporting-companies` 200 | no revenue', async (t) => {
