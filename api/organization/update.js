@@ -26,12 +26,12 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
     }
 
-    if (billingEmail) {
+    if (typeof billingEmail !== 'undefined') {
       // add billing email to stripe
       await ctx.stripe.updateCustomerEmail({ customerId: org.billingInfo.customerId, billingEmail })
       await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail, publicallyGive })
     }
-    if (publicallyGive) {
+    if (typeof publicallyGive !== 'undefined') {
       await ctx.db.organization.updatePublicallyGive({ orgId: org.id.toString(), publicallyGive })
     }
 

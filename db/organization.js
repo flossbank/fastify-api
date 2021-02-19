@@ -134,8 +134,8 @@ class OrganizationDbController {
       $set: {
         monthlyDonation: donationInMc !== 0,
         donationAmount: donationInMc,
-        ...(globalDonation && { globalDonation }),
-        ...(publicallyGive && { publicallyGive })
+        ...(typeof globalDonation !== 'undefined' && { globalDonation }),
+        ...(typeof publicallyGive !== 'undefined' && { publicallyGive })
       },
       $push: {
         donationChanges: {
