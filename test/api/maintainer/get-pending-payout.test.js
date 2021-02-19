@@ -117,7 +117,7 @@ test('GET `/maintainer/pending-payout` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test.only('GET `/maintainer/pending-payout` 200 success | maintainer who owns 100% and 50%', async (t) => {
+test('GET `/maintainer/pending-payout` 200 success | maintainer who owns 100% and 50%', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/maintainer/pending-payout',
