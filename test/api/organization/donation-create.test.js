@@ -192,7 +192,8 @@ test('POST `/organization/donation` 200 success | first card added ', async (t) 
       billingToken: 'stripe-billing-token',
       organizationId: t.context.orgId2,
       amount: amountToDonateCents,
-      globalDonation: true
+      globalDonation: true,
+      publicallyGive: true
     },
     headers: {
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutBillingInfo}`
@@ -206,6 +207,7 @@ test('POST `/organization/donation` 200 success | first card added ', async (t) 
   t.deepEqual(org.billingInfo.customerId, 'test-stripe-id')
   t.deepEqual(org.donationAmount, amountToDonateCents * 1000)
   t.deepEqual(org.globalDonation, true)
+  t.deepEqual(org.publicallyGive, true)
 
   const donationLedgerAddition = org.donationChanges.find(el => el.donationAmount === amountToDonateCents * 1000)
   t.true(donationLedgerAddition.timestamp === 123456)

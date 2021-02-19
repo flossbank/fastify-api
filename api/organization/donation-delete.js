@@ -42,7 +42,8 @@ module.exports = async (req, res, ctx) => {
     await ctx.stripe.deleteDonation({ customerId })
     await ctx.db.organization.setDonation({
       orgId: organizationId,
-      amount: 0
+      amount: 0,
+      globalDonation: false
     })
 
     res.send({ success: true })
