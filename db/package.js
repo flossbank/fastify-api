@@ -52,6 +52,48 @@ class PackageDbController {
     return packages.map(({ _id, ...rest }) => ({ id: _id, ...rest }))
   }
 
+  // Grab top ten donating orgs for a package
+  async getSupportingCompanies ({ packageId }) {
+    const pkg = await this.db.collection('packages').findOne({ _id: ObjectId(packageId) })
+    if (!pkg || !pkg.donationRevenue) return []
+    // Get top ten package supporters
+    // @returns [[<org_id>, <donation_amount], [<org_id>, <donation_amount>]]
+    const supportingCompanies = Object.entries(pkg.donationRevenue.reduce((acc, curr) => {
+      if (!curr.organizationId) return acc
+      if (acc[curr.organizationId]) {
+        acc[curr.organizationId] += curr.amount
+      } else {
+        acc[curr.organizationId] = curr.amount
+      }
+      return acc
+    }, {})).sort((a, b) => b[1] - a[1]).slice(0, 10)
+    // Grab org names and id's from org db
+    const companyIdsArray = supportingCompanies.reduce((acc, [orgId]) => acc.concat(ObjectId(orgId)), [])
+    const companies = await this.db.collection('organizations').find({
+      _id: {
+        $in: companyIdsArray
+      }
+    }, {
+      _id: 1,
+      name: 1,
+      avatarUrl: 1,
+      publicallyGive: 1
+    }).toArray()
+
+    return supportingCompanies.map(([orgId, amount]) => {
+      const company = companies.find((comp) => comp._id.toString() === orgId)
+      // If a company doesnt exist or hasn't opted in to having their donations shown, return null
+      if (!company || !company.publicallyGive) return null
+      const { name, avatarUrl } = company
+      return ({
+        organizationId: orgId,
+        contributionAmount: amount,
+        name,
+        avatarUrl
+      })
+    }).filter((c) => !!c) // filter out null
+  }
+
   async getByNameAndRegistry ({ name, registry }) {
     const pkg = await this.db.collection('packages').findOne({
       name, registry
@@ -188,13 +230,15 @@ class PackageDbController {
   }
 
   async getOwnedPackages ({ userId, registry, language }) {
-    return this.db.collection('packages').find({
+    const pkgs = await this.db.collection('packages').find({
       'maintainers.userId': userId,
 
       // optional qualifiers
       ...(registry && { registry }),
       ...(language && { language })
     }).toArray()
+
+    return pkgs.map(({ _id: id, ...rest }) => ({ id: id.toString(), ...rest }))
   }
 }
 

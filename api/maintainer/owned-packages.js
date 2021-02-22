@@ -15,7 +15,12 @@ module.exports = async (req, res, ctx) => {
     const cleanPackages = packages.map(({
       id, name, language, registry, donationRevenue, adRevenue
     }) => ({
-      id, name, language, registry, donationRevenue, adRevenue
+      id,
+      name,
+      language,
+      registry,
+      donationRevenue: donationRevenue ? donationRevenue.reduce((acc, r) => acc + r.amount, 0) : 0,
+      adRevenue: adRevenue ? adRevenue.reduce((acc, a) => acc + a.amount, 0) : 0
     }))
 
     res.send({ success: true, packages: cleanPackages })
