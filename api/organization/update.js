@@ -7,7 +7,12 @@ const { MSGS: { INTERNAL_SERVER_ERROR, INSUFFICIENT_PERMISSIONS } } = require('.
  */
 module.exports = async (req, res, ctx) => {
   try {
-    const { organizationId, billingEmail, publicallyGive } = req.body
+    const {
+      organizationId,
+      billingEmail,
+      publicallyGive,
+      description
+    } = req.body
     ctx.log.info('updating org with id %s', organizationId)
 
     const org = await ctx.db.organization.get({ orgId: organizationId })
@@ -33,6 +38,9 @@ module.exports = async (req, res, ctx) => {
     }
     if (typeof publicallyGive !== 'undefined') {
       await ctx.db.organization.updatePublicallyGive({ orgId: org.id.toString(), publicallyGive })
+    }
+    if (typeof description !== 'undefined') {
+      await ctx.db.organization.updateDescription({ orgId: org.id.toString(), description })
     }
 
     res.send({ success: true })

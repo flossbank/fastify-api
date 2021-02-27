@@ -141,6 +141,27 @@ test('PUT `/organization` authorized | success - update publically give', async 
   t.is(org.publicallyGive, false)
 })
 
+test('PUT `/organization` authorized | success - update description', async (t) => {
+  const newDesc = 'Here at flossbank we do a lot of cool stuff blah blah blah'
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId1,
+      description: newDesc
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.is(org.description, newDesc)
+})
+
 test('PUT `/organization/:organizationId` 500 error', async (t) => {
   t.context.stripe.updateCustomerEmail = () => { throw new Error() }
   const res = await t.context.app.inject({
