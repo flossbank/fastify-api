@@ -32,6 +32,15 @@ module.exports = async (req, res, ctx) => {
     }
 
     if (typeof billingEmail !== 'undefined') {
+      // First check to see if there is a customer id for this org already
+      if (typeof org.billingInfo.customerId === 'undefined') {
+        // Create stripe customer, and add the stripe customer id to db
+        const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: billingEmail })
+        await ctx.db.organization.updateCustomerId({
+          orgId: org.id.toString(),
+          customerId: stripeCustomer.id
+        })
+      }
       // add billing email to stripe
       await ctx.stripe.updateCustomerEmail({ customerId: org.billingInfo.customerId, billingEmail })
       await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail, publicallyGive })
