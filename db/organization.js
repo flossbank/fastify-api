@@ -111,6 +111,14 @@ class OrganizationDbController {
     })
   }
 
+  async updateDescription ({ orgId, description }) {
+    return this.db.collection('organizations').updateOne({
+      _id: ObjectId(orgId)
+    }, {
+      $set: { description }
+    })
+  }
+
   async addSnapshot ({ orgId, totalDeps, topLevelDeps }) {
     return this.db.collection('organizations').updateOne({
       _id: ObjectId(orgId)

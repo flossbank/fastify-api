@@ -19,6 +19,15 @@ test.before(async (t) => {
     await db.organization.updateCustomerId({ orgId: t.context.orgId1, customerId: 'honesty-cust-id' })
     await db.organization.setDonation({ orgId: t.context.orgId1, amount: 1000, globalDonation: false })
 
+    const { id: orgId2 } = await db.organization.create({
+      name: 'flossbank-2',
+      host: 'GitHub',
+      userId: t.context.userId1,
+      avatarUrl: 'blah.com',
+      email
+    })
+    t.context.orgId2 = orgId2.toString()
+
     const sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.sessionWithDonation = sessionWithDonation.sessionId
   })
@@ -103,6 +112,27 @@ test('PUT `/organization` authorized | success - update billing email', async (t
   t.is(org.email, 'boop@boop.com')
 })
 
+test('PUT `/organization` authorized | success - update billing email - creates stripe customer', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId2,
+      billingEmail: 'newBilling@boop.com'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId2 })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.is(org.email, 'newBilling@boop.com')
+  t.is(org.billingInfo.customerId, 'test-stripe-id')
+})
+
 test('PUT `/organization` authorized | success - update publically give', async (t) => {
   let res = await t.context.app.inject({
     method: 'PUT',
@@ -139,6 +169,27 @@ test('PUT `/organization` authorized | success - update publically give', async 
     success: true
   })
   t.is(org.publicallyGive, false)
+})
+
+test('PUT `/organization` authorized | success - update description', async (t) => {
+  const newDesc = 'Here at flossbank we do a lot of cool stuff blah blah blah'
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId1,
+      description: newDesc
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId1 })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.is(org.description, newDesc)
 })
 
 test('PUT `/organization/:organizationId` 500 error', async (t) => {
