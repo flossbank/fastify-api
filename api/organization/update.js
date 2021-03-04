@@ -7,7 +7,12 @@ const { MSGS: { INTERNAL_SERVER_ERROR, INSUFFICIENT_PERMISSIONS } } = require('.
  */
 module.exports = async (req, res, ctx) => {
   try {
-    const { organizationId, billingEmail, publicallyGive } = req.body
+    const {
+      organizationId,
+      billingEmail,
+      publicallyGive,
+      description
+    } = req.body
     ctx.log.info('updating org with id %s', organizationId)
 
     const org = await ctx.db.organization.get({ orgId: organizationId })
@@ -27,12 +32,24 @@ module.exports = async (req, res, ctx) => {
     }
 
     if (typeof billingEmail !== 'undefined') {
+      // First check to see if there is a customer id for this org already
+      if (typeof org.billingInfo.customerId === 'undefined') {
+        // Create stripe customer, and add the stripe customer id to db
+        const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: billingEmail })
+        await ctx.db.organization.updateCustomerId({
+          orgId: org.id.toString(),
+          customerId: stripeCustomer.id
+        })
+      }
       // add billing email to stripe
       await ctx.stripe.updateCustomerEmail({ customerId: org.billingInfo.customerId, billingEmail })
       await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail, publicallyGive })
     }
     if (typeof publicallyGive !== 'undefined') {
       await ctx.db.organization.updatePublicallyGive({ orgId: org.id.toString(), publicallyGive })
+    }
+    if (typeof description !== 'undefined') {
+      await ctx.db.organization.updateDescription({ orgId: org.id.toString(), description })
     }
 
     res.send({ success: true })
