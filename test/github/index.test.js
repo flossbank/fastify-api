@@ -116,6 +116,82 @@ test('isUserAnOrgAdmin', async (t) => {
     }
   ]
 
+  const membership = {
+    url: 'https://api.github.com/orgs/teacherfund/memberships/stripedpajamas',
+    state: 'active',
+    role: 'admin',
+    organization_url: 'https://api.github.com/orgs/teacherfund',
+    user: {
+      login: 'stripedpajamas',
+      id: 2707340,
+      node_id: 'MDQ6VXNlcjI3MDczNDA=',
+      avatar_url: 'https://avatars.githubusercontent.com/u/2707340?v=4',
+      gravatar_id: '',
+      url: 'https://api.github.com/users/stripedpajamas',
+      html_url: 'https://github.com/stripedpajamas',
+      followers_url: 'https://api.github.com/users/stripedpajamas/followers',
+      following_url: 'https://api.github.com/users/stripedpajamas/following{/other_user}',
+      gists_url: 'https://api.github.com/users/stripedpajamas/gists{/gist_id}',
+      starred_url: 'https://api.github.com/users/stripedpajamas/starred{/owner}{/repo}',
+      subscriptions_url: 'https://api.github.com/users/stripedpajamas/subscriptions',
+      organizations_url: 'https://api.github.com/users/stripedpajamas/orgs',
+      repos_url: 'https://api.github.com/users/stripedpajamas/repos',
+      events_url: 'https://api.github.com/users/stripedpajamas/events{/privacy}',
+      received_events_url: 'https://api.github.com/users/stripedpajamas/received_events',
+      type: 'User',
+      site_admin: false
+    },
+    organization: {
+      login: 'teacherfund',
+      id: 46003582,
+      node_id: 'MDEyOk9yZ2FuaXphdGlvbjQ2MDAzNTgy',
+      url: 'https://api.github.com/orgs/teacherfund',
+      repos_url: 'https://api.github.com/orgs/teacherfund/repos',
+      events_url: 'https://api.github.com/orgs/teacherfund/events',
+      hooks_url: 'https://api.github.com/orgs/teacherfund/hooks',
+      issues_url: 'https://api.github.com/orgs/teacherfund/issues',
+      members_url: 'https://api.github.com/orgs/teacherfund/members{/member}',
+      public_members_url: 'https://api.github.com/orgs/teacherfund/public_members{/member}',
+      avatar_url: 'https://avatars.githubusercontent.com/u/46003582?v=4',
+      description: ''
+    }
+  }
+
+  const user = {
+    login: 'stripedpajamas',
+    id: 2707340,
+    node_id: 'MDQ6VXNlcjI3MDczNDA=',
+    avatar_url: 'https://avatars.githubusercontent.com/u/2707340?v=4',
+    gravatar_id: '',
+    url: 'https://api.github.com/users/stripedpajamas',
+    html_url: 'https://github.com/stripedpajamas',
+    followers_url: 'https://api.github.com/users/stripedpajamas/followers',
+    following_url: 'https://api.github.com/users/stripedpajamas/following{/other_user}',
+    gists_url: 'https://api.github.com/users/stripedpajamas/gists{/gist_id}',
+    starred_url: 'https://api.github.com/users/stripedpajamas/starred{/owner}{/repo}',
+    subscriptions_url: 'https://api.github.com/users/stripedpajamas/subscriptions',
+    organizations_url: 'https://api.github.com/users/stripedpajamas/orgs',
+    repos_url: 'https://api.github.com/users/stripedpajamas/repos',
+    events_url: 'https://api.github.com/users/stripedpajamas/events{/privacy}',
+    received_events_url: 'https://api.github.com/users/stripedpajamas/received_events',
+    type: 'User',
+    site_admin: false,
+    name: 'Peter Squicciarini',
+    company: null,
+    blog: '',
+    location: 'Seattle, WA',
+    email: null,
+    hireable: true,
+    bio: null,
+    twitter_username: 'pajamaboat',
+    public_repos: 195,
+    public_gists: 4,
+    followers: 125,
+    following: 152,
+    created_at: '2012-11-02T14:34:23Z',
+    updated_at: '2021-03-05T18:00:21Z'
+  }
+
   const organization = {
     _id: '5f95f9de4027a735034a00be',
     name: 'teacherfund',
@@ -128,8 +204,45 @@ test('isUserAnOrgAdmin', async (t) => {
     donationAmount: 0,
     donationChanges: []
   }
-  got.paginate.all.resolves(admins)
+
+  got.get.onCall(0).resolves({ body: user })
+  got.get.onCall(1).resolves({ body: membership })
 
   t.is(await github.isUserAnOrgAdmin({ userGitHubId: 2707340, organization }), true)
+  t.true(got.get.calledWith('https://api.github.com/user/2707340'))
+  t.true(got.get.calledWith('https://api.github.com/orgs/teacherfund/memberships/stripedpajamas'))
+
+  got.get.reset()
+  got.get.onCall(0).resolves({
+    body: {
+      login: 'notsomeonewhoadministersteacherfund'
+    }
+  })
+  const error404 = new Error('not found')
+  error404.response = { statusCode: 404 }
+  got.get.onCall(1).rejects(error404)
   t.is(await github.isUserAnOrgAdmin({ userGitHubId: 1234567, organization }), false)
+  t.true(got.get.calledWith('https://api.github.com/user/1234567'))
+  t.true(got.get.calledWith('https://api.github.com/orgs/teacherfund/memberships/notsomeonewhoadministersteacherfund'))
+
+  // fallback logic uses the public list of members
+  got.get.reset()
+  got.get.rejects(new Error('you cannot find the username!'))
+  got.paginate.all.resolves(admins)
+  t.is(await github.isUserAnOrgAdmin({ userGitHubId: 2707340, organization }), true)
+
+  t.true(got.get.calledWith('https://api.github.com/user/2707340'))
+  t.true(got.paginate.all.calledWith('https://api.github.com/orgs/teacherfund/members'))
+
+  // fallback logic is also triggered in the case where the first GH call succeeds
+  // but the second one fails
+  got.get.reset()
+  got.get.onCall(0).resolves({ body: user })
+  got.get.onCall(1).rejects(new Error()) // not a 404
+
+  got.paginate.all.resolves(admins)
+  t.is(await github.isUserAnOrgAdmin({ userGitHubId: 2707340, organization }), true)
+
+  t.true(got.get.calledWith('https://api.github.com/user/2707340'))
+  t.true(got.paginate.all.calledWith('https://api.github.com/orgs/teacherfund/members'))
 })
