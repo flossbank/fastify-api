@@ -53,23 +53,52 @@ class GitHub {
     const { installationId, name } = organization
     const token = await this.app.getInstallationAccessToken({ installationId })
 
-    // get org admins
-    const admins = await this.got.paginate.all(
-      `https://api.github.com/orgs/${name}/members`, {
-        searchParams: {
-          role: 'admin',
-          per_page: 100
-        },
-        responseType: 'json',
-        headers: {
-          accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${token}`
-        }
-      }
-    )
+    // first determine the user's current username from their ID using an undocumented endpoint
+    // if this fails, we fall back to accessing the list of public members
+    try {
+      const { body: user } = await this.got.get(`https://api.github.com/user/${userGitHubId}`)
+      const { login: username } = user
 
-    // return whether or not user's ID is one of the admins
-    return !!admins.find(user => user.id === userGitHubId)
+      try {
+        const { body: membership } = await this.got.get(`https://api.github.com/orgs/${name}/memberships/${username}`, {
+          responseType: 'json',
+          headers: {
+            accept: 'application/vnd.github.v3+json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        const { role, state } = membership
+        return role === 'admin' && state === 'active'
+      } catch (e) {
+        const { response } = e
+        if (response && response.statusCode === 404) {
+          // if this call fails with 404 but the first one succeeds, they aren't an admin
+          return false
+        }
+        throw e
+      }
+    } catch (e) {
+      console.warn('Unable to retrieve username or membership status:', e)
+      console.warn('Attempting to determine membership status via public list')
+      // get org admins
+      const admins = await this.got.paginate.all(
+        `https://api.github.com/orgs/${name}/members`, {
+          searchParams: {
+            role: 'admin',
+            per_page: 100
+          },
+          responseType: 'json',
+          headers: {
+            accept: 'application/vnd.github.v3+json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      // return whether or not user's ID is one of the admins
+      return !!admins.find(user => user.id === userGitHubId)
+    }
   }
 
   async makeAuthedReq (method, endpoint, accessToken) {
