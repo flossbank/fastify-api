@@ -1,5 +1,10 @@
 const { ObjectId } = require('mongodb')
 
+const packageOwnershipSourceEnum = {
+  REGISTRY: 'registry',
+  INVITE: 'invite'
+}
+
 class PackageDbController {
   constructor ({ db }) {
     this.db = db
@@ -105,11 +110,14 @@ class PackageDbController {
     return { id, ...rest }
   }
 
-  async update ({ packageId, maintainers }) {
+  async update ({ packageId, maintainers, owner }) {
     return this.db.collection('packages').updateOne({
       _id: ObjectId(packageId)
     }, {
-      $set: { maintainers }
+      $set: {
+        ...(maintainers && { maintainers }),
+        ...(owner && { owner })
+      }
     })
   }
 
@@ -163,7 +171,14 @@ class PackageDbController {
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
-          $pull: { maintainers: { userId } }
+          $pull: { maintainers: { userId } },
+          ...(pkg.owner === userId &&
+            {
+              $set: {
+                owner: null
+              }
+            }
+          )
         }
       }))
 
@@ -179,7 +194,14 @@ class PackageDbController {
         },
         update: {
           $push: {
-            maintainers: { userId, revenuePercent: 100 }
+            maintainers: {
+              userId,
+              revenuePercent: 100,
+              source: packageOwnershipSourceEnum.REGISTRY
+            }
+          },
+          $set: {
+            owner: userId
           }
         }
       }))
@@ -194,7 +216,8 @@ class PackageDbController {
           $push: {
             maintainers: {
               userId,
-              revenuePercent: 0
+              revenuePercent: 0,
+              source: packageOwnershipSourceEnum.REGISTRY
             }
           }
         }

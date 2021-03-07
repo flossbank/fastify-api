@@ -38,7 +38,8 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: pid1,
-      maintainers: [{ userId: t.context.userId4, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId4, revenuePercent: 100, source: 'registry' }],
+      owner: t.context.userId4
     })
 
     // a pkg that m1 owns and npm will confirm
@@ -49,7 +50,8 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: yttriumId,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }],
+      owner: t.context.userId1
     })
     t.context.yttriumId = yttriumId.toHexString()
 
@@ -62,12 +64,14 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: sodium,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }],
+      owner: t.context.userId1
     })
     t.context.sodium = sodium.toHexString()
 
     // a pkg that is co-maintained, but npm will say maintainer1 no longer
     // maintains it; the surviving maintainer should remain and get 100%
+    // and the owner should get set to undefined
     const { id: papajohns } = await db.package.create({
       name: 'papajohns',
       registry: NPM,
@@ -76,9 +80,10 @@ test.before(async (t) => {
     await db.package.update({
       packageId: papajohns,
       maintainers: [
-        { userId: t.context.userId3, revenuePercent: 50 },
-        { userId: t.context.userId1, revenuePercent: 50 }
-      ]
+        { userId: t.context.userId3, revenuePercent: 50, source: 'registry' },
+        { userId: t.context.userId1, revenuePercent: 50, source: 'registry' }
+      ],
+      owner: t.context.userId1
     })
     t.context.papajohns = papajohns.toHexString()
 
@@ -91,7 +96,8 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: chive,
-      maintainers: [{ userId: t.context.userId3, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId3, revenuePercent: 100, source: 'registry' }],
+      owner: t.context.userId3
     })
     t.context.chive = chive.toHexString()
   })
@@ -149,21 +155,30 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
   const chive = await t.context.db.package.get({ packageId: t.context.chive })
   const papajohns = await t.context.db.package.get({ packageId: t.context.papajohns })
 
-  // maintainers
+  // maintainers and owners
   t.deepEqual(caesar.maintainers, [
-    { userId: t.context.userId1, revenuePercent: 100 }
+    { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  t.deepEqual(caesar.owner, t.context.userId1)
+
   t.deepEqual(yttrium.maintainers, [
-    { userId: t.context.userId1, revenuePercent: 100 }
+    { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  t.deepEqual(yttrium.owner, t.context.userId1)
+
   t.deepEqual(sodium.maintainers, [])
+  t.deepEqual(sodium.owner, null)
+
   t.deepEqual(chive.maintainers, [
-    { userId: t.context.userId3, revenuePercent: 100 },
-    { userId: t.context.userId1, revenuePercent: 0 }
+    { userId: t.context.userId3, revenuePercent: 100, source: 'registry' },
+    { userId: t.context.userId1, revenuePercent: 0, source: 'registry' }
   ])
+  t.deepEqual(chive.owner, t.context.userId3)
+
   t.deepEqual(papajohns.maintainers, [
-    { userId: t.context.userId3, revenuePercent: 100 }
+    { userId: t.context.userId3, revenuePercent: 100, source: 'registry' }
   ])
+  t.deepEqual(papajohns.owner, null)
 })
 
 test('PUT `/package/npm/refresh-ownership` 400 bad request | no npm info', async (t) => {
