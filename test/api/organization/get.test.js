@@ -60,6 +60,7 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     organization: {
+      id: t.context.orgId1,
       avatarUrl: 'blah.com',
       name: 'flossbank',
       globalDonation: false,
@@ -84,6 +85,7 @@ test('GET `/organization/:organizationId` unauthorized | not GH owner | send bac
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     organization: {
+      id: t.context.orgId1,
       avatarUrl: 'blah.com',
       name: 'flossbank',
       globalDonation: false,
