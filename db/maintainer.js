@@ -5,14 +5,6 @@ class MaintainerDbController {
     this.db = db
   }
 
-  async getOwnedPackages ({ maintainerId }) {
-    const pkgs = await this.db.collection('packages').find({
-      owner: maintainerId
-    }).toArray()
-
-    return pkgs.map(({ _id: id, ...rest }) => ({ id, ...rest }))
-  }
-
   async updateIlpPointer ({ userId, ilpPointer }) {
     return this.db.collection('users').updateOne({
       _id: ObjectId(userId)
