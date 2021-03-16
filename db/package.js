@@ -200,12 +200,37 @@ class PackageDbController {
         }
       }))
 
-    // For existing packages, if i exist in the maintainer list, but have a source "invite",
+    // For existing packages, if i exist in the maintainer list AND
+    // this package is returned by my owned packages by the registry, but have a source "invite",
     // update the source to 'registry'
-    const packageMaintainerUpdates = existingPackages
+    const packageMaintainerSourceUpdates = existingPackages
       .filter(pkg => {
-        // IF now currently maintained packages doesn't include this old package, filter it out, we don't want
-        // to update it in this loop, that's handled by the deletion block.
+        // This is a situation where the registry comes back and says I _dont_ own this package anymore.
+        // In this case, we dont want to set myself to be source registry, because that's not true.
+        // I'm still source invite for some packages that my registry says I don't maintain. That's great,
+        // we just need to filter out existing packages that the registry says I dont maintain anymore.
+        /**
+         * Example:
+         *
+         * existingPackages: [{
+         *   name: 'saturn',
+         *   maintainers: [{
+         *     userId: me,
+         *     source: 'invite'
+         *   }]
+         * }]
+         * registry returned pkgs: []
+         *
+         * Expected packages after update: [{
+         *   name: 'saturn',
+         *   maintainers: [{
+         *     userId: me,
+         *     source: 'invite'
+         *   }]
+         * }]
+         *
+         * This block should _not_ remove me from maintaining "moon" OR set me to source registry.
+         */
         if (!packages.includes(pkg.name)) return false
         // If maintainers don't exist on this package, skip, this will be handled by the
         // package updates function below
@@ -249,7 +274,7 @@ class PackageDbController {
     for (const update of packageUpdates) {
       bulkPackages.find(update.criteria).update(update.update)
     }
-    for (const maintainerUpdate of packageMaintainerUpdates) {
+    for (const maintainerUpdate of packageMaintainerSourceUpdates) {
       bulkPackages.find(maintainerUpdate.criteria).update(maintainerUpdate.update)
     }
 
