@@ -66,6 +66,7 @@ test('POST `/package/npm/ownership` 200 success', async (t) => {
       name: pkg,
       maintainers: [{
         userId,
+        source: 'registry',
         revenuePercent: 100
       }]
     })))

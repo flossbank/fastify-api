@@ -1,5 +1,10 @@
 const { ObjectId } = require('mongodb')
 
+const packageOwnershipSourceEnum = {
+  REGISTRY: 'registry',
+  INVITE: 'invite'
+}
+
 class PackageDbController {
   constructor ({ db }) {
     this.db = db
@@ -109,7 +114,9 @@ class PackageDbController {
     return this.db.collection('packages').updateOne({
       _id: ObjectId(packageId)
     }, {
-      $set: { maintainers }
+      $set: {
+        ...(maintainers && { maintainers })
+      }
     })
   }
 
@@ -179,7 +186,11 @@ class PackageDbController {
         },
         update: {
           $push: {
-            maintainers: { userId, revenuePercent: 100 }
+            maintainers: {
+              userId,
+              revenuePercent: 100,
+              source: packageOwnershipSourceEnum.REGISTRY
+            }
           }
         }
       }))
@@ -194,7 +205,8 @@ class PackageDbController {
           $push: {
             maintainers: {
               userId,
-              revenuePercent: 0
+              revenuePercent: 0,
+              source: packageOwnershipSourceEnum.REGISTRY
             }
           }
         }

@@ -38,7 +38,7 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: pid1,
-      maintainers: [{ userId: t.context.userId4, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId4, revenuePercent: 100, source: 'registry' }]
     })
 
     // a pkg that m1 owns and npm will confirm
@@ -49,7 +49,7 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: yttriumId,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }]
     })
     t.context.yttriumId = yttriumId.toHexString()
 
@@ -62,7 +62,7 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: sodium,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }]
     })
     t.context.sodium = sodium.toHexString()
 
@@ -76,8 +76,8 @@ test.before(async (t) => {
     await db.package.update({
       packageId: papajohns,
       maintainers: [
-        { userId: t.context.userId3, revenuePercent: 50 },
-        { userId: t.context.userId1, revenuePercent: 50 }
+        { userId: t.context.userId3, revenuePercent: 50, source: 'registry' },
+        { userId: t.context.userId1, revenuePercent: 50, source: 'registry' }
       ]
     })
     t.context.papajohns = papajohns.toHexString()
@@ -91,7 +91,7 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: chive,
-      maintainers: [{ userId: t.context.userId3, revenuePercent: 100 }]
+      maintainers: [{ userId: t.context.userId3, revenuePercent: 100, source: 'registry' }]
     })
     t.context.chive = chive.toHexString()
   })
@@ -151,18 +151,18 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
 
   // maintainers
   t.deepEqual(caesar.maintainers, [
-    { userId: t.context.userId1, revenuePercent: 100 }
+    { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
   t.deepEqual(yttrium.maintainers, [
-    { userId: t.context.userId1, revenuePercent: 100 }
+    { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
   t.deepEqual(sodium.maintainers, [])
   t.deepEqual(chive.maintainers, [
-    { userId: t.context.userId3, revenuePercent: 100 },
-    { userId: t.context.userId1, revenuePercent: 0 }
+    { userId: t.context.userId3, revenuePercent: 100, source: 'registry' },
+    { userId: t.context.userId1, revenuePercent: 0, source: 'registry' }
   ])
   t.deepEqual(papajohns.maintainers, [
-    { userId: t.context.userId3, revenuePercent: 100 }
+    { userId: t.context.userId3, revenuePercent: 100, source: 'registry' }
   ])
 })
 
