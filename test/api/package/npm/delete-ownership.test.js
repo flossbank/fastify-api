@@ -54,9 +54,25 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: roobs,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }]
+      maintainers: [
+        { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
+      ]
     })
     t.context.roobs = roobs.toHexString()
+
+    const { id: saturn } = await db.package.create({
+      name: 'saturn',
+      registry: REGISTRIES.NPM,
+      language: LANGUAGES.JAVASCRIPT
+    })
+    await db.package.update({
+      packageId: saturn,
+      maintainers: [
+        { userId: t.context.userId1, revenuePercent: 70, source: 'registry' },
+        { userId: t.context.userId2, revenuePercent: 30, source: 'registry' }
+      ]
+    })
+    t.context.saturn = saturn.toHexString()
 
     const { id: moonbase } = await db.package.create({
       name: 'moonbase',
@@ -67,7 +83,7 @@ test.before(async (t) => {
       packageId: moonbase,
       maintainers: [{ userId: t.context.userId3, revenuePercent: 100, source: 'registry' }]
     })
-    t.context.moonbase = roobs.toHexString()
+    t.context.moonbase = moonbase.toHexString()
   })
 })
 
@@ -116,11 +132,17 @@ test('DELETE `/package/npm/ownership` 200 success', async (t) => {
   const rubyPackages = await t.context.db.package.getOwnedPackages({ userId, registry: REGISTRIES.RUBYGEMS, language: LANGUAGES.RUBY })
   t.is(rubyPackages.length, 1)
 
-  // the package they were co-maintaining is now fully the other person's
+  // Sodiums revenue is now split between the two remaining maintainers, without adjusted revenue percentages
   const sodium = await t.context.db.package.get({ packageId: t.context.sodium })
   t.deepEqual(sodium.maintainers, [
     { userId: t.context.userId2, revenuePercent: 60, source: 'registry' },
     { userId: t.context.userId3, revenuePercent: 10, source: 'invite' }
+  ])
+
+  // The saturn package is now only maintained by a single maintanier, whose revenue share gets auto adjusted to 100%
+  const saturn = await t.context.db.package.get({ packageId: t.context.saturn })
+  t.deepEqual(saturn.maintainers, [
+    { userId: t.context.userId2, revenuePercent: 100, source: 'registry' }
   ])
 })
 
@@ -145,7 +167,7 @@ test('DELETE `/package/npm/ownership` 200 success | remove only registry sources
   // deleting ownership will not touch packages where the source is invite, only where source
   // is registry
   const sodium = await t.context.db.package.get({ packageId: t.context.sodium })
-  t.true(!!sodium.maintainers.find(m => (m.userId === t.context.userId3 && m.revenuePercent === 10 && m.source === 'invite')))
+  t.true(sodium.maintainers.some(m => (m.userId === t.context.userId3 && m.revenuePercent === 10 && m.source === 'invite')))
 })
 
 test('DELETE `/package/npm/ownership` 500 server error', async (t) => {
