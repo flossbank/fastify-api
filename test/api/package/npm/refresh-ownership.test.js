@@ -41,7 +41,7 @@ test.before(async (t) => {
       maintainers: [{ userId: t.context.userId4, revenuePercent: 100, source: 'registry' }]
     })
 
-    // a pkg that m1 owns and npm will confirm
+    // a pkg that m1 owns just through invite. npm will confirm ownership and convert this "invite" to source "registry"
     const { id: yttriumId } = await db.package.create({
       name: 'yttrium-server',
       registry: NPM,
@@ -49,7 +49,7 @@ test.before(async (t) => {
     })
     await db.package.update({
       packageId: yttriumId,
-      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }]
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'invite' }]
     })
     t.context.yttriumId = yttriumId.toHexString()
 
@@ -65,6 +65,19 @@ test.before(async (t) => {
       maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'registry' }]
     })
     t.context.sodium = sodium.toHexString()
+
+    // a pkg that is in the db that m1 currently maintains as an invite. Npm will say "they don't maintain it"
+    // but since they're a source: 'invite', leave them on the maintainer list
+    const { id: moonbase } = await db.package.create({
+      name: 'moonbase',
+      registry: NPM,
+      language: JAVASCRIPT
+    })
+    await db.package.update({
+      packageId: moonbase,
+      maintainers: [{ userId: t.context.userId1, revenuePercent: 100, source: 'invite' }]
+    })
+    t.context.moonbase = moonbase.toHexString()
 
     // a pkg that is co-maintained, but npm will say maintainer1 no longer
     // maintains it; the surviving maintainer should remain and get 100%
@@ -148,13 +161,20 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
   const sodium = await t.context.db.package.get({ packageId: t.context.sodium })
   const chive = await t.context.db.package.get({ packageId: t.context.chive })
   const papajohns = await t.context.db.package.get({ packageId: t.context.papajohns })
+  const moonbase = await t.context.db.package.get({ packageId: t.context.moonbase })
 
   // maintainers
   t.deepEqual(caesar.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  // Successfully converts this user to source registry from previously source "invite"
   t.deepEqual(yttrium.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
+  ])
+  // maintainer 1 will still be on this maintainer list as source invite, because registry ownership
+  // will not modify maintainers with source invite as it is no longer the source of truth
+  t.deepEqual(moonbase.maintainers, [
+    { userId: t.context.userId1, revenuePercent: 100, source: 'invite' }
   ])
   t.deepEqual(sodium.maintainers, [])
   t.deepEqual(chive.maintainers, [
