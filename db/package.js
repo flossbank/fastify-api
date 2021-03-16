@@ -122,27 +122,33 @@ class PackageDbController {
 
   async getUserInstalledPackages ({ userId }) {
     const installedPackages = await this.db.collection('packages').aggregate([
-      {
+      { // filter down the packages collection to only those packages installed by this user
         $match: { 'installs.userId': userId.toString() }
-      }, {
+      }, { // filter down the `installs` list of each package to only the installs by this user
+        $project: {
+          _id: 1,
+          name: 1,
+          language: 1,
+          registry: 1,
+          installs: {
+            $filter: {
+              input: '$installs',
+              as: 'install',
+              cond: {
+                $eq: ['$$install.userId', userId.toString()]
+              }
+            }
+          }
+        }
+      }, { // unwind the user's installs
         $unwind: { path: '$installs' }
-      }, {
-        $match: { 'installs.userId': userId.toString() }
-      }, {
+      }, { // regroup the documents, incrementing a count for each install of a unique pkg
         $group: {
           _id: '$_id',
           name: { $first: '$name' },
           language: { $first: '$language' },
           registry: { $first: '$registry' },
           installCount: { $sum: 1 }
-        }
-      }, {
-        $project: {
-          _id: 0,
-          name: 1,
-          language: 1,
-          registry: 1,
-          installCount: 1
         }
       }
     ]).toArray()
