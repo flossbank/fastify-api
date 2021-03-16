@@ -163,10 +163,15 @@ class PackageDbController {
       language
     }).toArray()
 
-    // of the packages already marked as maintained by me, whichever aren't in the list of
+    // of the packages already marked as maintained by me where my source is registry,
+    // whichever aren't in the list of
     // packages provided, remove my id from their maintainers list
     const packageDeletions = existingPackages
-      .filter(pkg => !packages.includes(pkg.name))
+      .filter(pkg => {
+        const packagesNoLongerRegistryVerified = !packages.includes(pkg.name)
+        const maintainerIsRegistryMaintainer = pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.REGISTRY))
+        return packagesNoLongerRegistryVerified && maintainerIsRegistryMaintainer
+      })
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
@@ -191,6 +196,27 @@ class PackageDbController {
               revenuePercent: 100,
               source: packageOwnershipSourceEnum.REGISTRY
             }
+          }
+        }
+      }))
+
+    // For existing packages, if i exist in the maintainer list, but have a source "invite",
+    // update the source to 'registry'
+    const packageMaintainerUpdates = existingPackages
+      .filter(pkg => {
+        // IF now currently maintained packages doesn't include this old package, filter it out, we don't want
+        // to update it in this loop, that's handled by the deletion block.
+        if (!packages.includes(pkg.name)) return false
+        // If maintainers don't exist on this package, skip, this will be handled by the
+        // package updates function below
+        if (!pkg.maintainers) return false
+        return pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.INVITE))
+      })
+      .map(pkg => ({
+        criteria: { _id: pkg._id, 'maintainers.userId': userId },
+        update: {
+          $set: {
+            'maintainers.$.source': packageOwnershipSourceEnum.REGISTRY
           }
         }
       }))
@@ -222,6 +248,9 @@ class PackageDbController {
     }
     for (const update of packageUpdates) {
       bulkPackages.find(update.criteria).update(update.update)
+    }
+    for (const maintainerUpdate of packageMaintainerUpdates) {
+      bulkPackages.find(maintainerUpdate.criteria).update(maintainerUpdate.update)
     }
 
     // due to how the insertions/updates were done, there may be some packages that were upserted
