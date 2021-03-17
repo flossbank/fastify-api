@@ -51,6 +51,25 @@ test('PUT `/maintainer/update-username` 400 | missing username', async (t) => {
   t.is(res.statusCode, 400)
 })
 
+test('PUT `/maintainer/update-username` 409 | dupe', async (t) => {
+  t.context.db.user.updateUsername = () => {
+    const error = new Error()
+    error.code = 11000 // Dupe key mongo error
+    throw error
+  }
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/maintainer/update-username',
+    body: {
+      username: 'hotsauce'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithoutUsername}`
+    }
+  })
+  t.is(res.statusCode, 409)
+})
+
 test('PUT `/maintainer/update-username` 400 | bad format, only hyphens alphanumeric allowed', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',
