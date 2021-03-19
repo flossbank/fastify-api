@@ -75,6 +75,7 @@ const npmOwnership = require('../api/package/npm/ownership')
 const npmDeleteOwnership = require('../api/package/npm/delete-ownership')
 const npmRefreshOwnership = require('../api/package/npm/refresh-ownership')
 const getSupportingCompanies = require('../api/package/get-supporting-companies')
+const updatePackageMaintainerRevenueShares = require('../api/package/update-maintainer-revenue')
 
 // Session
 const startSession = require('../api/session/start')
@@ -174,6 +175,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/maintainer/pending-payout', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.pendingPayout }, (req, res) => getMaintainerPendingPayout(req, res, fastify))
 
   // Packages
+  fastify.put('/package/maintainer-revenue-share', { schema: Schema.package.updateMaintainerRevenueShares, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => updatePackageMaintainerRevenueShares(req, res, fastify))
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
   fastify.get('/package', { schema: Schema.package.get }, (req, res) => getPackage(req, res, fastify))
   fastify.post('/package/npm/ownership', { schema: Schema.package.npm.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => npmOwnership(req, res, fastify))
