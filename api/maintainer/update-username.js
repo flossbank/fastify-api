@@ -4,10 +4,6 @@ module.exports = async (req, res, ctx) => {
   try {
     const { username } = req.body
     ctx.log.info('updating maintainer username for %s', req.session.userId)
-    if (!username) {
-      res.status(400)
-      return res.send({ success: false })
-    }
 
     try {
       await ctx.db.user.updateUsername({ userId: req.session.userId, username })
