@@ -100,6 +100,7 @@ class UserDbController {
   async mapMaintainerIdsToUsernames ({ pkg }) {
     const mapOfIds = pkg.maintainers.reduce((acc, maintainer) => {
       acc[maintainer.userId] = {
+        userId: maintainer.userId,
         revenuePercent: maintainer.revenuePercent
       }
       return acc
