@@ -1,10 +1,12 @@
 const fastifyPlugin = require('fastify-plugin')
 const NpmRegistry = require('./npm')
+const RubyGemsRegistry = require('./rubygems')
 
 class Registry {
   constructor () {
     this.npm = new NpmRegistry()
-    this.supported = new Set(['npm'])
+    this.rubygems = new RubyGemsRegistry()
+    this.supported = new Set(['npm', 'rubygems'])
   }
 
   isSupported (registry) {
