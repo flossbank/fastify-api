@@ -29,12 +29,12 @@ module.exports = async (req, res, ctx) => {
 
     // Only let a maintainer that was verified through the registry update packages
     const userIsRegistryMaintainer = pkg.maintainers.find((m) => {
-      const userMatch = m.userId === req.session.maintainerId
+      const userMatch = m.userId === req.session.userId
       const registrySource = m.source === 'registry'
       return userMatch && registrySource
     })
     if (!userIsRegistryMaintainer) {
-      ctx.log.warn('attempt to update package information from non-owner: %s', req.session.maintainerId)
+      ctx.log.warn('attempt to update package information from non-owner: %s', req.session.userId)
       res.status(401)
       return res.send({ success: false })
     }
@@ -46,17 +46,24 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    if (maintainers.map(m => m.userId).sort() !== pkg.maintainers.map(m => m.userId).sort()) {
+    const newMaintainers = maintainers.map(m => m.userId).sort()
+    const oldMaintainers = pkg.maintainers.map(m => m.userId).sort()
+    let equals = true
+    for (let i = 0; i < newMaintainers.length; i++) {
+      if (newMaintainers[i] !== oldMaintainers[i]) equals = false
+    }
+
+    if (!equals) {
       ctx.log.warn('new maintainer list doesnt have same maintainers as existing maintainer list')
       res.status(400)
       return res.send({ success: false })
     }
 
     // create maintainers to update on db side. This combines the existing fields of the maintainer list
-    // such as "source", and just adds the new "revenueShare" amount
+    // such as "source", and just adds the new "revenuePercent" amount
     const newMaintainersList = pkg.maintainers.map((m) => {
       const newMaintainer = maintainers.find(nm => nm.userId === m.userId)
-      m.revenueShare = newMaintainer.revenueShare
+      m.revenuePercent = newMaintainer.revenuePercent
       return m
     })
 
