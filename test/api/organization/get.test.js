@@ -11,7 +11,6 @@ test.before(async (t) => {
     const { id: orgId1 } = await db.organization.create({
       name: 'flossbank',
       host: 'GitHub',
-      description: 'test-desc',
       userId: t.context.userId1,
       avatarUrl: 'blah.com',
       email
@@ -19,6 +18,7 @@ test.before(async (t) => {
     t.context.orgId1 = orgId1.toString()
     await db.organization.updateCustomerId({ orgId: t.context.orgId1, customerId: 'honesty-cust-id' })
     await db.organization.setDonation({ orgId: t.context.orgId1, amount: 1000, globalDonation: false })
+    await db.organization.updateDescription({ orgId: t.context.orgId1, description: 'test-desc' })
 
     const { id: orgId2 } = await db.organization.create({
       name: 'tf',
