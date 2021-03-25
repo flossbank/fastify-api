@@ -11,6 +11,7 @@ test.before(async (t) => {
     const { id: orgId1 } = await db.organization.create({
       name: 'flossbank',
       host: 'GitHub',
+      description: 'test-desc',
       userId: t.context.userId1,
       avatarUrl: 'blah.com',
       email
@@ -62,6 +63,7 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
     organization: {
       id: t.context.orgId1,
       avatarUrl: 'blah.com',
+      description: 'test-desc',
       name: 'flossbank',
       globalDonation: false,
       donationAmount: 1000000
@@ -87,6 +89,7 @@ test('GET `/organization/:organizationId` unauthorized | not GH owner | send bac
     organization: {
       id: t.context.orgId1,
       avatarUrl: 'blah.com',
+      description: 'test-desc',
       name: 'flossbank',
       globalDonation: false,
       donationAmount: 1000000

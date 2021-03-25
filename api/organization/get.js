@@ -19,6 +19,7 @@ module.exports = async (req, res, ctx) => {
     const unauthedOrgData = {
       id: org.id,
       name: org.name,
+      description: org.description,
       globalDonation: org.globalDonation,
       donationAmount: org.donationAmount,
       avatarUrl: org.avatarUrl,

@@ -71,10 +71,11 @@ class OrganizationDbController {
     return { id, ...rest }
   }
 
-  async create ({ name, host, installationId, email, avatarUrl }) {
+  async create ({ name, host, installationId, description, email, avatarUrl }) {
     const orgToInsert = {
       name,
       host,
+      ...(description && { description }),
       installationId,
       email,
       avatarUrl,
