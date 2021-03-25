@@ -122,27 +122,33 @@ class PackageDbController {
 
   async getUserInstalledPackages ({ userId }) {
     const installedPackages = await this.db.collection('packages').aggregate([
-      {
+      { // filter down the packages collection to only those packages installed by this user
         $match: { 'installs.userId': userId.toString() }
-      }, {
+      }, { // filter down the `installs` list of each package to only the installs by this user
+        $project: {
+          _id: 1,
+          name: 1,
+          language: 1,
+          registry: 1,
+          installs: {
+            $filter: {
+              input: '$installs',
+              as: 'install',
+              cond: {
+                $eq: ['$$install.userId', userId.toString()]
+              }
+            }
+          }
+        }
+      }, { // unwind the user's installs
         $unwind: { path: '$installs' }
-      }, {
-        $match: { 'installs.userId': userId.toString() }
-      }, {
+      }, { // regroup the documents, incrementing a count for each install of a unique pkg
         $group: {
           _id: '$_id',
           name: { $first: '$name' },
           language: { $first: '$language' },
           registry: { $first: '$registry' },
           installCount: { $sum: 1 }
-        }
-      }, {
-        $project: {
-          _id: 0,
-          name: 1,
-          language: 1,
-          registry: 1,
-          installCount: 1
         }
       }
     ]).toArray()
@@ -163,10 +169,15 @@ class PackageDbController {
       language
     }).toArray()
 
-    // of the packages already marked as maintained by me, whichever aren't in the list of
+    // of the packages already marked as maintained by me where my source is registry,
+    // whichever aren't in the list of
     // packages provided, remove my id from their maintainers list
     const packageDeletions = existingPackages
-      .filter(pkg => !packages.includes(pkg.name))
+      .filter(pkg => {
+        const packagesNoLongerRegistryVerified = !packages.includes(pkg.name)
+        const maintainerIsRegistryMaintainer = pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.REGISTRY))
+        return packagesNoLongerRegistryVerified && maintainerIsRegistryMaintainer
+      })
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
@@ -191,6 +202,52 @@ class PackageDbController {
               revenuePercent: 100,
               source: packageOwnershipSourceEnum.REGISTRY
             }
+          }
+        }
+      }))
+
+    // For existing packages, if i exist in the maintainer list AND
+    // this package is returned by my owned packages by the registry, but have a source "invite",
+    // update the source to 'registry'
+    const packageMaintainerSourceUpdates = existingPackages
+      .filter(pkg => {
+        // This is a situation where the registry comes back and says I _dont_ own this package anymore.
+        // In this case, we dont want to set myself to be source registry, because that's not true.
+        // I'm still source invite for some packages that my registry says I don't maintain. That's great,
+        // we just need to filter out existing packages that the registry says I dont maintain anymore.
+        /**
+         * Example:
+         *
+         * existingPackages: [{
+         *   name: 'saturn',
+         *   maintainers: [{
+         *     userId: me,
+         *     source: 'invite'
+         *   }]
+         * }]
+         * registry returned pkgs: []
+         *
+         * Expected packages after update: [{
+         *   name: 'saturn',
+         *   maintainers: [{
+         *     userId: me,
+         *     source: 'invite'
+         *   }]
+         * }]
+         *
+         * This block should _not_ remove me from maintaining "moon" OR set me to source registry.
+         */
+        if (!packages.includes(pkg.name)) return false
+        // If maintainers don't exist on this package, skip, this will be handled by the
+        // package updates function below
+        if (!pkg.maintainers) return false
+        return pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.INVITE))
+      })
+      .map(pkg => ({
+        criteria: { _id: pkg._id, 'maintainers.userId': userId },
+        update: {
+          $set: {
+            'maintainers.$.source': packageOwnershipSourceEnum.REGISTRY
           }
         }
       }))
@@ -222,6 +279,9 @@ class PackageDbController {
     }
     for (const update of packageUpdates) {
       bulkPackages.find(update.criteria).update(update.update)
+    }
+    for (const maintainerUpdate of packageMaintainerSourceUpdates) {
+      bulkPackages.find(maintainerUpdate.criteria).update(maintainerUpdate.update)
     }
 
     // due to how the insertions/updates were done, there may be some packages that were upserted

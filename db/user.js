@@ -30,19 +30,6 @@ class UserDbController {
     })
   }
 
-  async associateOrgWithUser ({ userId, orgId, role }) {
-    return this.db.collection('users').updateOne({
-      _id: ObjectId(userId)
-    }, {
-      $push: {
-        organizations: {
-          organizationId: orgId,
-          role
-        }
-      }
-    })
-  }
-
   // link registry-specific info to this user account (e.g. username on NPM)
   async linkToRegistry ({ userId, registry, data }) {
     return this.db.collection('users').updateOne({
@@ -97,10 +84,25 @@ class UserDbController {
     }
   }
 
-  async getListOfUsers ({ ids }) {
-    return this.db.collection('users').find({
-      _id: { $in: ids.map((userId) => ObjectId(userId)) }
+  async mapMaintainerIdsToUsernames ({ pkg }) {
+    const mapOfIds = pkg.maintainers.reduce((acc, maintainer) => {
+      acc[maintainer.userId] = {
+        userId: maintainer.userId,
+        revenuePercent: maintainer.revenuePercent
+      }
+      return acc
+    }, {})
+
+    const ids = pkg.maintainers.map((m) => ObjectId(m.userId))
+    const usersFromIds = await this.db.collection('users').find({
+      _id: { $in: ids }
     }).toArray()
+
+    usersFromIds.forEach((user) => {
+      mapOfIds[user._id.toString()].username = user.username
+    })
+
+    return Object.values(mapOfIds)
   }
 
   async create ({ email, referralCode, githubId, username }) {

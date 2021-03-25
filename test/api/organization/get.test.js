@@ -18,6 +18,7 @@ test.before(async (t) => {
     t.context.orgId1 = orgId1.toString()
     await db.organization.updateCustomerId({ orgId: t.context.orgId1, customerId: 'honesty-cust-id' })
     await db.organization.setDonation({ orgId: t.context.orgId1, amount: 1000, globalDonation: false })
+    await db.organization.updateDescription({ orgId: t.context.orgId1, description: 'test-desc' })
 
     const { id: orgId2 } = await db.organization.create({
       name: 'tf',
@@ -62,6 +63,7 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
     organization: {
       id: t.context.orgId1,
       avatarUrl: 'blah.com',
+      description: 'test-desc',
       name: 'flossbank',
       globalDonation: false,
       donationAmount: 1000000
@@ -87,6 +89,7 @@ test('GET `/organization/:organizationId` unauthorized | not GH owner | send bac
     organization: {
       id: t.context.orgId1,
       avatarUrl: 'blah.com',
+      description: 'test-desc',
       name: 'flossbank',
       globalDonation: false,
       donationAmount: 1000000
