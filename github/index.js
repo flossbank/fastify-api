@@ -56,7 +56,9 @@ class GitHub {
     // first determine the user's current username from their ID using an undocumented endpoint
     // if this fails, we fall back to accessing the list of public members
     try {
-      const { body: user } = await this.got.get(`https://api.github.com/user/${userGitHubId}`)
+      const { body: user } = await this.got.get(`https://api.github.com/user/${userGitHubId}`, {
+        responseType: 'json'
+      })
       const { login: username } = user
 
       try {
@@ -73,6 +75,7 @@ class GitHub {
       } catch (e) {
         const { response } = e
         if (response && response.statusCode === 404) {
+          console.warn(`Got 404 from orgs/${name}/memberships/${username} call`)
           // if this call fails with 404 but the first one succeeds, they aren't an admin
           return false
         }

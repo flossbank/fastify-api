@@ -13,7 +13,7 @@ module.exports = async (req, res, ctx) => {
       publicallyGive,
       description
     } = req.body
-    ctx.log.info('updating org with id %s', organizationId)
+    ctx.log.info('%s is updating org with id %s', req.session.userId, organizationId)
 
     const org = await ctx.db.organization.get({ orgId: organizationId })
     if (!org) {
@@ -25,8 +25,14 @@ module.exports = async (req, res, ctx) => {
     const user = await ctx.db.user.get({ userId: req.session.userId })
     const { githubId } = user
 
+    ctx.log.info(
+      'checking if user (gh id: %s) has admin perms for org (gh install id: %s)',
+      githubId,
+      org.installationId
+    )
+
     if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization: org })) {
-      ctx.log.warn('attempt to update org that user doesnt have write perms to')
+      ctx.log.warn('attempt to update org that user doesnt have write perms to (%s)', githubId)
       res.status(401)
       return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
     }
