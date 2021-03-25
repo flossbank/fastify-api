@@ -135,11 +135,13 @@ test('GET `/package` 200 | authed as maintainer', async (t) => {
       maintainers: [
         {
           username: 'peter',
-          revenuePercent: 90
+          revenuePercent: 90,
+          userId: t.context.userId1
         },
         {
           username: 'joel',
-          revenuePercent: 10
+          revenuePercent: 10,
+          userId: t.context.userId2
         }
       ]
     }
