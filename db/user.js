@@ -30,19 +30,6 @@ class UserDbController {
     })
   }
 
-  async associateOrgWithUser ({ userId, orgId, role }) {
-    return this.db.collection('users').updateOne({
-      _id: ObjectId(userId)
-    }, {
-      $push: {
-        organizations: {
-          organizationId: orgId,
-          role
-        }
-      }
-    })
-  }
-
   // link registry-specific info to this user account (e.g. username on NPM)
   async linkToRegistry ({ userId, registry, data }) {
     return this.db.collection('users').updateOne({

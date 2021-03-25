@@ -49,7 +49,7 @@ module.exports = async (req, res, ctx) => {
       }
       // add billing email to stripe
       await ctx.stripe.updateCustomerEmail({ customerId: org.billingInfo.customerId, billingEmail })
-      await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail, publicallyGive })
+      await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail })
     }
     if (typeof publicallyGive !== 'undefined') {
       await ctx.db.organization.updatePublicallyGive({ orgId: org.id.toString(), publicallyGive })
