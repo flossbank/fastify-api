@@ -42,11 +42,11 @@ module.exports = async (req, res, ctx) => {
     // Make sure that all existing maintainers of the package are accounted for
     const newMaintainers = maintainers.map(m => m.userId)
     const oldMaintainers = new Set(pkg.maintainers.map(m => m.userId))
-    const equalLists = 
+    const equalLists =
       oldMaintainers.size === newMaintainers.length &&
       newMaintainers.every(m => oldMaintainers.has(m))
 
-    if (equalLists) {
+    if (!equalLists) {
       ctx.log.warn('new maintainer list doesnt have same maintainers as existing maintainer list')
       res.status(400)
       return res.send({ success: false })
