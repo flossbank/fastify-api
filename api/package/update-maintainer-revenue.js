@@ -40,20 +40,13 @@ module.exports = async (req, res, ctx) => {
     }
 
     // Make sure that all existing maintainers of the package are accounted for
-    if (maintainers.length !== pkg.maintainers.length) {
-      ctx.log.warn('new maintainer list doesnt have same length as existing maintainer list')
-      res.status(400)
-      return res.send({ success: false })
-    }
+    const newMaintainers = maintainers.map(m => m.userId)
+    const oldMaintainers = new Set(pkg.maintainers.map(m => m.userId))
+    const equalLists =
+      oldMaintainers.size === newMaintainers.length &&
+      newMaintainers.every(m => oldMaintainers.has(m))
 
-    const newMaintainers = maintainers.map(m => m.userId).sort()
-    const oldMaintainers = pkg.maintainers.map(m => m.userId).sort()
-    let equals = true
-    for (let i = 0; i < newMaintainers.length; i++) {
-      if (newMaintainers[i] !== oldMaintainers[i]) equals = false
-    }
-
-    if (!equals) {
+    if (!equalLists) {
       ctx.log.warn('new maintainer list doesnt have same maintainers as existing maintainer list')
       res.status(400)
       return res.send({ success: false })
@@ -63,8 +56,10 @@ module.exports = async (req, res, ctx) => {
     // such as "source", and just adds the new "revenuePercent" amount
     const newMaintainersList = pkg.maintainers.map((m) => {
       const newMaintainer = maintainers.find(nm => nm.userId === m.userId)
-      m.revenuePercent = newMaintainer.revenuePercent
-      return m
+      return {
+        ...m,
+        revenuePercent: newMaintainer.revenuePercent
+      }
     })
 
     await ctx.db.package.update({ packageId, maintainers: newMaintainersList })

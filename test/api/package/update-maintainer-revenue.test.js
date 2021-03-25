@@ -60,24 +60,6 @@ test('PUT `/package/maintainer-revenue-share` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('PUT `/package/maintainer-revenue-share` 401 unauthorized | non-owner', async (t) => {
-  const res = await t.context.app.inject({
-    method: 'PUT',
-    url: '/package/maintainer-revenue-share',
-    payload: {
-      packageId: t.context.moonbaseId,
-      maintainers: [
-        { userId: t.context.userId1, revenuePercent: 75 },
-        { userId: t.context.userId2, revenuePercent: 25 }
-      ]
-    },
-    headers: {
-      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionId2}`
-    }
-  })
-  t.deepEqual(res.statusCode, 401)
-})
-
 test('PUT `/package/maintainer-revenue-share` 404 | non-existant package', async (t) => {
   const res = await t.context.app.inject({
     method: 'PUT',

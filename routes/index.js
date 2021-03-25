@@ -71,9 +71,18 @@ const ownedPackages = require('../api/maintainer/owned-packages')
 // Packages
 const searchPackagesByName = require('../api/package/search-by-name')
 const getPackage = require('../api/package/get')
-const npmOwnership = require('../api/package/npm/ownership')
-const npmDeleteOwnership = require('../api/package/npm/delete-ownership')
-const npmRefreshOwnership = require('../api/package/npm/refresh-ownership')
+const registries = {
+  npm: {
+    ownership: require('../api/package/npm/ownership'),
+    delete: require('../api/package/npm/delete-ownership'),
+    refresh: require('../api/package/npm/refresh-ownership')
+  },
+  rubygems: {
+    ownership: require('../api/package/rubygems/ownership')
+    // delete: require('../api/package/rubygems/delete-ownership'),
+    // refresh: require('../api/package/rubygems/refresh-ownership')
+  }
+}
 const getSupportingCompanies = require('../api/package/get-supporting-companies')
 const updatePackageMaintainerRevenueShares = require('../api/package/update-maintainer-revenue')
 
@@ -178,9 +187,10 @@ async function routes (fastify, opts, done) {
   fastify.put('/package/maintainer-revenue-share', { schema: Schema.package.updateMaintainerRevenueShares, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => updatePackageMaintainerRevenueShares(req, res, fastify))
   fastify.get('/package/search', { schema: Schema.package.searchByName }, (req, res) => searchPackagesByName(req, res, fastify))
   fastify.get('/package', { schema: Schema.package.get }, (req, res) => getPackage(req, res, fastify))
-  fastify.post('/package/npm/ownership', { schema: Schema.package.npm.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => npmOwnership(req, res, fastify))
-  fastify.delete('/package/npm/ownership', { schema: Schema.package.npm.deleteOwnership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => npmDeleteOwnership(req, res, fastify))
-  fastify.put('/package/npm/refresh-ownership', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.package.npm.refreshOwnership }, (req, res) => npmRefreshOwnership(req, res, fastify))
+  fastify.post('/package/npm/ownership', { schema: Schema.package.npm.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => registries.npm.ownership(req, res, fastify))
+  fastify.delete('/package/npm/ownership', { schema: Schema.package.npm.deleteOwnership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => registries.npm.delete(req, res, fastify))
+  fastify.put('/package/npm/refresh-ownership', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.package.npm.refreshOwnership }, (req, res) => registries.npm.refresh(req, res, fastify))
+  fastify.post('/package/rubygems/ownership', { schema: Schema.package.rubygems.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => registries.rubygems.ownership(req, res, fastify))
   fastify.get('/package/get-supporting-companies', { schema: Schema.package.getSupportingCompanies }, (req, res) => getSupportingCompanies(req, res, fastify))
 
   // Session

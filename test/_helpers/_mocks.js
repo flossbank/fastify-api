@@ -21,6 +21,10 @@ module.exports = {
       getUsername: sinon.stub().resolves('twoseventythree'),
       getOwnedPackages: sinon.stub().resolves(['js-deep-equals', 'ninja-rmm-api'])
     }
+    this.rubygems = {
+      tokenUsernameMatch: sinon.stub().resolves(true),
+      getOwnedPackages: sinon.stub().resolves(['ruby-deep-equals', 'ninja-rmm-api'])
+    }
     this.isSupported = sinon.stub().resolves(true)
   },
   Stripe: function Stripe ({ config }) {
