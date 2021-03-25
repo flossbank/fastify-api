@@ -56,8 +56,10 @@ module.exports = async (req, res, ctx) => {
     // such as "source", and just adds the new "revenuePercent" amount
     const newMaintainersList = pkg.maintainers.map((m) => {
       const newMaintainer = maintainers.find(nm => nm.userId === m.userId)
-      m.revenuePercent = newMaintainer.revenuePercent
-      return m
+      return {
+        ...m,
+        revenuePercent: newMaintainer.revenuePercent
+      }
     })
 
     await ctx.db.package.update({ packageId, maintainers: newMaintainersList })
