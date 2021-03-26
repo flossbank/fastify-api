@@ -84,7 +84,12 @@ test('GET `/user/is-github-organization-admin` 401 unauthorized | not github adm
       cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.session1}`
     }
   })
-  t.deepEqual(res.statusCode, 401)
+  t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+  t.deepEqual(payload, {
+    success: true,
+    isOrgAdmin: false
+  })
 })
 
 test('GET `/user/is-github-organization-admin` 200 success', async (t) => {
@@ -97,6 +102,11 @@ test('GET `/user/is-github-organization-admin` 200 success', async (t) => {
     }
   })
   t.deepEqual(res.statusCode, 200)
+  const payload = JSON.parse(res.payload)
+  t.deepEqual(payload, {
+    success: true,
+    isOrgAdmin: true
+  })
 })
 
 test('GET `/user/is-github-organization-admin` 400 bad request', async (t) => {

@@ -1,4 +1,4 @@
-const { MSGS: { INTERNAL_SERVER_ERROR, INSUFFICIENT_PERMISSIONS, USER_IS_NOT_GITHUB_AUTHED } } = require('../../helpers/constants')
+const { MSGS: { INTERNAL_SERVER_ERROR, USER_IS_NOT_GITHUB_AUTHED } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -21,11 +21,10 @@ module.exports = async (req, res, ctx) => {
     }
 
     if (!await ctx.github.isUserAnOrgAdmin({ userGitHubId: githubId, organization })) {
-      res.status(401)
-      return res.send({ success: false, message: INSUFFICIENT_PERMISSIONS })
+      return res.send({ success: true, isOrgAdmin: false })
     }
 
-    res.send({ success: true })
+    res.send({ success: true, isOrgAdmin: true })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)
