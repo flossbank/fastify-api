@@ -23,6 +23,7 @@ module.exports = {
     NO_SNAPSHOTS: 'No snapshots found',
     DONATION_ALREADY_EXISTS: 'Donation already exists',
     URL_NOT_FOUND: 'URL identifier not found',
+    USER_IS_NOT_GITHUB_AUTHED: 'User is not associated with a GitHub account',
     ORG_MISSING_BILLING_EMAIL: 'Please add a billing email for this organization on the settings page before creating a donation'
   },
   CODES: {
