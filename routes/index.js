@@ -46,6 +46,7 @@ const getInstalledPackages = require('../api/user/get-installed-packages')
 const getUserDonationInfo = require('../api/user/get-donation-info')
 const getUserSessions = require('../api/user/get-sessions')
 const githubAuthUser = require('../api/user/github-auth')
+const getIsUserGithubOrganizationAdmin = require('../api/user/is-github-organization-admin')
 
 // Organization
 const orgGithubAuth = require('../api/organization/github-auth')
@@ -94,7 +95,6 @@ const completeSession = require('../api/session/complete')
 const userWebMiddleware = require('../middleware/userWeb')
 const userCliMiddleware = require('../middleware/userCli')
 // const advertiserWebMiddleware = require('../middleware/advertiser')
-// const maintainerWebMiddleware = require('../middleware/maintainer')
 
 // URL
 // const createUrl = require('../api/url/create')
@@ -161,6 +161,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/get-installed-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getInstalledPackages }, (req, res) => getInstalledPackages(req, res, fastify))
   fastify.get('/user/get-donation-info', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getDonationInfo }, (req, res) => getUserDonationInfo(req, res, fastify))
   fastify.get('/user/get-sessions', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.getSessions }, (req, res) => getUserSessions(req, res, fastify))
+  fastify.get('/user/is-github-organization-admin', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.isGithubOrgAdmin }, (req, res) => getIsUserGithubOrganizationAdmin(req, res, fastify))
 
   // Organization
   fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => orgGithubAuth(req, res, fastify))
