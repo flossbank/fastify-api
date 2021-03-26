@@ -80,8 +80,8 @@ const registries = {
   },
   rubygems: {
     ownership: require('../api/package/rubygems/ownership'),
-    delete: require('../api/package/rubygems/delete-ownership')
-    // refresh: require('../api/package/rubygems/refresh-ownership')
+    delete: require('../api/package/rubygems/delete-ownership'),
+    refresh: require('../api/package/rubygems/refresh-ownership')
   }
 }
 const getSupportingCompanies = require('../api/package/get-supporting-companies')
@@ -193,6 +193,7 @@ async function routes (fastify, opts, done) {
   fastify.put('/package/npm/refresh-ownership', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.package.npm.refreshOwnership }, (req, res) => registries.npm.refresh(req, res, fastify))
   fastify.post('/package/rubygems/ownership', { schema: Schema.package.rubygems.ownership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => registries.rubygems.ownership(req, res, fastify))
   fastify.delete('/package/rubygems/ownership', { schema: Schema.package.rubygems.deleteOwnership, preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done) }, (req, res) => registries.rubygems.delete(req, res, fastify))
+  fastify.put('/package/rubygems/refresh-ownership', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.package.rubygems.refreshOwnership }, (req, res) => registries.rubygems.refresh(req, res, fastify))
   fastify.get('/package/get-supporting-companies', { schema: Schema.package.getSupportingCompanies }, (req, res) => getSupportingCompanies(req, res, fastify))
 
   // Session
