@@ -107,6 +107,14 @@ test.before(async (t) => {
       maintainers: [{ userId: t.context.userId3, revenuePercent: 100, source: 'registry' }]
     })
     t.context.chive = chive.toHexString()
+
+    // a pkg that has no maintainers but will after ownership is refreshed
+    const { id: packgeWithNoMaintainers } = await db.package.create({
+      name: 'packgeWithNoMaintainers',
+      registry: NPM,
+      language: JAVASCRIPT
+    })
+    t.context.packgeWithNoMaintainers = packgeWithNoMaintainers.toHexString()
   })
 })
 
@@ -139,8 +147,9 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
     'caesar', // a new pkg
     'yttrium-server', // remains the same
     // 'sodium-native' is not here, so maintainership will be removed
-    'chive' // in the db, but no currently marked as maintaining
+    'chive', // in the db, but no currently marked as maintaining
     // 'papajohns' is not here, so surviving maintainer should get full revenue
+    'packgeWithNoMaintainers' // This package had no maintainers but will be updated to have one
   ])
   const res = await t.context.app.inject({
     method: 'PUT',
@@ -162,6 +171,7 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
   const chive = await t.context.db.package.get({ packageId: t.context.chive })
   const papajohns = await t.context.db.package.get({ packageId: t.context.papajohns })
   const moonbase = await t.context.db.package.get({ packageId: t.context.moonbase })
+  const packgeWithNoMaintainers = await t.context.db.package.get({ packageId: t.context.packgeWithNoMaintainers })
 
   // maintainers
   t.deepEqual(caesar.maintainers, [
@@ -183,6 +193,10 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
   ])
   t.deepEqual(papajohns.maintainers, [
     { userId: t.context.userId3, revenuePercent: 100, source: 'registry' }
+  ])
+
+  t.deepEqual(packgeWithNoMaintainers.maintainers, [
+    { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
 })
 
