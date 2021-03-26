@@ -5,15 +5,6 @@ class OrganizationDbController {
     this.db = db
   }
 
-  async findOrgsByNameAndHost ({ names, host }) {
-    const orgs = await this.db.collection('organizations').find({
-      name: { $in: names },
-      host
-    }).toArray()
-
-    return orgs.map((org) => ({ id: org._id, ...org }))
-  }
-
   async searchByNameAndHost ({ name, host }) {
     // only allow alphanumeric characters and hyphens
     // which is also what GitHub constrains the org name to

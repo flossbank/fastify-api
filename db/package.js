@@ -34,6 +34,7 @@ class PackageDbController {
 
   async searchByName ({ name }) {
     // only allow alphanumeric characters and hyphens
+    // This is also guarded by the API Schema, so it's not testable
     const safeName = name.replace(/[^a-z0-9-]/gi, '')
     if (!safeName) return [] // handle case where all the characters were dangerous
 
@@ -175,7 +176,7 @@ class PackageDbController {
     const packageDeletions = existingPackages
       .filter(pkg => {
         const packagesNoLongerRegistryVerified = !packages.includes(pkg.name)
-        const maintainerIsRegistryMaintainer = pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.REGISTRY))
+        const maintainerIsRegistryMaintainer = pkg.maintainers && pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.REGISTRY))
         return packagesNoLongerRegistryVerified && maintainerIsRegistryMaintainer
       })
       .map(pkg => ({
