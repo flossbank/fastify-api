@@ -197,3 +197,17 @@ test.serial('getOwnedPackages | returns packages', async (t) => {
     'hello_stripedpajamas'
   ])
 })
+
+test.serial('getOwnedPackages | returns empty array if no pkgs', async (t) => {
+  const { reg } = t.context
+
+  const username = 'stripedpajamas'
+
+  nock(reg.constants.registry)
+    .get(`/api/v1/owners/${username}/gems.json`)
+    .reply(200, null)
+
+  const packages = await reg.getOwnedPackages({ username })
+
+  t.deepEqual(packages, [])
+})
