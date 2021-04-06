@@ -39,7 +39,26 @@ test('github | request user info', async (t) => {
     accessToken: 'test_access_token'
   })
 
-  t.deepEqual(res, { email: 'joelwass@joel.com', githubId: 'id-1' })
+  t.deepEqual(res, { githubId: 'id-1' })
+})
+
+test('github | request user emails', async (t) => {
+  const emails = [
+    {
+      email: 'foo@bar.com',
+      primary: true
+    },
+    {
+      email: 'asdf@fdsa.com',
+      primary: false
+    }
+  ]
+  t.context.github.got.get.returns({ body: JSON.stringify(emails) })
+  const res = await t.context.github.requestUserEmail({
+    accessToken: 'test_access_token'
+  })
+
+  t.deepEqual(res, 'foo@bar.com')
 })
 
 test('github | get user orgs', async (t) => {
