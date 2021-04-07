@@ -1,4 +1,4 @@
-const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('../../helpers/constants')
+const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR, NO_GITHUB_EMAIL } } = require('../../helpers/constants')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -15,7 +15,16 @@ module.exports = async (req, res, ctx) => {
      * - return the intersection of the mongo scan and the github orgs list
      */
     const accessToken = await ctx.github.requestAccessToken({ code, state })
-    const { email, githubId } = await ctx.github.requestUserData({ accessToken })
+
+    const { githubId } = await ctx.github.requestUserData({ accessToken })
+    const email = await ctx.github.requestUserEmail({ accessToken })
+
+    if (!email) {
+      res.status(400)
+      res.send({ success: false, message: NO_GITHUB_EMAIL })
+      return
+    }
+
     let user = await ctx.db.user.getByEmail({ email })
     if (!user) {
       user = await ctx.db.user.create({ email, githubId })

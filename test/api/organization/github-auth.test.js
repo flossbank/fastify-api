@@ -30,6 +30,9 @@ test.after(async (t) => {
 })
 
 test('POST `/organization/github-auth` 200 success | create new user', async (t) => {
+  t.context.github.requestUserData.resolves({ email: null, githubId: 'id-5555' })
+  t.context.github.requestUserEmail.resolves('logitech@etsy.com')
+
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/github-auth',
@@ -45,7 +48,10 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
   t.true(payload.success)
 
   const user = await t.context.db.user.get({ userId: payload.user.id })
-  t.is(user.githubId, 'id-1')
+  t.is(user.githubId, 'id-5555')
+
+  // ensure that their email is correct (from GH)
+  t.is(user.email, 'logitech@etsy.com')
 
   // make sure that their API key was cached in Dynamo
   const { auth } = t.context
@@ -56,6 +62,8 @@ test('POST `/organization/github-auth` 200 success | create new user', async (t)
 
 test('POST `/organization/github-auth` 200 success | existing user', async (t) => {
   t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1' })
+  t.context.github.requestUserEmail.resolves('honey@etsy.com')
+
   let res = await t.context.app.inject({
     method: 'POST',
     url: '/organization/github-auth',
@@ -91,6 +99,21 @@ test('POST `/organization/github-auth` 200 success | existing user', async (t) =
 
   const userAfter = await t.context.db.user.get({ userId: payload.user.id })
   t.is(userAfter.githubId, 'id-2')
+})
+
+test('POST `/user/github-auth` 400 bad request | no email from github', async (t) => {
+  t.context.github.requestUserEmail.resolves(undefined)
+
+  const res = await t.context.app.inject({
+    method: 'POST',
+    url: '/user/github-auth',
+    payload: {
+      state: 'test_state',
+      code: 'test_code'
+    }
+  })
+
+  t.deepEqual(res.statusCode, 400)
 })
 
 test('POST `/organization/github-auth` 400 bad request | no state', async (t) => {
