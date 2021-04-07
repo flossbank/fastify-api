@@ -6,16 +6,6 @@ const { MSGS: { INTERNAL_SERVER_ERROR, INSUFFICIENT_PERMISSIONS } } = require('.
  * be isolated.
  */
 module.exports = async (req, res, ctx) => {
-  const createStripeCustomerAbstracted = async (email, org) => {
-    // Create stripe customer, and add the stripe customer id to db
-    const stripeCustomer = await ctx.stripe.createStripeCustomer({ email })
-    await ctx.db.organization.updateCustomerId({
-      orgId: org.id.toString(),
-      customerId: stripeCustomer.id
-    })
-    return stripeCustomer.id
-  }
-
   try {
     const {
       organizationId,
@@ -53,7 +43,12 @@ module.exports = async (req, res, ctx) => {
       let customerId = org.billingInfo.customerId
       if (typeof customerId === 'undefined') {
         // Create stripe customer, and add the stripe customer id to db
-        customerId = await createStripeCustomerAbstracted(billingEmail, org)
+        const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: billingEmail })
+        customerId = stripeCustomer.id
+        await ctx.db.organization.updateCustomerId({
+          orgId: org.id.toString(),
+          customerId
+        })
       }
       // add billing email to stripe
       await ctx.stripe.updateCustomerEmail({ customerId, billingEmail })
@@ -74,7 +69,12 @@ module.exports = async (req, res, ctx) => {
           res.status(400)
           return res.send({ success: false, message: 'Must have a billing email to add billing info' })
         }
-        customerId = await createStripeCustomerAbstracted(org.email, org)
+        const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: org.email })
+        customerId = stripeCustomer.id
+        await ctx.db.organization.updateCustomerId({
+          orgId: org.id.toString(),
+          customerId
+        })
       }
       // Update the stripe customer with the new billing token (stripe CC card token)
       await ctx.stripe.updateStripeCustomer({
