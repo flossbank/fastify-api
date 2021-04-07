@@ -21,6 +21,7 @@ module.exports = {
     INVALID_API_KEY: 'Invalid API key',
     NO_DONATION: 'No donation found',
     NO_SNAPSHOTS: 'No snapshots found',
+    NO_GITHUB_EMAIL: 'No email found on GitHub profile',
     DONATION_ALREADY_EXISTS: 'Donation already exists',
     URL_NOT_FOUND: 'URL identifier not found',
     USER_IS_NOT_GITHUB_AUTHED: 'User is not associated with a GitHub account',

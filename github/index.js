@@ -26,8 +26,17 @@ class GitHub {
 
   async requestUserData ({ accessToken }) {
     const res = await this.makeAuthedReq('get', 'https://api.github.com/user', accessToken)
-    const { email, id: githubId } = JSON.parse(res.body)
-    return { email, githubId }
+    const { id: githubId } = JSON.parse(res.body)
+    return { githubId }
+  }
+
+  async requestUserEmail ({ accessToken }) {
+    const res = await this.makeAuthedReq('get', 'https://api.github.com/user/emails', accessToken)
+
+    const emails = JSON.parse(res.body)
+
+    // filter for the primary address (every GitHub account has a primary email address on it)
+    return emails.filter(email => email.primary).map(({ email }) => email).pop()
   }
 
   async getUserOrgs ({ accessToken }) {
