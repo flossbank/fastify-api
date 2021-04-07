@@ -28,6 +28,24 @@ test.before(async (t) => {
     })
     t.context.orgId2 = orgId2.toString()
 
+    const { id: orgId3 } = await db.organization.create({
+      name: 'flossbank-3',
+      host: 'GitHub',
+      userId: t.context.userId1,
+      avatarUrl: 'blah.com',
+      email
+    })
+    t.context.orgId3 = orgId3.toString()
+
+    const { id: orgId4 } = await db.organization.create({
+      name: 'flossbank-4',
+      host: 'GitHub',
+      userId: t.context.userId1,
+      avatarUrl: 'blah.com',
+      email: undefined
+    })
+    t.context.orgId4 = orgId4.toString()
+
     const sessionWithDonation = await auth.user.createWebSession({ userId: t.context.userId1 })
     t.context.sessionWithDonation = sessionWithDonation.sessionId
   })
@@ -131,6 +149,68 @@ test('PUT `/organization` authorized | success - update billing email - creates 
   })
   t.is(org.email, 'newBilling@boop.com')
   t.is(org.billingInfo.customerId, 'test-stripe-id')
+})
+
+test('PUT `/organization` authorized | success - update billing token', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId1,
+      billingToken: 'test_stripe_token'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'honesty-cust-id',
+    sourceId: 'test_stripe_token'
+  }))
+})
+
+test('PUT `/organization` authorized | success - update billing token - creates stripe customer', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId3,
+      billingToken: 'test_stripe_token'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  const org = await t.context.db.organization.get({ orgId: t.context.orgId3 })
+  t.is(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true
+  })
+  t.is(org.billingInfo.customerId, 'test-stripe-id')
+  t.true(t.context.stripe.updateStripeCustomer.calledWith({
+    customerId: 'test-stripe-id',
+    sourceId: 'test_stripe_token'
+  }))
+})
+
+test('PUT `/organization` authorized | failure - update billing token - no org email yet', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'PUT',
+    url: '/organization',
+    body: {
+      organizationId: t.context.orgId4,
+      billingToken: 'test_stripe_token'
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithDonation}`
+    }
+  })
+  t.is(res.statusCode, 400)
+  t.true(t.context.stripe.updateStripeCustomer.notCalled)
 })
 
 test('PUT `/organization` authorized | success - update publically give', async (t) => {
