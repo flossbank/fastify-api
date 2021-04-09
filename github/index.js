@@ -26,8 +26,8 @@ class GitHub {
 
   async requestUserData ({ accessToken }) {
     const res = await this.makeAuthedReq('get', 'https://api.github.com/user', accessToken)
-    const { id: githubId } = JSON.parse(res.body)
-    return { githubId }
+    const { id: githubId, login } = JSON.parse(res.body)
+    return { githubId, login }
   }
 
   async requestUserEmail ({ accessToken }) {

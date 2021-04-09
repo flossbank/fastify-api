@@ -65,7 +65,7 @@ module.exports = {
   },
   GitHub: function GitHub () {
     this.requestAccessToken = sinon.stub().resolves('test_access_token')
-    this.requestUserData = sinon.stub().resolves({ email: null, githubId: 'id-1' })
+    this.requestUserData = sinon.stub().resolves({ email: null, githubId: 'id-1', login: 'prayingmantis' })
     this.requestUserEmail = sinon.stub().resolves('stripedpajamas@github.com')
     this.getUserOrgs = sinon.stub().resolves({ orgsData: [{ login: 'flossbank' }] })
     this.getInstallationDetails = sinon.stub().resolves()
