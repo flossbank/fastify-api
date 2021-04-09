@@ -9,6 +9,7 @@ module.exports = async (req, res, ctx) => {
   try {
     const {
       organizationId,
+      billingToken,
       billingEmail,
       publicallyGive,
       description
@@ -39,16 +40,18 @@ module.exports = async (req, res, ctx) => {
 
     if (typeof billingEmail !== 'undefined') {
       // First check to see if there is a customer id for this org already
-      if (typeof org.billingInfo.customerId === 'undefined') {
+      let customerId = org.billingInfo.customerId
+      if (typeof customerId === 'undefined') {
         // Create stripe customer, and add the stripe customer id to db
         const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: billingEmail })
+        customerId = stripeCustomer.id
         await ctx.db.organization.updateCustomerId({
           orgId: org.id.toString(),
-          customerId: stripeCustomer.id
+          customerId
         })
       }
       // add billing email to stripe
-      await ctx.stripe.updateCustomerEmail({ customerId: org.billingInfo.customerId, billingEmail })
+      await ctx.stripe.updateCustomerEmail({ customerId, billingEmail })
       await ctx.db.organization.updateEmail({ orgId: org.id.toString(), email: billingEmail })
     }
     if (typeof publicallyGive !== 'undefined') {
@@ -56,6 +59,28 @@ module.exports = async (req, res, ctx) => {
     }
     if (typeof description !== 'undefined') {
       await ctx.db.organization.updateDescription({ orgId: org.id.toString(), description })
+    }
+    if (typeof billingToken !== 'undefined') {
+      // First check to see if there is a customer id for this org already
+      let customerId = org.billingInfo.customerId
+      if (typeof customerId === 'undefined') {
+        // If email doesn't exist yet, return 400
+        if (!org.email) {
+          res.status(400)
+          return res.send({ success: false, message: 'Must have a billing email to add billing info' })
+        }
+        const stripeCustomer = await ctx.stripe.createStripeCustomer({ email: org.email })
+        customerId = stripeCustomer.id
+        await ctx.db.organization.updateCustomerId({
+          orgId: org.id.toString(),
+          customerId
+        })
+      }
+      // Update the stripe customer with the new billing token (stripe CC card token)
+      await ctx.stripe.updateStripeCustomer({
+        customerId: customerId,
+        sourceId: billingToken
+      })
     }
 
     res.send({ success: true })
