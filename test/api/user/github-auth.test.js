@@ -24,7 +24,7 @@ test.after(async (t) => {
 })
 
 test('POST `/user/github-auth` 200 success | create new user', async (t) => {
-  t.context.github.requestUserData.resolves({ email: null, githubId: 'id-5555' })
+  t.context.github.requestUserData.resolves({ email: null, githubId: 'id-5555', login: 'telescope' })
   t.context.github.requestUserEmail.resolves('logitech@etsy.com')
 
   const res = await t.context.app.inject({
@@ -48,6 +48,7 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
 
   // ensure that their email is correct (from GH)
   t.is(user.email, 'logitech@etsy.com')
+  t.is(user.username, 'telescope')
 
   // make sure that their API key was cached in Dynamo
   const { auth } = t.context
@@ -58,7 +59,7 @@ test('POST `/user/github-auth` 200 success | create new user', async (t) => {
 
 // TODO should we really change the stored GitHub ID ?
 test('POST `/user/github-auth` 200 success | existing user | diff github Id', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'mouse@etsy.com', githubId: 'id-3' })
+  t.context.github.requestUserData.resolves({ email: 'mouse@etsy.com', githubId: 'id-3', login: 'blah' })
   t.context.github.requestUserEmail.resolves('mouse@etsy.com')
 
   const userBefore = await t.context.db.user.get({ userId: t.context.userId2 })
@@ -85,7 +86,7 @@ test('POST `/user/github-auth` 200 success | existing user | diff github Id', as
 })
 
 test('POST `/user/github-auth` 200 success | existing user', async (t) => {
-  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1' })
+  t.context.github.requestUserData.resolves({ email: 'honey@etsy.com', githubId: 'id-1', login: 'blah' })
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/user/github-auth',

@@ -111,7 +111,7 @@ class UserDbController {
       email,
       apiKey,
       githubId,
-      username: username || '',
+      username: username || null,
       referralCode,
       billingInfo: {},
       apiKeysRequested: []
