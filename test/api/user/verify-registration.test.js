@@ -67,6 +67,7 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
     }
   })
   t.true(user.apiKey.length > 0)
+  t.is(user.username, null)
 
   const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
   t.is(apiKeyInfo.id, user.id.toString())
@@ -99,6 +100,7 @@ test('POST `/user/verify-registration` 200 success | with referral code', async 
   })
   t.true(user.apiKey.length > 0)
   t.is(user.referralCode, 'papajohn')
+  t.is(user.username, null)
 
   const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
   t.is(apiKeyInfo.id, user.id.toString())

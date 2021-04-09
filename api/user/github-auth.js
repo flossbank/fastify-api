@@ -15,7 +15,7 @@ module.exports = async (req, res, ctx) => {
      * - create a web session and return the cookie
      */
     const accessToken = await ctx.github.requestAccessToken({ code, state })
-    const { githubId } = await ctx.github.requestUserData({ accessToken })
+    const { githubId, login } = await ctx.github.requestUserData({ accessToken })
     const email = await ctx.github.requestUserEmail({ accessToken })
 
     if (!email) {
@@ -27,7 +27,7 @@ module.exports = async (req, res, ctx) => {
     let user = await ctx.db.user.getByEmail({ email })
     if (!user) {
       created = true
-      user = await ctx.db.user.create({ email, githubId })
+      user = await ctx.db.user.create({ email, githubId, username: login })
       await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
     } else if (user.githubId !== githubId) {
       // If github user ids are different, update github user id
