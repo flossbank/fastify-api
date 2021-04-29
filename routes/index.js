@@ -180,7 +180,7 @@ async function routes (fastify, opts, done) {
   fastify.put('/maintainer/update-username', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateUsername }, (req, res) => updateMaintainerUsername(req, res, fastify))
   fastify.post('/maintainer/request-login', { schema: Schema.user.requestLogin }, (req, res) => requestLoginMaintainer(req, res, fastify))
   fastify.post('/maintainer/register', { schema: Schema.user.register }, (req, res) => registerMaintainer(req, res, fastify))
-  fastify.post('/maintainer/update-ilp-pointer', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateIlpPointer }, (req, res) => updateMaintainerIlp(req, res, fastify))
+  fastify.put('/maintainer/update-ilp-pointer', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.updateIlpPointer }, (req, res) => updateMaintainerIlp(req, res, fastify))
   fastify.get('/maintainer/owned-packages', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.ownedPackages }, (req, res) => ownedPackages(req, res, fastify))
   fastify.get('/maintainer/pending-payout', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.maintainer.pendingPayout }, (req, res) => getMaintainerPendingPayout(req, res, fastify))
 
