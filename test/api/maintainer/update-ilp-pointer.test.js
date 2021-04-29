@@ -25,9 +25,9 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/maintainer/update-ilp-pointer` 401 unauthorized', async (t) => {
+test('PUT `/maintainer/update-ilp-pointer` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
-    method: 'POST',
+    method: 'PUT',
     url: '/maintainer/update-ilp-pointer',
     payload: {
       ilpPointer: '$moneyd.local.pete'
@@ -39,9 +39,9 @@ test('POST `/maintainer/update-ilp-pointer` 401 unauthorized', async (t) => {
   t.is(res.statusCode, 401)
 })
 
-test('POST `/maintainer/update-ilp-pointer` 200 success', async (t) => {
+test('PUT `/maintainer/update-ilp-pointer` 200 success', async (t) => {
   const res = await t.context.app.inject({
-    method: 'POST',
+    method: 'PUT',
     url: '/maintainer/update-ilp-pointer',
     payload: {
       ilpPointer: '$moneyd.local.pete'
@@ -60,7 +60,7 @@ test('POST `/maintainer/update-ilp-pointer` 200 success', async (t) => {
 
   // Can update existing pointer
   const res2 = await t.context.app.inject({
-    method: 'POST',
+    method: 'PUT',
     url: '/maintainer/update-ilp-pointer',
     payload: {
       ilpPointer: '$moneyd.local.joel'
@@ -78,9 +78,9 @@ test('POST `/maintainer/update-ilp-pointer` 200 success', async (t) => {
   t.is(maintainer2.payoutInfo.ilpPointer, '$moneyd.local.joel')
 })
 
-test('POST `/maintainer/update-ilp-pointer` 400 bad request', async (t) => {
+test('PUT `/maintainer/update-ilp-pointer` 400 bad request', async (t) => {
   const res = await t.context.app.inject({
-    method: 'POST',
+    method: 'PUT',
     url: '/maintainer/update-ilp-pointer',
     payload: {},
     headers: {
@@ -90,10 +90,10 @@ test('POST `/maintainer/update-ilp-pointer` 400 bad request', async (t) => {
   t.is(res.statusCode, 400)
 })
 
-test('POST `/maintainer/update-ilp-pointer` 500 server error', async (t) => {
+test('PUT `/maintainer/update-ilp-pointer` 500 server error', async (t) => {
   t.context.db.maintainer.updateIlpPointer = () => { throw new Error() }
   const res = await t.context.app.inject({
-    method: 'POST',
+    method: 'PUT',
     url: '/maintainer/update-ilp-pointer',
     payload: {
       ilpPointer: '$moneyd.local.pete'
