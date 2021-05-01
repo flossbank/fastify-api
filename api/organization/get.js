@@ -23,6 +23,7 @@ module.exports = async (req, res, ctx) => {
       publicallyGive: org.publicallyGive,
       globalDonation: org.globalDonation,
       donationAmount: org.donationAmount,
+      totalDonated: org.totalDonated || 0,
       avatarUrl: org.avatarUrl,
       snapshots: org.snapshots
     }
