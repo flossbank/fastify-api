@@ -16,6 +16,14 @@ test.before(async (t) => {
       email
     })
     t.context.orgId1 = orgId1.toString()
+    // Manually add total donated, which in production is incremented in the distribute org donations lambda
+    await db.db.collection('organizations').updateOne({
+      _id: orgId1
+    }, {
+      $set: {
+        totalDonated: 10000
+      }
+    })
     await db.organization.updateCustomerId({ orgId: t.context.orgId1, customerId: 'honesty-cust-id' })
     await db.organization.setDonation({ orgId: t.context.orgId1, amount: 1000, globalDonation: false })
     await db.organization.updateDescription({ orgId: t.context.orgId1, description: 'test-desc' })
@@ -65,6 +73,7 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
       avatarUrl: 'blah.com',
       description: 'test-desc',
       name: 'flossbank',
+      totalDonated: 10000,
       globalDonation: false,
       donationAmount: 1000000
     }
@@ -91,6 +100,7 @@ test('GET `/organization/:organizationId` unauthorized | not GH owner | send bac
       avatarUrl: 'blah.com',
       description: 'test-desc',
       name: 'flossbank',
+      totalDonated: 10000,
       globalDonation: false,
       donationAmount: 1000000
     }
