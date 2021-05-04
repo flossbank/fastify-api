@@ -37,6 +37,10 @@ test.before(async (t) => {
           id: 'abcd',
           amount: 100000,
           paid: false
+        }, {
+          id: 'abcd',
+          amount: 100000,
+          paid: true
         }]
       }
     })
