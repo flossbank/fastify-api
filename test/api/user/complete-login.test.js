@@ -6,6 +6,13 @@ test.before(async (t) => {
   await before(t, async ({ db, auth }) => {
     const { id } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId = id.toHexString()
+    await db.db.collection('users').updateOne({ _id: id }, {
+      $set: {
+        payoutInfo: {
+          ilpPointer: 'test-ilp-pointer'
+        }
+      }
+    })
     const { token } = await auth.user.beginAuthentication({ userId: t.context.userId })
     t.context.token = token
   })
@@ -53,6 +60,7 @@ test('POST `/user/complete-login` 200 success', async (t) => {
   const payload = JSON.parse(res.payload)
   t.is(payload.success, true)
   t.is(payload.user.email, 'honey@etsy.com')
+  t.is(payload.user.payoutInfo.ilpPointer, 'test-ilp-pointer')
 })
 
 test('POST `/user/complete-login` 400 bad request', async (t) => {
