@@ -4,8 +4,6 @@ module.exports = async (req, res, ctx) => {
   try {
     ctx.log.info('fetching pending payout for %s', req.session.userId)
 
-    // TODO: when we add the pending payouts ledger to a maintainer for failed payments,
-    // add that amount to the amount we send back to the UI
     const payoutRes = await ctx.db.maintainer.getPendingPayout({
       maintainerId: req.session.userId
     })

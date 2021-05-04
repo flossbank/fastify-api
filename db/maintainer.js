@@ -15,86 +15,26 @@ class MaintainerDbController {
 
   // @returns an array of [{ _id: <packageId>, payout: <payoutInMS> }]
   async getPendingPayout ({ maintainerId }) {
-    return this.db.collection('packages').aggregate([
+    return this.db.collection('users').aggregate([
       {
         $match: {
-          'maintainers.userId': {
-            $eq: maintainerId
-          }
-        }
-      }, {
-        $match: {
-          $or: [
-            {
-              adRevenue: {
-                $ne: null
-              }
-            }, {
-              donationRevenue: {
-                $ne: null
-              }
-            }
-          ]
-        }
-      }, {
-        $project: {
-          adRevenue: {
-            $filter: {
-              input: '$adRevenue',
-              as: 'adRev',
-              cond: {
-                $ne: [
-                  '$$adRev.paid', true
-                ]
-              }
-            }
-          },
-          donationRevenue: {
-            $filter: {
-              input: '$donationRevenue',
-              as: 'donRev',
-              cond: {
-                $ne: [
-                  '$$donRev.paid', true
-                ]
-              }
-            }
-          },
-          maintainers: 1
-        }
-      }, {
-        $project: {
-          adRevenue: {
-            $sum: '$adRevenue.amount'
-          },
-          donationRevenue: {
-            $sum: '$donationRevenue.amount'
-          },
-          maintainers: 1
+          _id: new ObjectId(maintainerId)
         }
       }, {
         $unwind: {
-          path: '$maintainers',
-          preserveNullAndEmptyArrays: false
+          path: '$payouts'
         }
       }, {
         $match: {
-          'maintainers.userId': maintainerId
+          'payouts.paid': {
+            $ne: true
+          }
         }
       }, {
-        $project: {
+        $group: {
+          _id: '$_id',
           payout: {
-            $sum: [
-              {
-                $multiply: [
-                  '$adRevenue', '$maintainers.revenuePercent', 0.01
-                ]
-              }, {
-                $multiply: [
-                  '$donationRevenue', '$maintainers.revenuePercent', 0.01
-                ]
-              }
-            ]
+            $sum: '$payouts.amount'
           }
         }
       }
