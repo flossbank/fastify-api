@@ -147,42 +147,44 @@ class OrganizationDbController {
   }
 
   async getDonationLedger ({ orgId }) {
-    const pkgs = await this.db.collection('packages').aggregate([
+    const aggregationFunction = [
       {
-        $match: { // First filter out all packages that dont have a single donation from this org
+        $match: {
           'donationRevenue.organizationId': {
             $eq: orgId
           }
         }
       }, {
-        $unwind: { // unwind donations
-          path: '$donationRevenue',
-          preserveNullAndEmptyArrays: false
-        }
-      }, {
-        $match: { // filter out all donations not made by this org
-          'donationRevenue.organizationId': {
-            $eq: orgId
+        $project: {
+          _id: 1,
+          name: 1,
+          maintainers: 1,
+          registry: 1,
+          donationRevenue: {
+            $filter: {
+              input: '$donationRevenue',
+              as: 'donRev',
+              cond: {
+                $eq: [
+                  '$$donRev.organizationId', orgId
+                ]
+              }
+            }
           }
         }
       }, {
-        $group: { // sum up total paid and retain fields of name, registry, maintainers
-          _id: '$_id',
+        $project: {
+          _id: 1,
+          name: 1,
+          maintainers: 1,
+          registry: 1,
           totalPaid: {
             $sum: '$donationRevenue.amount'
-          },
-          name: {
-            $first: '$name'
-          },
-          registry: {
-            $first: '$registry'
-          },
-          maintainers: {
-            $first: '$maintainers'
           }
         }
       }
-    ]).toArray()
+    ]
+    const pkgs = await this.db.collection('packages').aggregate(aggregationFunction).toArray()
     return pkgs.map((v) => {
       const { _id, ...rest } = v
       return { id: _id.toString(), ...rest }
