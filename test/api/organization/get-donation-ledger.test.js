@@ -190,18 +190,17 @@ test('GET `/organization/get-donation-ledger` 200 success | user admin of org', 
       success: true,
       ledger: [
         {
-          id: t.context.packageId2,
-          name: 'flossbank',
-          registry: 'npm',
-          maintainers: null,
-          totalPaid: 5000
-        },
-        {
           id: t.context.packageId1,
           name: 'yttrium-server',
           registry: 'npm',
           maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }],
           totalPaid: 110000
+        },
+        {
+          id: t.context.packageId2,
+          name: 'flossbank',
+          registry: 'npm',
+          totalPaid: 5000
         }
       ]
     })
