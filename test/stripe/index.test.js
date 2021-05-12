@@ -140,6 +140,31 @@ test('get stripe customer donation info', async (t) => {
   })
 })
 
+test('get stripe customer donation info | no sources', async (t) => {
+  const { stripe } = t.context
+  stripe.getStripeCustomer = sinon.stub().resolves({
+    subscriptions: {
+      data: [
+        {
+          plan: {
+            amount: 200
+          },
+          current_period_end: 1234
+        }
+      ]
+    },
+    sources: {
+      data: []
+    }
+  })
+
+  t.deepEqual(await stripe.getStripeCustomerDonationInfo({ customerId: 'cust-id' }), {
+    amount: 200,
+    renewal: 1234000,
+    last4: 'n/a'
+  })
+})
+
 test('get stripe customer donation info | no subscriptions', async (t) => {
   const { stripe } = t.context
   stripe.getStripeCustomer = sinon.stub().resolves({
