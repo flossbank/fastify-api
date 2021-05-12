@@ -15,30 +15,37 @@ class MaintainerDbController {
 
   // @returns an array of [{ _id: <packageId>, payout: <payoutInMS> }]
   async getPendingPayout ({ maintainerId }) {
-    return this.db.collection('users').aggregate([
+    const aggPipeline = [
       {
         $match: {
           _id: new ObjectId(maintainerId)
         }
       }, {
-        $unwind: {
-          path: '$payouts'
-        }
-      }, {
-        $match: {
-          'payouts.paid': {
-            $ne: true
+        $project: {
+          _id: 1,
+          email: 1,
+          payouts: {
+            $filter: {
+              input: '$payouts',
+              as: 'payouts',
+              cond: {
+                $ne: [
+                  '$$payouts.paid', true
+                ]
+              }
+            }
           }
         }
       }, {
-        $group: {
-          _id: '$_id',
+        $project: {
+          _id: 1,
           payout: {
             $sum: '$payouts.amount'
           }
         }
       }
-    ]).toArray()
+    ]
+    return this.db.collection('users').aggregate(aggPipeline).toArray()
   }
 }
 
