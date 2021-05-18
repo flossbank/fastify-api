@@ -112,16 +112,12 @@ class PackageDbController {
   }
 
   async update ({ packageId, maintainers }) {
-    return this.db.collection('packages').updateOne({
-      _id: ObjectId(packageId)
-    }, {
-      $set: {
-        ...(maintainers && {
-          maintainers,
-          hasMaintainers: true
-        })
-      }
-    })
+    const hasMaintainers = !!maintainers.length
+    const updateOp = hasMaintainers
+      ? { $set: { hasMaintainers, maintainers } }
+      : { $unset: { maintainers: '' }, $set: { hasMaintainers } }
+
+    return this.db.collection('packages').updateOne({ _id: ObjectId(packageId) }, updateOp)
   }
 
   async getUserInstalledPackages ({ userId }) {
