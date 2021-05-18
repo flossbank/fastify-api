@@ -109,12 +109,12 @@ test.before(async (t) => {
     t.context.chive = chive.toHexString()
 
     // a pkg that has no maintainers but will after ownership is refreshed
-    const { id: packgeWithNoMaintainers } = await db.package.create({
-      name: 'packgeWithNoMaintainers',
+    const { id: packageWithNoMaintainers } = await db.package.create({
+      name: 'packageWithNoMaintainers',
       registry: NPM,
       language: JAVASCRIPT
     })
-    t.context.packgeWithNoMaintainers = packgeWithNoMaintainers.toHexString()
+    t.context.packageWithNoMaintainers = packageWithNoMaintainers.toHexString()
   })
 })
 
@@ -149,7 +149,7 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
     // 'sodium-native' is not here, so maintainership will be removed
     'chive', // in the db, but no currently marked as maintaining
     // 'papajohns' is not here, so surviving maintainer should get full revenue
-    'packgeWithNoMaintainers' // This package had no maintainers but will be updated to have one
+    'packageWithNoMaintainers' // This package had no maintainers but will be updated to have one
   ])
   const res = await t.context.app.inject({
     method: 'PUT',
@@ -171,33 +171,45 @@ test('PUT `/package/npm/refresh-ownership` 200 success', async (t) => {
   const chive = await t.context.db.package.get({ packageId: t.context.chive })
   const papajohns = await t.context.db.package.get({ packageId: t.context.papajohns })
   const moonbase = await t.context.db.package.get({ packageId: t.context.moonbase })
-  const packgeWithNoMaintainers = await t.context.db.package.get({ packageId: t.context.packgeWithNoMaintainers })
+  const packageWithNoMaintainers = await t.context.db.package.get({ packageId: t.context.packageWithNoMaintainers })
 
   // maintainers
   t.deepEqual(caesar.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  t.true(caesar.hasMaintainers)
+
   // Successfully converts this user to source registry from previously source "invite"
   t.deepEqual(yttrium.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  t.true(yttrium.hasMaintainers)
+
   // maintainer 1 will still be on this maintainer list as source invite, because registry ownership
   // will not modify maintainers with source invite as it is no longer the source of truth
   t.deepEqual(moonbase.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'invite' }
   ])
-  t.deepEqual(sodium.maintainers, [])
+  t.true(moonbase.hasMaintainers)
+
+  t.deepEqual(sodium.maintainers, undefined)
+  t.false(sodium.hasMaintainers)
+
   t.deepEqual(chive.maintainers, [
     { userId: t.context.userId3, revenuePercent: 100, source: 'registry' },
     { userId: t.context.userId1, revenuePercent: 0, source: 'registry' }
   ])
+  t.true(chive.hasMaintainers)
+
   t.deepEqual(papajohns.maintainers, [
     { userId: t.context.userId3, revenuePercent: 100, source: 'registry' }
   ])
+  t.true(papajohns.hasMaintainers)
 
-  t.deepEqual(packgeWithNoMaintainers.maintainers, [
+  t.deepEqual(packageWithNoMaintainers.maintainers, [
     { userId: t.context.userId1, revenuePercent: 100, source: 'registry' }
   ])
+  t.true(packageWithNoMaintainers.hasMaintainers) // lol
 })
 
 test('PUT `/package/npm/refresh-ownership` 400 bad request | no npm info', async (t) => {
