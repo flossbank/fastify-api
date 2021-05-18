@@ -116,7 +116,10 @@ class PackageDbController {
       _id: ObjectId(packageId)
     }, {
       $set: {
-        ...(maintainers && { maintainers })
+        ...(maintainers && {
+          maintainers,
+          hasMaintainers: true
+        })
       }
     })
   }
@@ -184,12 +187,23 @@ class PackageDbController {
         const maintainerIsRegistryMaintainer = pkg.maintainers && pkg.maintainers.some(m => (m.userId === userId && m.source === packageOwnershipSourceEnum.REGISTRY))
         return packagesNoLongerRegistryVerified && maintainerIsRegistryMaintainer
       })
-      .map(pkg => ({
-        criteria: { _id: pkg._id },
-        update: {
-          $pull: { maintainers: { userId } }
+      .map(pkg => {
+        if (pkg.maintainers.length === 1) {
+          return {
+            criteria: { _id: pkg._id },
+            update: {
+              $set: { hasMaintainers: false },
+              $unset: { maintainers: '' }
+            }
+          }
         }
-      }))
+        return {
+          criteria: { _id: pkg._id },
+          update: {
+            $pull: { maintainers: { userId } }
+          }
+        }
+      })
 
     // of the packages provided, whichever aren't already in the db, create them and
     // push my id to their maintainers list
@@ -202,6 +216,9 @@ class PackageDbController {
           language
         },
         update: {
+          $set: {
+            hasMaintainers: true
+          },
           $push: {
             maintainers: {
               userId,
@@ -265,6 +282,9 @@ class PackageDbController {
       .map(pkg => ({
         criteria: { _id: pkg._id },
         update: {
+          $set: {
+            hasMaintainers: true
+          },
           $push: {
             maintainers: {
               userId,

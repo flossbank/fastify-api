@@ -33,6 +33,7 @@ const mockDonationRevenue = [
 const formatPackages = (pkgs) => {
   return pkgs.map((pkg) => {
     delete pkg.maintainers
+    delete pkg.hasMaintainers
     delete pkg.avatarUrl
     pkg.donationRevenue = pkg.donationRevenue ? pkg.donationRevenue.reduce((a, r) => a + r.amount, 0) : 0
     pkg.adRevenue = pkg.adRevenue ? pkg.adRevenue.reduce((a, r) => a + r.amount, 0) : 0
