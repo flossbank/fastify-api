@@ -80,6 +80,35 @@ test('GET `/organization/:organizationId` unauthorized | send back public org da
   })
 })
 
+test('GET `/organization/:organizationId` unauthorized | no auth requested | no GH calls made', async (t) => {
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: `/organization/${t.context.orgId1}`,
+    query: {
+      organizationId: t.context.orgId1,
+      noAuth: true
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=not_a_gr8_cookie`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    organization: {
+      id: t.context.orgId1,
+      avatarUrl: 'blah.com',
+      description: 'test-desc',
+      name: 'flossbank',
+      totalDonated: 10000,
+      globalDonation: false,
+      donationAmount: 1000000
+    }
+  })
+
+  t.true(t.context.github.isUserAnOrgAdmin.notCalled)
+})
+
 test('GET `/organization/:organizationId` unauthorized | not GH owner | send back public org data', async (t) => {
   t.context.github.isUserAnOrgAdmin.resolves(false)
   const res = await t.context.app.inject({
