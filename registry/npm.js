@@ -4,7 +4,6 @@ class NpmRegistry {
   constructor () {
     this.constants = {
       registry: 'https://registry.npmjs.org/',
-      registryNerf: '//registry.npmjs.org/',
       readWrite: 'read-write',
       write: 'write'
     }
