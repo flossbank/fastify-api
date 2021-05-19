@@ -1,7 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
-  '@flossbank/schema': ^1.31.4
+  '@flossbank/schema': ^1.32.0
   '@octokit/app': ^4.2.1
   ajv: ^6.10.2
   ava: ^3.15.0
@@ -36,7 +36,7 @@ specifiers:
   ulid: ^2.3.0
 
 dependencies:
-  '@flossbank/schema': link:../schema
+  '@flossbank/schema': 1.32.0
   '@octokit/app': 4.2.1
   ajv: 6.12.6
   aws-sdk: 2.775.0
@@ -164,6 +164,12 @@ packages:
     dependencies:
       arrify: 1.0.1
     dev: true
+
+  /@flossbank/schema/1.32.0:
+    resolution: {integrity: sha512-OSf1fM208ZMrQ4RiTRthGaKexBhg9lb6qXyoBV9/681kJFE8HXV/RY/4zYIU/XIGab7Jm0BuTcjCyqvFCw6uJg==}
+    dependencies:
+      fluent-schema: 0.10.0
+    dev: false
 
   /@hapi/bourne/2.0.0:
     resolution: {integrity: sha512-WEezM1FWztfbzqIUbsDzFRVMxSoLy3HugVcux6KDDtTqzPsLE8NDRHfXvev66aH1i2oOKKar3/XDjbvh/OUBdg==}
@@ -2320,6 +2326,14 @@ packages:
   /flatted/2.0.2:
     resolution: {integrity: sha512-r5wGx7YeOwNWNlCA0wQ86zKyDLMQr+/RB8xy74M4hTphfmjlijTSSXGuH8rnvKZnfT9i+75zmd8jcKdMR4O6jA==}
     dev: true
+
+  /fluent-schema/0.10.0:
+    resolution: {integrity: sha512-XCQGwJbkMmB6mftyPqo2VbC2A1ZuIhgkVCKQ8sFbjGCY4MnUkOmw0ooL1W6wyr6Io4GHjb6L2WQnVnbdQcFXkQ==}
+    engines: {node: '>=8'}
+    deprecated: 'The package as been renamed as fluent-json-schema. Run: npm install fluent-json-schema'
+    dependencies:
+      deepmerge: 4.2.2
+    dev: false
 
   /flush-write-stream/1.1.1:
     resolution: {integrity: sha512-3Z4XhFZ3992uIq0XOqb9AreonueSYphE6oYbpt5+3u06JWklbsPkNv3ZKkP9Bz/r+1MWCaMoSQ28P85+1Yc77w==}
