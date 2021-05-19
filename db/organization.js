@@ -203,6 +203,12 @@ class OrganizationDbController {
       return { id: _id.toString(), ...rest }
     })
   }
+
+  async getDonationLedgerSize ({ orgId }) {
+    return this.db.collection('packages').find({
+      'donationRevenue.organizationId': orgId
+    }).count()
+  }
 }
 
 module.exports = OrganizationDbController

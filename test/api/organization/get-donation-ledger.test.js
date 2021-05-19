@@ -145,6 +145,23 @@ test('GET `/organization/get-donation-ledger` 401 unauthorized | unauthed && pub
   })
 })
 
+test('GET `/organization/get-donation-ledger` 401 unauthorized | no auth, no public | size req', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId1,
+      sizeRequest: true
+    }
+  })
+  t.deepEqual(res.statusCode, 401)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: false,
+    message: INSUFFICIENT_PERMISSIONS
+  })
+})
+
 test('GET `/organization/get-donation-ledger` 404 no org', async (t) => {
   const res = await t.context.app.inject({
     method: 'GET',
@@ -193,7 +210,6 @@ test('GET `/organization/get-donation-ledger` 200 success | user admin of org', 
           id: t.context.packageId1,
           name: 'yttrium-server',
           registry: 'npm',
-          maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }],
           totalPaid: 110000
         },
         {
@@ -204,6 +220,70 @@ test('GET `/organization/get-donation-ledger` 200 success | user admin of org', 
         }
       ]
     })
+})
+
+test('GET `/organization/get-donation-ledger` 200 success | user admin of org | limit/offset', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(true)
+  let res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId1,
+      limit: 1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithPublicDonations}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    ledger: [
+      {
+        id: t.context.packageId1,
+        name: 'yttrium-server',
+        registry: 'npm',
+        totalPaid: 110000
+      }
+      // {
+      //   id: t.context.packageId2,
+      //   name: 'flossbank',
+      //   registry: 'npm',
+      //   totalPaid: 5000
+      // }
+    ]
+  })
+
+  res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId1,
+      limit: 1,
+      offset: 1
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithPublicDonations}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload), {
+    success: true,
+    ledger: [
+      // {
+      //   id: t.context.packageId1,
+      //   name: 'yttrium-server',
+      //   registry: 'npm',
+      //   totalPaid: 110000
+      // }
+      {
+        id: t.context.packageId2,
+        name: 'flossbank',
+        registry: 'npm',
+        totalPaid: 5000
+      }
+    ]
+  })
 })
 
 test('GET `/organization/get-donation-ledger` 200 success | org has publically give set to true', async (t) => {
@@ -224,10 +304,48 @@ test('GET `/organization/get-donation-ledger` 200 success | org has publically g
           id: t.context.packageId1,
           name: 'yttrium-server',
           registry: 'npm',
-          maintainers: [{ userId: t.context.userId1, revenuePercent: 100 }],
           totalPaid: 10000
         }
       ]
+    })
+})
+
+test('GET `/organization/get-donation-ledger` 200 success | user is admin | size request', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(true)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId1,
+      sizeRequest: true
+    },
+    headers: {
+      cookie: `${USER_WEB_SESSION_COOKIE}=${t.context.sessionWithPublicDonations}`
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload),
+    {
+      success: true,
+      ledgerSize: 2
+    })
+})
+
+test('GET `/organization/get-donation-ledger` 200 success | public giver | size request', async (t) => {
+  t.context.github.isUserAnOrgAdmin.resolves(false)
+  const res = await t.context.app.inject({
+    method: 'GET',
+    url: '/organization/get-donation-ledger',
+    query: {
+      organizationId: t.context.orgId2,
+      sizeRequest: true
+    }
+  })
+  t.deepEqual(res.statusCode, 200)
+  t.deepEqual(JSON.parse(res.payload),
+    {
+      success: true,
+      ledgerSize: 1
     })
 })
 
