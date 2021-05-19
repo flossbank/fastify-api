@@ -2,8 +2,8 @@ const { MSGS: { INTERNAL_SERVER_ERROR, INSUFFICIENT_PERMISSIONS }, USER_WEB_SESS
 
 module.exports = async (req, res, ctx) => {
   try {
-    const { organizationId } = req.query
-    ctx.log.info('grabbing donation ledger for %s', organizationId)
+    const { organizationId, offset, limit } = req.query
+    ctx.log.info({ limit, offset }, 'retrieving donation ledger for %s', organizationId)
 
     const org = await ctx.db.organization.get({ orgId: organizationId })
     if (!org) {
@@ -36,9 +36,7 @@ module.exports = async (req, res, ctx) => {
     /**
      * @returns [{ <packageId>, <totalPaid>, <packageName>, <packageRegistry>, <maintainersList> }]
      */
-    const ledger = await ctx.db.organization.getDonationLedger({
-      orgId: org.id.toString()
-    })
+    const ledger = await ctx.db.organization.getDonationLedger({ orgId: org.id.toString(), limit, offset })
 
     res.send({ success: true, ledger })
   } catch (e) {

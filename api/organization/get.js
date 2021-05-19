@@ -3,6 +3,7 @@ const { USER_WEB_SESSION_COOKIE, MSGS: { INTERNAL_SERVER_ERROR } } = require('..
 module.exports = async (req, res, ctx) => {
   try {
     const { organizationId } = req.params
+    const { noAuth } = req.query
     ctx.log.info('finding org with id %s', organizationId)
 
     const org = await ctx.db.organization.get({ orgId: organizationId })
@@ -10,11 +11,6 @@ module.exports = async (req, res, ctx) => {
       res.status(404)
       return res.send({ success: false })
     }
-
-    // Attempt to fetch session
-    const session = await ctx.auth.user.getWebSession({
-      sessionId: req.cookies[USER_WEB_SESSION_COOKIE]
-    })
 
     const unauthedOrgData = {
       id: org.id,
@@ -27,6 +23,16 @@ module.exports = async (req, res, ctx) => {
       avatarUrl: org.avatarUrl,
       snapshots: org.snapshots
     }
+
+    // if the caller doesn't care about auth'd org data, get out quick
+    if (noAuth) {
+      return res.send({ success: true, organization: unauthedOrgData })
+    }
+
+    // otherwise, attempt to fetch session
+    const session = await ctx.auth.user.getWebSession({
+      sessionId: req.cookies[USER_WEB_SESSION_COOKIE]
+    })
 
     // If this was fetched without a session, return stripped down org data
     if (!session || !session.userId) {

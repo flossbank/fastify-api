@@ -4,13 +4,20 @@ class NpmRegistry {
   constructor () {
     this.constants = {
       registry: 'https://registry.npmjs.org/',
+      registryNerf: '//registry.npmjs.org/',
       readWrite: 'read-write',
       write: 'write'
     }
   }
 
   async getUsername ({ readOnlyToken }) {
-    const opts = { registry: this.constants.registry, token: readOnlyToken }
+    const opts = {
+      registry: this.constants.registry,
+      token: readOnlyToken,
+      forceAuth: {
+        _authToken: readOnlyToken
+      }
+    }
 
     // will throw in the case of an invalid token
     const userData = await fetch.json('/-/npm/v1/user', opts)
