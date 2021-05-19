@@ -146,7 +146,7 @@ class OrganizationDbController {
     })
   }
 
-  async getDonationLedger ({ orgId }) {
+  async getDonationLedger ({ orgId, limit, offset }) {
     const aggregationFunction = [
       {
         $match: {
@@ -182,13 +182,32 @@ class OrganizationDbController {
             $sum: '$donationRevenue.amount'
           }
         }
+      }, {
+        $sort: {
+          totalPaid: -1
+        }
       }
     ]
-    const pkgs = await this.db.collection('packages').aggregate(aggregationFunction).toArray()
+    let cursor = this.db.collection('packages').aggregate(aggregationFunction)
+
+    if (offset) {
+      cursor = cursor.skip(offset)
+    }
+    if (limit) {
+      cursor = cursor.limit(limit)
+    }
+    const pkgs = await cursor.toArray()
+
     return pkgs.map((v) => {
       const { _id, ...rest } = v
       return { id: _id.toString(), ...rest }
     })
+  }
+
+  async getDonationLedgerSize ({ orgId }) {
+    return this.db.collection('packages').find({
+      'donationRevenue.organizationId': orgId
+    }).count()
   }
 }
 
