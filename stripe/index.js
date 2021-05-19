@@ -23,8 +23,12 @@ class Stripe {
 
   async getStripeCustomerDonationInfo ({ customerId }) {
     const customer = await this.getStripeCustomer({ customerId })
-    const donationInfo = {
-      last4: customer.sources.data[0].last4
+    const donationInfo = {}
+    // This will reject if the customer has no billing sources, hence the try catch
+    try {
+      donationInfo.last4 = customer.sources.data[0].last4
+    } catch (e) {
+      donationInfo.last4 = 'n/a'
     }
     try {
       donationInfo.amount = customer.subscriptions.data[0].plan.amount

@@ -91,7 +91,7 @@ class GitHub {
         throw e
       }
     } catch (e) {
-      console.warn('Unable to retrieve username or membership status:', e)
+      console.warn('Unable to retrieve username or membership status:', e.message)
       console.warn('Attempting to determine membership status via public list')
       // get org admins
       const admins = await this.got.paginate.all(
