@@ -15,13 +15,13 @@ module.exports = async (req, res, ctx) => {
      * - create a web session and return the cookie
      */
     const accessToken = await ctx.github.requestAccessToken({ code, state })
-    ctx.log.info('Grabbed access token %s from github', accessToken)
+    ctx.log.info('Grabbed access token from github')
 
     const { githubId, login } = await ctx.github.requestUserData({ accessToken })
     ctx.log.info('With GitHub access token received github id %s and login %s', githubId, login)
 
     const email = await ctx.github.requestUserEmail({ accessToken })
-    ctx.log.info('Received email %s from github for access token %s', email, accessToken)
+    ctx.log.info('Received email %s from github w/ access token', email)
 
     if (!email) {
       res.status(400)
