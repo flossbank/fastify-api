@@ -49,7 +49,6 @@ const githubAuthUser = require('../api/user/github-auth')
 const getIsUserGithubOrganizationAdmin = require('../api/user/is-github-organization-admin')
 
 // Organization
-const orgGithubAuth = require('../api/organization/github-auth')
 const createOrgDonation = require('../api/organization/donation-create')
 const getOrgDonationInfo = require('../api/organization/get-donation-info')
 const updateOrgDonation = require('../api/organization/donation-update')
@@ -164,7 +163,7 @@ async function routes (fastify, opts, done) {
   fastify.get('/user/is-github-organization-admin', { preHandler: (req, res, done) => userWebMiddleware(req, res, fastify, done), schema: Schema.user.isGithubOrgAdmin }, (req, res) => getIsUserGithubOrganizationAdmin(req, res, fastify))
 
   // Organization
-  fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => orgGithubAuth(req, res, fastify))
+  fastify.post('/organization/github-auth', { schema: Schema.organization.githubAuth }, (req, res) => githubAuthUser(req, res, fastify))
   fastify.get('/organization', { schema: Schema.organization.getByName }, (req, res) => getOrgByName(req, res, fastify))
   fastify.get('/organization/:organizationId', (req, res) => getOrganization(req, res, fastify))
   fastify.post('/organization/github-create', { schema: Schema.organization.githubCreate }, (req, res) => createGitHubOrganization(req, res, fastify))
