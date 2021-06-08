@@ -31,7 +31,7 @@ module.exports = async (req, res, ctx) => {
           ctx.log.info('Sending distribute user donations sqs message')
           await ctx.sqs.sendDistributeUserDonationMessage({
             userId: userId.toString(),
-            amount,
+            amount: amount * 1000, // convert cents to millicents
             description,
             timestamp: Date.now(),
             paymentSuccess: true
@@ -45,7 +45,7 @@ module.exports = async (req, res, ctx) => {
 
           await ctx.sqs.sendDistributeOrgDonationMessage({
             organizationId: organizationId.toString(),
-            amount,
+            amount: amount * 1000, // convert cents to millicents,
             description,
             timestamp: Date.now(),
             paymentSuccess: true
