@@ -66,7 +66,7 @@ test('POST `/stripe/webhook/event` 200 success | user', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
   const expectedPayload = {
-    amount: 2000,
+    amount: 2000 * 1000,
     userId: t.context.userId1,
     description: '(created by Stripe CLI)',
     paymentSuccess: true,
@@ -87,7 +87,7 @@ test('POST `/stripe/webhook/event` 200 success | org', async (t) => {
   })
   t.deepEqual(res.statusCode, 200)
   const expectedPayload = {
-    amount: 2000,
+    amount: 2000 * 1000,
     organizationId: t.context.orgId1,
     description: '(created by Stripe CLI)',
     paymentSuccess: true,
