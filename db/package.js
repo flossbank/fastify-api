@@ -174,6 +174,8 @@ class PackageDbController {
       language
     }).toArray()
 
+    const packagesUpdatedToOneMaintainer = []
+
     // of the packages already marked as maintained by me where my source is registry,
     // whichever aren't in the list of
     // packages provided, remove my id from their maintainers list
@@ -184,6 +186,9 @@ class PackageDbController {
         return packagesNoLongerRegistryVerified && maintainerIsRegistryMaintainer
       })
       .map(pkg => {
+        // If there are strictly two maintainers, then when we delete one maintainer
+        // we'll need to set the remaining 1 maintainer to rev share of 100%
+        if (pkg.maintainers.length === 2) packagesUpdatedToOneMaintainer.push({ criteria: { _id: pkg._id } })
         if (pkg.maintainers.length === 1) {
           return {
             criteria: { _id: pkg._id },
@@ -284,7 +289,7 @@ class PackageDbController {
           $push: {
             maintainers: {
               userId,
-              revenuePercent: 0,
+              revenuePercent: (pkg.maintainers && pkg.maintainers.length) ? 0 : 100,
               source: packageOwnershipSourceEnum.REGISTRY
             }
           }
@@ -306,19 +311,22 @@ class PackageDbController {
       bulkPackages.find(maintainerUpdate.criteria).update(maintainerUpdate.update)
     }
 
-    // due to how the insertions/updates were done, there may be some packages that were upserted
-    // or updated and have only one maintainer with 0 percent revenue share. to fix that, we'll
-    // change those to 100%
-    bulkPackages.find({
-      registry,
-      language,
-      maintainers: { $size: 1 }
-    }).update({
-      $set: {
-        'maintainers.$[].revenuePercent': 100
-        // https://docs.mongodb.com/manual/reference/operator/update/positional-all/#up._S_[]
+    // Need to update the packages we are deleting us from to see if there
+    // is only one maintainer, in which case we need to set their rev to 100%
+    if (packagesUpdatedToOneMaintainer.length) {
+      const percentUpdateCall = {
+        $set: {
+          'maintainers.$[].revenuePercent': 100
+          // https://docs.mongodb.com/manual/reference/operator/update/positional-all/#up._S_[]
+        }
       }
-    })
+      for (const percentUpdate of packagesUpdatedToOneMaintainer) {
+        bulkPackages.find(percentUpdate.criteria).update(percentUpdateCall)
+      }
+    }
+
+    // If no updates - bail
+    if (!bulkPackages.length) return
 
     return bulkPackages.execute()
   }
