@@ -16,6 +16,7 @@ module.exports = async (req, res, ctx) => {
 
     res.send({ success: true })
   } catch (e) {
+    console.log('here', e)
     ctx.log.error(e)
     res.status(500)
     res.send({ success: false, message: INTERNAL_SERVER_ERROR })

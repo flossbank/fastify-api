@@ -280,26 +280,21 @@ class PackageDbController {
     // of the ones I maintain
     const packageUpdates = existingPackages
       .filter(pkg => !pkg.maintainers || !pkg.maintainers.some(m => m.userId === userId))
-      .map(pkg => {
-        // If there are no maintainers, then we're adding the first maintainer so
-        // we'll need to update that one maintainers percent to 100
-        if (!pkg.maintainers) packagesUpdatedToOneMaintainer.push({ criteria: { _id: pkg._id } })
-        return {
-          criteria: { _id: pkg._id },
-          update: {
-            $set: {
-              hasMaintainers: true
-            },
-            $push: {
-              maintainers: {
-                userId,
-                revenuePercent: 0,
-                source: packageOwnershipSourceEnum.REGISTRY
-              }
+      .map(pkg => ({
+        criteria: { _id: pkg._id },
+        update: {
+          $set: {
+            hasMaintainers: true
+          },
+          $push: {
+            maintainers: {
+              userId,
+              revenuePercent: (pkg.maintainers && pkg.maintainers.length) ? 0 : 100,
+              source: packageOwnershipSourceEnum.REGISTRY
             }
           }
         }
-      })
+      }))
 
     const bulkPackages = this.db.collection('packages').initializeUnorderedBulkOp()
 
@@ -316,7 +311,7 @@ class PackageDbController {
       bulkPackages.find(maintainerUpdate.criteria).update(maintainerUpdate.update)
     }
 
-    // Need to update the packages we are deleting us from or adding us to to see if there
+    // Need to update the packages we are deleting us from to see if there
     // is only one maintainer, in which case we need to set their rev to 100%
     if (packagesUpdatedToOneMaintainer.length) {
       const percentUpdateCall = {
