@@ -1,28 +1,34 @@
 const test = require('ava')
+const sinon = require('sinon')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   await before(t, async ({ db }) => {
-    const { id: packageId1 } = await db.package.create({
+    t.context.pkg1 = {
       name: 'flossbank',
       registry: 'npm',
       language: 'javascript',
       avatarUrl: 'blah.com'
-    })
-    t.context.packageId = packageId1.toString()
-
-    const { id: packageId2 } = await db.package.create({
+    }
+    t.context.pkg2 = {
       name: 'floss-js-deep-equals',
       registry: 'npm',
       language: 'javascript',
       avatarUrl: 'blah.com'
-    })
+    }
+
+    const { id: packageId1 } = await db.package.create(t.context.pkg1)
+    t.context.packageId = packageId1.toString()
+
+    const { id: packageId2 } = await db.package.create(t.context.pkg2)
     t.context.packageId2 = packageId2.toString()
   })
 })
 
 test.beforeEach(async (t) => {
   await beforeEach(t)
+
+  t.context.db.package.searchByName = sinon.stub().resolves([t.context.pkg1, t.context.pkg2])
 })
 
 test.afterEach(async (t) => {
@@ -38,20 +44,18 @@ test('GET `/package/search` send back packages info for all matches', async (t) 
     method: 'GET',
     url: '/package/search',
     query: {
-      name: 'floss'
+      name: 'js'
     }
   })
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     packages: [{
-      id: t.context.packageId,
       name: 'flossbank',
       language: 'javascript',
       registry: 'npm',
       avatarUrl: 'blah.com'
     }, {
-      id: t.context.packageId2,
       name: 'floss-js-deep-equals',
       language: 'javascript',
       registry: 'npm',
@@ -61,6 +65,7 @@ test('GET `/package/search` send back packages info for all matches', async (t) 
 })
 
 test('GET `/package/search` send back packages info for single match', async (t) => {
+  t.context.db.package.searchByName = sinon.stub().resolves([t.context.pkg2])
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/search',
@@ -72,7 +77,6 @@ test('GET `/package/search` send back packages info for single match', async (t)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     packages: [{
-      id: t.context.packageId2,
       name: 'floss-js-deep-equals',
       language: 'javascript',
       registry: 'npm',
@@ -82,6 +86,7 @@ test('GET `/package/search` send back packages info for single match', async (t)
 })
 
 test('GET `/package/search` 200 no packages found', async (t) => {
+  t.context.db.package.searchByName = sinon.stub().resolves([])
   const res = await t.context.app.inject({
     method: 'GET',
     url: '/package/search',
