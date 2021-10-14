@@ -10,8 +10,8 @@ const { EthicalAds } = require('../../ethicalAds')
 const mocks = require('./_mocks')
 
 exports.before = async function (t, setup) {
-  const mongo = new MongoMemoryServer()
-  const mongoUri = await mongo.getUri()
+  const mongo = await MongoMemoryServer.create()
+  const mongoUri = mongo.getUri()
 
   const config = new Config({
     env: {
@@ -100,7 +100,7 @@ async function createTables (endpoint, config) {
   const { Advertiser, Maintainer, User } = config.getAuthConfig()
   const urlConfig = config.getUrlConfig()
   const ethicalAdsConfig = config.getEthicalAdsConfig()
-  const tables = [].concat(
+  const dynamoTables = [].concat(
     Advertiser.TableAttributes,
     Maintainer.TableAttributes,
     User.TableAttributes,
@@ -109,14 +109,14 @@ async function createTables (endpoint, config) {
   )
 
   const dynamo = new AWS.DynamoDB({ endpoint })
-  await Promise.all(tables.map(async ({ TableName, KeyAttribute }) => dynamo.createTable({
+  await Promise.all(dynamoTables.map(async ({ TableName, KeyAttribute }) => dynamo.createTable({
     TableName,
     AttributeDefinitions: [KeyAttribute],
     KeySchema: [{ KeyType: 'HASH', AttributeName: KeyAttribute.AttributeName }],
     BillingMode: 'PAY_PER_REQUEST'
   }).promise()))
 
-  await Promise.all(tables.map(async ({ TableName }) => {
+  await Promise.all(dynamoTables.map(async ({ TableName }) => {
     let tableStatus
     while (tableStatus !== 'ACTIVE') {
       const description = await dynamo.describeTable({ TableName }).promise()
