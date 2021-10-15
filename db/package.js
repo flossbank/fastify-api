@@ -47,6 +47,9 @@ class PackageDbController {
           },
           index: 'pkg_name_static'
         }
+      },
+      {
+        $limit: 20
       }
     ]).toArray()
 
