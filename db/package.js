@@ -37,23 +37,21 @@ class PackageDbController {
     // This is also guarded by the API Schema, so it's not testable
     const safeName = name.replace(/[^a-z0-9-]/gi, '')
     if (!safeName) return [] // handle case where all the characters were dangerous
-
-    const partialNameMatch = new RegExp(`.*${safeName}.*`, 'i')
-    const packages = await this.db.collection('packages').find({
-      name: partialNameMatch
-      // TODO there may be cases where a package does not want to appear
-      // in search results; if so, we can add a flag to their profiles in
-      // the DB and filter it out here
-    }, {
-      limit: 10,
-      projection: {
-        _id: 1,
-        name: 1,
-        language: 1,
-        registry: 1,
-        avatarUrl: 1
+    const packages = await this.db.collection('packages').aggregate([
+      {
+        $search: {
+          text: {
+            path: 'name',
+            query: safeName,
+            fuzzy: {}
+          },
+          index: 'pkg_name_static'
+        }
+      },
+      {
+        $limit: 20
       }
-    }).toArray()
+    ]).toArray()
 
     return packages.map(({ _id, ...rest }) => ({ id: _id, ...rest }))
   }

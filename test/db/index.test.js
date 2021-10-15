@@ -4,8 +4,8 @@ const { Db } = require('../../db')
 const { Config } = require('../../config')
 
 test.beforeEach(async (t) => {
-  const mongo = new MongoMemoryServer()
-  const mongoUri = await mongo.getUri()
+  const mongo = await MongoMemoryServer.create()
+  const mongoUri = mongo.getUri()
   const config = new Config({ env: { mongo_uri: mongoUri } })
 
   const db = new Db({ config })
