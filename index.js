@@ -7,6 +7,7 @@ const { Config } = require('./config')
 const { Db } = require('./db')
 const { Auth } = require('./auth')
 const { Sqs } = require('./sqs')
+const { S3 } = require('./s3')
 const { Email } = require('./email')
 const { Registry } = require('./registry')
 const { Url } = require('./url')
@@ -25,6 +26,7 @@ const { EthicalAds } = require('./ethicalAds')
   const auth = new Auth({ config, docs })
   const email = new Email({ ses: new AWS.SES() })
   const sqs = new Sqs({ config, sqs: new AWS.SQS() })
+  const s3 = new S3({ s3: new AWS.S3() })
   const stripe = new Stripe({ stripe: StripeClient, config })
   const registry = new Registry()
   const url = new Url({ config, docs })
@@ -38,6 +40,7 @@ const { EthicalAds } = require('./ethicalAds')
     db,
     auth,
     sqs,
+    s3,
     email,
     stripe,
     registry,
