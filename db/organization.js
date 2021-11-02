@@ -48,7 +48,10 @@ class OrganizationDbController {
     const org = await this.db.collection('organizations').findOne({
       'billingInfo.customerId': customerId
     })
-    return org && org._id
+    if (!org) return org
+    const { name, _id: id } = org
+
+    return { name, id }
   }
 
   async getByInstallationId ({ installationId }) {

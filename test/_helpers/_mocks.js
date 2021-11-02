@@ -16,6 +16,9 @@ module.exports = {
     this.sendDistributeUserDonationMessage = sinon.stub().resolves()
     this.sendDistributeOrgDonationMessage = sinon.stub().resolves()
   },
+  S3: function S3 () {
+    this.writeDistributeOrgDonationInitialState = sinon.stub().resolves()
+  },
   Registry: function Registry () {
     this.npm = {
       getUsername: sinon.stub().resolves('twoseventythree'),

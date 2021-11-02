@@ -1,10 +1,12 @@
 const test = require('ava')
 const sinon = require('sinon')
+const ULID = require('ulid')
 const testData = require('./_test_event')
 const { before, beforeEach, afterEach, after } = require('../../_helpers/_setup')
 
 test.before(async (t) => {
   sinon.stub(Date, 'now').returns(1592794872)
+  sinon.stub(ULID, 'ulid').returns('ulid')
   await before(t, async ({ db }) => {
     const { id: userId1 } = await db.user.create({ email: 'honey@etsy.com' })
     t.context.userId1 = userId1.toHexString()
@@ -27,6 +29,7 @@ test.afterEach(async (t) => {
 test.after(async (t) => {
   await after(t)
   Date.now.restore()
+  ULID.ulid.restore()
 })
 
 test('POST `/stripe/webhook/event` 403 unauthorized no stripe signature in header', async (t) => {
@@ -86,12 +89,18 @@ test('POST `/stripe/webhook/event` 200 success | org', async (t) => {
     }
   })
   t.deepEqual(res.statusCode, 200)
+  t.deepEqual(t.context.s3.writeDistributeOrgDonationInitialState.lastCall.args, [
+    'Papa_Johns_ulid',
+    {
+      amount: 2000 * 1000,
+      organizationId: t.context.orgId1,
+      description: '(created by Stripe CLI)',
+      timestamp: 1592794872
+    }
+  ])
   const expectedPayload = {
-    amount: 2000 * 1000,
-    organizationId: t.context.orgId1,
-    description: '(created by Stripe CLI)',
-    paymentSuccess: true,
-    timestamp: 1592794872
+    correlationId: 'Papa_Johns_ulid',
+    organizationId: t.context.orgId1
   }
   t.deepEqual(t.context.sqs.sendDistributeOrgDonationMessage.lastCall.args, [expectedPayload])
 })
