@@ -1,4 +1,5 @@
 const { MSGS: { INTERNAL_SERVER_ERROR }, CODE_HOSTS } = require('../../helpers/constants')
+const ULID = require('ulid')
 
 /*
  * Authenticate with GitHub as the Flossbank GitHub App
@@ -35,14 +36,23 @@ module.exports = async (req, res, ctx) => {
       avatarUrl
     })
 
-    // Trigger org distribution with 0 dollars so we get an OSS snapshot
     try {
-      await ctx.sqs.sendDistributeOrgDonationMessage({
+      // Trigger org distribution with 0 dollars so we get an OSS snapshot
+      // First we need a correlation ID to write initial state to s3
+      const correlationId = name.replace(' ', '_') + '_' + ULID.ulid()
+      ctx.log.info(`Writing DoD initial state to S3 (${correlationId})`)
+      const initialState = {
         organizationId: organization.id.toString(),
         amount: 0,
-        description: 'Initial distribution to get OSS snapshot',
         timestamp: Date.now(),
-        paymentSuccess: true
+        description: 'Initial distribution to get OSS snapshot'
+      }
+      await ctx.s3.writeDistributeOrgDonationInitialState(correlationId, initialState)
+
+      ctx.log.info('Sending distribute org donations sqs message')
+      await ctx.sqs.sendDistributeOrgDonationMessage({
+        correlationId,
+        organizationId: organization.id.toString()
       })
     } catch (e) {
       ctx.log.error(e)
