@@ -131,6 +131,10 @@ class Config {
   getGitHubClientSecret () {
     return this.env.github_client_secret
   }
+
+  getOrgDodBucketName () {
+    return this.env.ORG_DONATION_STATE_BUCKET
+  }
 }
 
 const configPlugin = (config) => fastifyPlugin(async (fastify) => {
