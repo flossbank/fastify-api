@@ -9,6 +9,9 @@ test.beforeEach((t) => {
       putObject: sinon.stub().returns({
         promise: sinon.stub()
       })
+    },
+    config: {
+      getOrgDodBucketName: sinon.stub().returns('flossbank-dod-org-bucket-staging')
     }
   })
 })
@@ -34,7 +37,7 @@ test('writeDistributeOrgDonationInitialState | calls s3 putObject', async (t) =>
       timestamp: 1234,
       description: 'blah'
     }),
-    Bucket: 'org-donation-state',
+    Bucket: 'flossbank-dod-org-bucket-staging',
     Key: 'corr-id/initial_state.json'
   })
 })

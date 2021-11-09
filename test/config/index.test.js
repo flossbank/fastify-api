@@ -13,7 +13,8 @@ test.beforeEach((t) => {
       distribute_donation_queue_url: 'dd_queue_url',
       distribute_org_donation_queue_url: 'dd_org_queue_url',
       url_host: 'url_host',
-      stripe_token: 'test_stripe_token'
+      stripe_token: 'test_stripe_token',
+      ORG_DONATION_STATE_BUCKET: 'flossbank-org-donation-state-staging'
     }
   })
 })
@@ -52,6 +53,10 @@ test('config | getUrlHost', (t) => {
 
 test('config | getStripeToken', (t) => {
   t.deepEqual(t.context.config.getStripeToken(), 'test_stripe_token')
+})
+
+test('config | getOrgDodBucketName', (t) => {
+  t.deepEqual(t.context.config.getOrgDodBucketName(), 'flossbank-org-donation-state-staging')
 })
 
 test('config | getUrlHost fallback', (t) => {

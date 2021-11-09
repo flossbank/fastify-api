@@ -1,8 +1,9 @@
 const fastifyPlugin = require('fastify-plugin')
 
 class S3 {
-  constructor ({ s3 }) {
+  constructor ({ s3, config }) {
     this.s3 = s3
+    this.config = config
   }
 
   async writeDistributeOrgDonationInitialState (correlationId, {
@@ -20,7 +21,7 @@ class S3 {
         timestamp,
         description
       }),
-      Bucket: 'org-donation-state',
+      Bucket: this.config.getOrgDodBucketName(),
       Key: `${correlationId}/initial_state.json`
     }
     return this.s3.putObject(params).promise()
