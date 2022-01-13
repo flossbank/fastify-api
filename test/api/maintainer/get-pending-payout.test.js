@@ -17,7 +17,7 @@ test.before(async (t) => {
       $set: {
         payouts: [{
           id: 'abc',
-          amount: 100,
+          amount: 100000,
           paid: true
         }]
       }
@@ -84,7 +84,8 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer with multiple pa
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: 2
+    pendingPayout: 2,
+    totalPaidOut: 1
   })
 })
 
@@ -100,7 +101,8 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer with no packages
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: 0
+    pendingPayout: 0,
+    totalPaidOut: 0
   })
 })
 
@@ -116,7 +118,8 @@ test('GET `/maintainer/pending-payout` 200 success | maintainer with only paid p
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
-    payout: 0
+    pendingPayout: 0,
+    totalPaidOut: 1
   })
 })
 
