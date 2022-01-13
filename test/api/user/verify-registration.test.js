@@ -60,14 +60,14 @@ test('POST `/user/verify-registration` 200 success', async (t) => {
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     user: {
-      username: '',
+      username: user.email,
       billingInfo: user.billingInfo,
       id: user.id.toString(),
       email: user.email
     }
   })
   t.true(user.apiKey.length > 0)
-  t.is(user.username, null)
+  t.is(user.username, user.email)
 
   const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
   t.is(apiKeyInfo.id, user.id.toString())
@@ -92,7 +92,7 @@ test('POST `/user/verify-registration` 200 success | with referral code', async 
   t.deepEqual(JSON.parse(res.payload), {
     success: true,
     user: {
-      username: '',
+      username: user.email,
       billingInfo: user.billingInfo,
       id: user.id.toString(),
       email: user.email
@@ -100,7 +100,7 @@ test('POST `/user/verify-registration` 200 success | with referral code', async 
   })
   t.true(user.apiKey.length > 0)
   t.is(user.referralCode, 'papajohn')
-  t.is(user.username, null)
+  t.is(user.username, user.email)
 
   const apiKeyInfo = await auth.user.getApiKey({ apiKey: user.apiKey })
   t.is(apiKeyInfo.id, user.id.toString())
