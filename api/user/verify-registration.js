@@ -14,7 +14,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false, message: INVALID_EMAIL_TOKEN })
     }
 
-    const user = await ctx.db.user.create({ email, referralCode })
+    const user = await ctx.db.user.create({ email, referralCode, username: email })
     await ctx.auth.user.cacheApiKey({ apiKey: user.apiKey, userId: user.id.toString() })
 
     const { sessionId, expiration } = await ctx.auth.user.createWebSession({ userId: user.id.toString() })
