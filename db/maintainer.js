@@ -24,7 +24,7 @@ class MaintainerDbController {
         $project: {
           _id: 1,
           email: 1,
-          payouts: {
+          pendingPayouts: {
             $filter: {
               input: '$payouts',
               as: 'payouts',
@@ -34,13 +34,27 @@ class MaintainerDbController {
                 ]
               }
             }
+          },
+          totalPaidOut: {
+            $filter: {
+              input: '$payouts',
+              as: 'payouts',
+              cond: {
+                $eq: [
+                  '$$payouts.paid', true
+                ]
+              }
+            }
           }
         }
       }, {
         $project: {
           _id: 1,
-          payout: {
-            $sum: '$payouts.amount'
+          pendingPayout: {
+            $sum: '$pendingPayouts.amount'
+          },
+          totalPaidOut: {
+            $sum: '$totalPaidOut.amount'
           }
         }
       }
