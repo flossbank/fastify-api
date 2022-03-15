@@ -29,7 +29,7 @@
   "dependencies": {
     "@flossbank/schema": "^2.0.0",
     "@octokit/app": "^4.2.1",
-    "ajv": "^6.10.2",
+    "ajv": "^6.12.3",
     "aws-sdk": "^2.543.0",
     "b36": "^1.0.0",
     "bcrypt": "^5.0.0",
