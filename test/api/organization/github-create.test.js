@@ -45,6 +45,7 @@ test('POST `/organization/github-create` 200 success', async (t) => {
   const payload = JSON.parse(res.body)
 
   t.is(payload.organization.name, 'New Org')
+  t.true(t.context.s3.writeDistributeOrgDonationInitialState.calledOnce)
   t.true(t.context.sqs.sendDistributeOrgDonationMessage.calledOnce)
 })
 

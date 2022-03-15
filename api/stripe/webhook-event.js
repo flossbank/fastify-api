@@ -1,4 +1,5 @@
 const { MSGS: { INTERNAL_SERVER_ERROR, INVALID_EVENT_SIG } } = require('../../helpers/constants')
+const ULID = require('ulid')
 
 module.exports = async (req, res, ctx) => {
   try {
@@ -37,18 +38,26 @@ module.exports = async (req, res, ctx) => {
             paymentSuccess: true
           })
         } else {
-          const organizationId = await ctx.db.organization.getIdByCustomerId({ customerId: customer })
+          const org = await ctx.db.organization.getIdByCustomerId({ customerId: customer })
+          const { name, id: organizationId } = org
           if (!organizationId) {
             throw new Error('Received a valid Stripe webhook event that contained a non-existant customer id')
           }
-          ctx.log.info('Sending distribute org donations sqs message')
 
-          await ctx.sqs.sendDistributeOrgDonationMessage({
+          const correlationId = name.replace(' ', '_') + '_' + ULID.ulid()
+          ctx.log.info(`Writing DoD initial state to S3 (${correlationId})`)
+          const initialState = {
             organizationId: organizationId.toString(),
-            amount: amount * 1000, // convert cents to millicents,
-            description,
+            amount: amount * 1000, // convert cents to millicents
             timestamp: Date.now(),
-            paymentSuccess: true
+            description
+          }
+          await ctx.s3.writeDistributeOrgDonationInitialState(correlationId, initialState)
+
+          ctx.log.info('Sending distribute org donations sqs message')
+          await ctx.sqs.sendDistributeOrgDonationMessage({
+            correlationId,
+            organizationId: organizationId.toString()
           })
         }
         break

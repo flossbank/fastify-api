@@ -9,9 +9,10 @@ module.exports = async (req, res, ctx) => {
     })
 
     // Round payout to the nearest 10 cents to obfuscate ad revenue abuse mechanism
-    const payout = (payoutRes.reduce((total, { payout: p }) => total + p, 0) / 100000).toFixed(1)
+    const pendingPayout = (payoutRes.reduce((total, { pendingPayout: p }) => total + p, 0) / 100000).toFixed(1)
+    const totalPaidOut = (payoutRes.reduce((total, { totalPaidOut: p }) => total + p, 0) / 100000).toFixed(1)
 
-    res.send({ success: true, payout })
+    res.send({ success: true, pendingPayout, totalPaidOut })
   } catch (e) {
     ctx.log.error(e)
     res.status(500)

@@ -56,6 +56,7 @@ exports.beforeEach = async function (t) {
   t.context.auth = new Auth({ docs, config: t.context.config })
   t.context.url = new Url({ docs, config: t.context.config })
   t.context.sqs = new mocks.Sqs()
+  t.context.s3 = new mocks.S3()
   t.context.email = new mocks.Email()
   t.context.stripe = new mocks.Stripe({ config: t.context.config })
   t.context.registry = new mocks.Registry()
@@ -65,6 +66,7 @@ exports.beforeEach = async function (t) {
     auth: t.context.auth,
     email: t.context.email,
     sqs: t.context.sqs,
+    s3: t.context.s3,
     stripe: t.context.stripe,
     registry: t.context.registry,
     url: t.context.url,

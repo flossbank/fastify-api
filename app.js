@@ -5,6 +5,7 @@ const stripeRoutes = require('./routes/stripe')
 const { authPlugin } = require('./auth')
 const { dbPlugin } = require('./db')
 const { sqsPlugin } = require('./sqs')
+const { s3Plugin } = require('./s3')
 const { configPlugin } = require('./config')
 const { stripePlugin } = require('./stripe')
 const { registryPlugin } = require('./registry')
@@ -18,6 +19,7 @@ module.exports = async function buildFastify (deps) {
     db,
     auth,
     sqs,
+    s3,
     email,
     registry,
     stripe,
@@ -73,6 +75,7 @@ module.exports = async function buildFastify (deps) {
   fastify.register(emailPlugin(email))
   fastify.register(stripePlugin(stripe))
   fastify.register(sqsPlugin(sqs))
+  fastify.register(s3Plugin(s3))
   fastify.register(registryPlugin(registry))
   fastify.register(urlPlugin(url))
   fastify.register(configPlugin(config))
