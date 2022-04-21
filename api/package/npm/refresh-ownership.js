@@ -22,7 +22,7 @@ module.exports = async (req, res, ctx) => {
       return res.send({ success: false })
     }
 
-    const packages = await ctx.registry.npm.getOwnedPackages(user[NPM].username)
+    const packages = await ctx.registry.npm.getOwnedPackages({ username: user[NPM].username })
     ctx.log.info('%s maintains %d packages on NPM', userId, packages.length)
 
     await ctx.db.package.refreshOwnership({ packages, language: JAVASCRIPT, registry: NPM, userId })
