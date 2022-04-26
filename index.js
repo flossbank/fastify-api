@@ -14,6 +14,7 @@ const { Url } = require('./url')
 const { Stripe } = require('./stripe')
 const { GitHub } = require('./github')
 const { EthicalAds } = require('./ethicalAds')
+const { DodS3GitHubPoller } = require('./dod-github-s3-poller')
 
 ;(async function () {
   const config = new Config({ env: process.env })
@@ -32,9 +33,12 @@ const { EthicalAds } = require('./ethicalAds')
   const url = new Url({ config, docs })
   const github = new GitHub({ config })
   const ethicalAds = new EthicalAds({ config, docs })
+  const dodGithubS3Poller = new DodS3GitHubPoller({ db, config, s3, sqs })
 
   await db.setup()
   stripe.init()
+  // TODO: figure out how to keep this alive, maybe a setTimeout here?
+  dodGithubS3Poller.startPolling()
 
   const app = await App({
     db,
