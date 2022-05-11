@@ -2,7 +2,7 @@ const RegistryResolver = require('@flossbank/registry-resolver')
 const GithubRetriever = require('./github-manifest-retriever')
 const got = require('got')
 
-class DodS3GitHubPoller {
+class DodTopLevelDependencyRetriever {
   constructor ({ db, config, s3, sqs }) {
     this.config = config
     this.got = got
@@ -12,14 +12,6 @@ class DodS3GitHubPoller {
     // no epsilon needed because we are only using the resolver to get search patterns
     this.resolver = new RegistryResolver({ log: console.log, epsilon: 0 })
     this.retriever = new GithubRetriever({ log: console.log, config })
-  }
-
-  // if we find a message in the queue, then kick off extractGitHubTopLevelDeps
-  // with the correlation id and org id
-  async startPolling () {
-    setInterval(() => {
-      // TODO: Poll
-    }, 5000)
   }
 
   async extractGitHubTopLevelDeps ({ record }) {
@@ -90,4 +82,4 @@ class DodS3GitHubPoller {
   }
 }
 
-exports.DodS3GitHubPoller = DodS3GitHubPoller
+module.exports = DodTopLevelDependencyRetriever

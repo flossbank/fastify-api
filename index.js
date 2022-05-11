@@ -14,7 +14,8 @@ const { Url } = require('./url')
 const { Stripe } = require('./stripe')
 const { GitHub } = require('./github')
 const { EthicalAds } = require('./ethicalAds')
-const { DodS3GitHubPoller } = require('./dod-github-s3-poller')
+const { DodTopLevelDependencyRetriever } = require('./github/dod-top-level-dependency-retriever')
+const { Consumer } = require('sqs-consumer')
 
 ;(async function () {
   const config = new Config({ env: process.env })
@@ -33,12 +34,37 @@ const { DodS3GitHubPoller } = require('./dod-github-s3-poller')
   const url = new Url({ config, docs })
   const github = new GitHub({ config })
   const ethicalAds = new EthicalAds({ config, docs })
-  const dodGithubS3Poller = new DodS3GitHubPoller({ db, config, s3, sqs })
+  const dodTopLevelDependencyRetriever = new DodTopLevelDependencyRetriever({ db, config, s3, sqs })
 
   await db.setup()
   stripe.init()
-  // TODO: figure out how to keep this alive, maybe a setTimeout here?
-  dodGithubS3Poller.startPolling()
+
+  /** Distribute Org Donations poller */
+  const dodPoller = Consumer.create({
+    queueUrl: config.getDistributeOrgDonationQueueUrl(),
+    handleMessage: async (message) => {
+      dodTopLevelDependencyRetriever.extractGitHubTopLevelDeps(message)
+    },
+    sqs
+  })
+
+  dodPoller.on('error', (err) => {
+    // TODO: do something without killing our server
+    console.log(err)
+  })
+
+  dodPoller.on('processing_error', (err) => {
+    // TODO: do something without killing our server
+    console.log(err)
+  })
+
+  dodPoller.on('timeout_error', (err) => {
+    // TODO: do something without killing our server
+    console.log(err)
+  })
+
+  dodPoller.start()
+  /** end poller */
 
   const app = await App({
     db,
