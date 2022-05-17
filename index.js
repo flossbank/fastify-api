@@ -39,32 +39,29 @@ const { Consumer } = require('sqs-consumer')
   await db.setup()
   stripe.init()
 
-  /** Distribute Org Donations poller */
-  const dodPoller = Consumer.create({
-    queueUrl: config.getDistributeOrgDonationQueueUrl(),
-    handleMessage: async (message) => {
-      dodTopLevelDependencyRetriever.extractGitHubTopLevelDeps(message)
-    },
-    sqs
-  })
+  if (process.env.ENABLE_DOD_POLLING) {
+    const dodPoller = Consumer.create({
+      queueUrl: config.getDistributeOrgDonationQueueUrl(),
+      handleMessage: async (message) => {
+        dodTopLevelDependencyRetriever.extractGitHubTopLevelDeps(message)
+      },
+      sqs
+    })
 
-  dodPoller.on('error', (err) => {
-    // TODO: do something without killing our server
-    console.log(err)
-  })
+    dodPoller.on('error', (err) => {
+      console.log('Generic_error: ', err)
+    })
 
-  dodPoller.on('processing_error', (err) => {
-    // TODO: do something without killing our server
-    console.log(err)
-  })
+    dodPoller.on('processing_error', (err) => {
+      console.log('Processing_error: ', err)
+    })
 
-  dodPoller.on('timeout_error', (err) => {
-    // TODO: do something without killing our server
-    console.log(err)
-  })
+    dodPoller.on('timeout_error', (err) => {
+      console.log('Timeout_error: ', err)
+    })
 
-  dodPoller.start()
-  /** end poller */
+    dodPoller.start()
+  }
 
   const app = await App({
     db,

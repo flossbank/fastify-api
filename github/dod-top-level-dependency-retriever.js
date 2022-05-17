@@ -25,14 +25,14 @@ class DodTopLevelDependencyRetriever {
 
     console.log({ organizationId, correlationId })
 
-    const org = await this.db.getOrg({ organizationId })
+    const org = await this.db.organization.get({ orgId: organizationId })
     let installationId
     const { name, installationId: _installationId } = org
 
     // this is an org that hasn't installed our Github App; we will only be scraping their public repos,
     // and we'll authenticate via Flossbank's installation ID
     if (!_installationId) {
-      const flossbank = await this.db.getOrg({ organizationId: this.config.getFlossbankOrgId() })
+      const flossbank = await this.db.organization.get({ orgId: this.config.getFlossbankOrgId() })
       installationId = flossbank.installationId
 
       // this shouldn't ever happen, so if it does we'll be noisy
