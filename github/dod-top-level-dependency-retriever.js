@@ -82,4 +82,4 @@ class DodTopLevelDependencyRetriever {
   }
 }
 
-module.exports = DodTopLevelDependencyRetriever
+exports.DodTopLevelDependencyRetriever = DodTopLevelDependencyRetriever

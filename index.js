@@ -39,13 +39,12 @@ const { Consumer } = require('sqs-consumer')
   await db.setup()
   stripe.init()
 
-  if (process.env.ENABLE_DOD_POLLING) {
+  if (process.env.ENABLE_DOD_POLLING && process.env.ENABLE_DOD_POLLING === 'true') {
     const dodPoller = Consumer.create({
       queueUrl: config.getDistributeOrgDonationQueueUrl(),
       handleMessage: async (message) => {
         dodTopLevelDependencyRetriever.extractGitHubTopLevelDeps(message)
-      },
-      sqs
+      }
     })
 
     dodPoller.on('error', (err) => {
