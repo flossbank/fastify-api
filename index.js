@@ -14,6 +14,8 @@ const { Url } = require('./url')
 const { Stripe } = require('./stripe')
 const { GitHub } = require('./github')
 const { EthicalAds } = require('./ethicalAds')
+const { DodTopLevelDependencyRetriever } = require('./github/dod-top-level-dependency-retriever')
+const { Consumer } = require('sqs-consumer')
 
 ;(async function () {
   const config = new Config({ env: process.env })
@@ -32,9 +34,33 @@ const { EthicalAds } = require('./ethicalAds')
   const url = new Url({ config, docs })
   const github = new GitHub({ config })
   const ethicalAds = new EthicalAds({ config, docs })
+  const dodTopLevelDependencyRetriever = new DodTopLevelDependencyRetriever({ db, config, s3, sqs })
 
   await db.setup()
   stripe.init()
+
+  if (process.env.ENABLE_DOD_POLLING && process.env.ENABLE_DOD_POLLING === 'true') {
+    const dodPoller = Consumer.create({
+      queueUrl: config.getDistributeOrgDonationQueueUrl(),
+      handleMessage: async (message) => {
+        dodTopLevelDependencyRetriever.extractGitHubTopLevelDeps(message)
+      }
+    })
+
+    dodPoller.on('error', (err) => {
+      console.log('Generic_error: ', err)
+    })
+
+    dodPoller.on('processing_error', (err) => {
+      console.log('Processing_error: ', err)
+    })
+
+    dodPoller.on('timeout_error', (err) => {
+      console.log('Timeout_error: ', err)
+    })
+
+    dodPoller.start()
+  }
 
   const app = await App({
     db,

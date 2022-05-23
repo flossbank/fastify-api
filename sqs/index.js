@@ -21,6 +21,11 @@ class Sqs {
     return this.sendMessage(url, payload)
   }
 
+  async sendRegistryResolverMessage (payload) {
+    const url = this.config.getRegistryResolverInputQueueUrl()
+    return this.sendMessage(url, payload)
+  }
+
   async sendMessage (url, payload) {
     return this.sqs.sendMessage({
       QueueUrl: url,

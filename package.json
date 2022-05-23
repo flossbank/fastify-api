@@ -27,6 +27,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@flossbank/registry-resolver": "^2.2.2",
     "@flossbank/schema": "^2.0.0",
     "@octokit/app": "^4.2.1",
     "ajv": "^6.10.2",
@@ -47,6 +48,7 @@
     "mongodb": "^3.6.3",
     "npm-registry-fetch": "^10.1.1",
     "rfc4648": "^1.3.0",
+    "sqs-consumer": "^5.7.0",
     "stripe": "^8.14.0",
     "ulid": "^2.3.0"
   },

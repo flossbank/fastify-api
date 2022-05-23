@@ -91,8 +91,16 @@ class Config {
     return this.env.distribute_org_donation_queue_url
   }
 
+  getRegistryResolverInputQueueUrl () {
+    return this.env.distribute_org_donation_registry_resolver_input_url
+  }
+
   getSessionCompleteQueueUrl () {
     return this.env.session_complete_queue_url
+  }
+
+  getFlossbankOrgId () {
+    return process.env.FLOSSBANK_ORG_ID
   }
 
   getUrlConfig () {

@@ -26,6 +26,17 @@ class S3 {
     }
     return this.s3.putObject(params).promise()
   }
+
+  async putTopLevelPackages ({ correlationId, extractedDependencies }) {
+    return Promise.all(extractedDependencies.map(async ({ language, registry, deps }) => {
+      const params = {
+        Body: JSON.stringify(deps),
+        Bucket: this.config.getOrgDodBucketName(),
+        Key: `${correlationId}/${language}_${registry}_top_level_packages.json`
+      }
+      return this.s3.putObject(params).promise()
+    }))
+  }
 }
 
 exports.S3 = S3
