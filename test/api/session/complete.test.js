@@ -19,7 +19,7 @@ test.after(async (t) => {
   await after(t)
 })
 
-test('POST `/session/complete` 401 unauthorized', async (t) => {
+test.skip('POST `/session/complete` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',
@@ -35,7 +35,7 @@ test('POST `/session/complete` 401 unauthorized', async (t) => {
   t.deepEqual(res.statusCode, 401)
 })
 
-test('POST `/session/complete` 400 bad request', async (t) => {
+test.skip('POST `/session/complete` 400 bad request', async (t) => {
   let res
   res = await t.context.app.inject({
     method: 'POST',
@@ -54,7 +54,7 @@ test('POST `/session/complete` 400 bad request', async (t) => {
   t.deepEqual(res.statusCode, 400)
 })
 
-test('POST `/session/complete` 200 success', async (t) => {
+test.skip('POST `/session/complete` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/complete',
@@ -70,7 +70,7 @@ test('POST `/session/complete` 200 success', async (t) => {
   t.deepEqual(res.statusCode, 200)
 })
 
-test('POST `/session/complete` 500 server error', async (t) => {
+test.skip('POST `/session/complete` 500 server error', async (t) => {
   t.context.sqs.sendSessionCompleteMessage.throws()
   const res = await t.context.app.inject({
     method: 'POST',

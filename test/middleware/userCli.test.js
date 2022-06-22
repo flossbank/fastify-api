@@ -18,7 +18,7 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/session/start` 500 middleware failure', async (t) => {
+test.skip('POST `/session/start` 500 middleware failure', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',

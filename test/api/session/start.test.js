@@ -105,7 +105,7 @@ test.after.always(async (t) => {
   await after(t)
 })
 
-test('POST `/session/start` 401 unauthorized', async (t) => {
+test.skip('POST `/session/start` 401 unauthorized', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -115,7 +115,7 @@ test('POST `/session/start` 401 unauthorized', async (t) => {
   t.is(res.statusCode, 401)
 })
 
-test('POST `/session/start` 401 unauthorized | no header', async (t) => {
+test.skip('POST `/session/start` 401 unauthorized | no header', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -132,7 +132,7 @@ test('POST `/session/start` 401 unauthorized | no header', async (t) => {
   t.is(res2.statusCode, 401)
 })
 
-test('POST `/session/start` 200 success', async (t) => {
+test.skip('POST `/session/start` 200 success', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -162,7 +162,7 @@ test('POST `/session/start` 200 success', async (t) => {
   })
 })
 
-test('POST `/session/start` 200 success | ethical ads is down', async (t) => {
+test.skip('POST `/session/start` 200 success | ethical ads is down', async (t) => {
   t.context.ethicalAds.got = () => { throw new Error() }
 
   const res = await t.context.app.inject({
@@ -194,7 +194,7 @@ test('POST `/session/start` 200 success | ethical ads is down', async (t) => {
   })
 })
 
-test('POST `/session/start` 200 success | no ads available still gets a session', async (t) => {
+test.skip('POST `/session/start` 200 success | no ads available still gets a session', async (t) => {
   t.context.db.ad.getBatch = () => []
   const res = await t.context.app.inject({
     method: 'POST',
@@ -207,7 +207,7 @@ test('POST `/session/start` 200 success | no ads available still gets a session'
   t.true(payload.sessionId.length > 0)
 })
 
-test('POST `/session/start` 200 success | existing session', async (t) => {
+test.skip('POST `/session/start` 200 success | existing session', async (t) => {
   const res1 = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -238,7 +238,7 @@ test('POST `/session/start` 200 success | existing session', async (t) => {
   })
 })
 
-test('POST `/session/start` 200 success | user has opted out of ads', async (t) => {
+test.skip('POST `/session/start` 200 success | user has opted out of ads', async (t) => {
   const res = await t.context.app.inject({
     method: 'POST',
     url: '/session/start',
@@ -250,7 +250,7 @@ test('POST `/session/start` 200 success | user has opted out of ads', async (t) 
   t.deepEqual(payload.ads, [])
 })
 
-test('POST `/session/start` 500 server error', async (t) => {
+test.skip('POST `/session/start` 500 server error', async (t) => {
   t.context.db.ad.getBatch = () => { throw new Error() }
   const res = await t.context.app.inject({
     method: 'POST',

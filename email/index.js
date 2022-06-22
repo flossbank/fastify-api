@@ -19,93 +19,93 @@ class Email {
   }
 
   async sendContactUsEmail ({ email, body, name, topic }) {
-    return this.ses.sendEmail({
-      Destination: { ToAddresses: [FLOSSBANK_ADMIN] },
-      Source: FLOSSBANK_CUSTOMER_FEEDBACK,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: `<h1>${topic} from: ${name}, ${email},</h1><p>${body}</p>`
-          },
-          Text: {
-            Charset: 'UTF-8',
-            Data: `${topic} from: ${name}, ${email},\r\n${body}`
-          }
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: `Customer feedback ${topic}`
-        }
-      }
-    }).promise()
+    // return this.ses.sendEmail({
+    //   Destination: { ToAddresses: [FLOSSBANK_ADMIN] },
+    //   Source: FLOSSBANK_CUSTOMER_FEEDBACK,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Message: {
+    //     Body: {
+    //       Html: {
+    //         Charset: 'UTF-8',
+    //         Data: `<h1>${topic} from: ${name}, ${email},</h1><p>${body}</p>`
+    //       },
+    //       Text: {
+    //         Charset: 'UTF-8',
+    //         Data: `${topic} from: ${name}, ${email},\r\n${body}`
+    //       }
+    //     },
+    //     Subject: {
+    //       Charset: 'UTF-8',
+    //       Data: `Customer feedback ${topic}`
+    //     }
+    //   }
+    // }).promise()
   }
 
   async sendUserActivationEmail (email, token) {
-    const activationUrl = this.createActivationUrl(email, token, 'user')
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: USER_ACTIVATION_TEMPLATE,
-      TemplateData: JSON.stringify({ activationUrl })
-    }).promise()
+    // const activationUrl = this.createActivationUrl(email, token, 'user')
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_ADMIN,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: USER_ACTIVATION_TEMPLATE,
+    //   TemplateData: JSON.stringify({ activationUrl })
+    // }).promise()
   }
 
   async sendAdvertiserActivationEmail (email, token) {
-    const activationUrl = this.createActivationUrl(email, token, 'advertiser')
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: ADVERTISER_ACTIVATION_TEMPLATE,
-      TemplateData: JSON.stringify({ activationUrl })
-    }).promise()
+    // const activationUrl = this.createActivationUrl(email, token, 'advertiser')
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_ADMIN,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: ADVERTISER_ACTIVATION_TEMPLATE,
+    //   TemplateData: JSON.stringify({ activationUrl })
+    // }).promise()
   }
 
   async sendMaintainerActivationEmail (email, token) {
-    const activationUrl = this.createActivationUrl(email, token, 'maintainer')
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: MAINTAINER_ACTIVATION_TEMPLATE,
-      TemplateData: JSON.stringify({ activationUrl })
-    }).promise()
+    // const activationUrl = this.createActivationUrl(email, token, 'maintainer')
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_ADMIN,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: MAINTAINER_ACTIVATION_TEMPLATE,
+    //   TemplateData: JSON.stringify({ activationUrl })
+    // }).promise()
   }
 
   async sendBetaSubscriptionEmail (email, token) {
-    const unsubscribeUrl = this.createUnsubscribeUrl(email, token)
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_JOEL,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: BETA_SUBSCRIBE_TEMPLATE,
-      TemplateData: JSON.stringify({ unsubscribeUrl })
-    }).promise()
+    // const unsubscribeUrl = this.createUnsubscribeUrl(email, token)
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_JOEL,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: BETA_SUBSCRIBE_TEMPLATE,
+    //   TemplateData: JSON.stringify({ unsubscribeUrl })
+    // }).promise()
   }
 
   async sendUserMagicLinkEmail (email, { token, code }) {
-    const loginUrl = this.createLoginUrl(email, token, 'user')
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: USER_MAGIC_LINK_TEMPLATE,
-      TemplateData: JSON.stringify({ code, loginUrl })
-    }).promise()
+    // const loginUrl = this.createLoginUrl(email, token, 'user')
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_ADMIN,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: USER_MAGIC_LINK_TEMPLATE,
+    //   TemplateData: JSON.stringify({ code, loginUrl })
+    // }).promise()
   }
 
   async sendMaintainerMagicLinkEmail (email, { token, code }) {
-    const loginUrl = this.createLoginUrl(email, token, 'maintainer')
-    return this.ses.sendTemplatedEmail({
-      Destination: { ToAddresses: [email] },
-      Source: FLOSSBANK_ADMIN,
-      ConfigurationSetName: DEFAULT_CONFIG_SET,
-      Template: USER_MAGIC_LINK_TEMPLATE,
-      TemplateData: JSON.stringify({ code, loginUrl })
-    }).promise()
+    // const loginUrl = this.createLoginUrl(email, token, 'maintainer')
+    // return this.ses.sendTemplatedEmail({
+    //   Destination: { ToAddresses: [email] },
+    //   Source: FLOSSBANK_ADMIN,
+    //   ConfigurationSetName: DEFAULT_CONFIG_SET,
+    //   Template: USER_MAGIC_LINK_TEMPLATE,
+    //   TemplateData: JSON.stringify({ code, loginUrl })
+    // }).promise()
   }
 
   encodeEmail (email) {
