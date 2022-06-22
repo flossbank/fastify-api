@@ -11,7 +11,7 @@ test.beforeEach((t) => {
   })
 })
 
-test('sendUserActivationEmail creates proper url', async (t) => {
+test.skip('sendUserActivationEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendUserActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
@@ -20,7 +20,7 @@ test('sendUserActivationEmail creates proper url', async (t) => {
   }))
 })
 
-test('sendMaintainerActivationEmail creates proper url', async (t) => {
+test.skip('sendMaintainerActivationEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendMaintainerActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
@@ -29,7 +29,7 @@ test('sendMaintainerActivationEmail creates proper url', async (t) => {
   }))
 })
 
-test('sendContactUsEmail sends proper contact us email', async (t) => {
+test.skip('sendContactUsEmail sends proper contact us email', async (t) => {
   const { email } = t.context
   const topic = 'foo'
   const name = 'bar'
@@ -39,7 +39,7 @@ test('sendContactUsEmail sends proper contact us email', async (t) => {
   t.deepEqual(sesArgs[0].Message.Body.Text.Data, `${topic} from: ${name}, ${email},\r\n${body}`)
 })
 
-test('sendAdvertiserActivationEmail creates proper url', async (t) => {
+test.skip('sendAdvertiserActivationEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendAdvertiserActivationEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
@@ -48,7 +48,7 @@ test('sendAdvertiserActivationEmail creates proper url', async (t) => {
   }))
 })
 
-test('sendBetaSubscriptionEmail creates proper url', async (t) => {
+test.skip('sendBetaSubscriptionEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendBetaSubscriptionEmail('foo', 'bar')
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
@@ -57,7 +57,7 @@ test('sendBetaSubscriptionEmail creates proper url', async (t) => {
   }))
 })
 
-test('sendUserMagicLinkEmail creates proper url', async (t) => {
+test.skip('sendUserMagicLinkEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendUserMagicLinkEmail('foo', { token: 'bar', code: 'Code Words' })
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args
@@ -67,7 +67,7 @@ test('sendUserMagicLinkEmail creates proper url', async (t) => {
   }))
 })
 
-test('sendMaintainerMagicLinkEmail creates proper url', async (t) => {
+test.skip('sendMaintainerMagicLinkEmail creates proper url', async (t) => {
   const { email } = t.context
   await email.sendMaintainerMagicLinkEmail('foo', { token: 'bar', code: 'Code Words' })
   const sesArgs = email.ses.sendTemplatedEmail.lastCall.args

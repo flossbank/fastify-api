@@ -196,8 +196,23 @@ async function routes (fastify, opts, done) {
   fastify.get('/package/get-supporting-companies', { schema: Schema.package.getSupportingCompanies }, (req, res) => getSupportingCompanies(req, res, fastify))
 
   // Session
-  fastify.post('/session/start', { preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done), schema: Schema.session.start }, (req, res) => startSession(req, res, fastify))
-  fastify.post('/session/complete', { preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done), schema: Schema.session.complete }, (req, res) => completeSession(req, res, fastify))
+  // Auth isn't necessary in our shutdown-phase, as no sessions are being recorded,
+  // and the route itself is "free" (doesn't call our dependencies/dbs)
+  fastify.post('/session/start',
+    {
+      // preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done),
+      schema: Schema.session.start
+    },
+    (req, res) => startSession(req, res, fastify)
+  )
+
+  fastify.post('/session/complete',
+    {
+      // preHandler: (req, res, done) => userCliMiddleware(req, res, fastify, done),
+      schema: Schema.session.complete
+    },
+    (req, res) => completeSession(req, res, fastify)
+  )
 
   // URL
   // fastify.post('/url/create', { preHandler: (req, res, done) => advertiserWebMiddleware(req, res, fastify, done), schema: Schema.url.create }, (req, res) => createUrl(req, res, fastify))
