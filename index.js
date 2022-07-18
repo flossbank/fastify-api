@@ -61,6 +61,8 @@ const server = require('fastify')()
 server.register(require('fastify-helmet'))
 server.register(require('fastify-cookie'))
 server.register(async (fastify, opts, done) => {
+  fastify.get('/health', { logLevel: 'error' }, (req, res) => res.send({ success: true }))
+  fastify.post('/health', { logLevel: 'error' }, (req, res) => res.send({ success: true }))
   fastify.post('/session/start', (req, res) => {
     res.send({
       ads: [{
